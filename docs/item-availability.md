@@ -1,5 +1,35 @@
 # Finding and using items
 
+## Current public counters (October26 release)
+
+At Alpha Test Hub31 these ordinary exits reach finite buy-only counters. Use
+`+store`, choose **Buy items** and inspect actual quantities; `back` returns to
+the hub. There is no automatic refill or resale.
+
+| Exit | Supplies |
+| --- | --- |
+| `supplies` | Potion, Oran Berry, Fresh Water, Fire Stone, Leftovers, Smoke Ball |
+| `statusmeds` | Six status medicines |
+| `recoverymeds` | Super/Hyper Potion, Revive/Max Revive |
+| `ppmeds` | Ether/Max Ether, Elixir/Max Elixir |
+| `stones` | Water, Thunder, Leaf, Ice, Sun and Moon Stone |
+| `vitamins` | HP Up, Protein, Iron, Calcium, Zinc and Carbos |
+| `capacity` | PP Up/Max and Ability Capsule/Patch; sold out at acceptance |
+| `helditems` | Sitrus, Lum, Focus Sash and Choice items; Choice offers sold out |
+| `seeds` | Cheri, Pecha, Rawst and Aspear; plant/water four real-hour stages here |
+| `expcandy` | XS, S, M, L and XL; XL sold out at acceptance |
+| `mints` | All21 nature mints; sold out at acceptance |
+
+The [released report](testing/remaining-item-released-player-2026-10-26.md) and
+[dated per-item index](testing/item-availability-released-index-2026-10-26.json)
+record72 offers:43 in stock and29 sold out at final observation. Later sales
+can deplete them. The other421 scoped definitions remain world-unverified.
+Real nursery harvest/use, Candy progression/learning, mint genetics and both
+native Ultra lifecycles passed ordinary-player checks. Live QA fixtures and
+temporary capture/crystal helpers were removed; sealed audit histories remain.
+Temporary helpers do not certify permanent public acquisition. Earlier dated
+source-only reports and then-pending gates below remain historical evidence.
+
 Use `+store` in a shop, choose **Buy items**, then enter the complete displayed
 item name and amount, such as `Potion 1`. The shop needs stock and you need
 enough money. `+itemdex` describes items; it does not tell you where they are

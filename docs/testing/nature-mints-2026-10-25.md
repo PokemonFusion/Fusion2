@@ -1,5 +1,12 @@
 # Nature mint qualification (#897–#904)
 
+**October26 released acceptance update:** Later approved PF2-Dev player checks,
+actual crop/breeding waits, receipt-preserving QA teardown and independent
+same-build health are complete. See the [released report](remaining-item-released-player-2026-10-26.md)
+and [dated availability index](item-availability-released-index-2026-10-26.json).
+The October25 source-only receipts and then-pending limits below remain
+historical records. Temporary QA helpers do not certify permanent stock.
+
 Local automated command/SQL and consumer qualification is complete for21 exact
 mints. Actual migration rehearsals and deliberately released acceptance are
 separate gates; see the machine report for their current status. No existing

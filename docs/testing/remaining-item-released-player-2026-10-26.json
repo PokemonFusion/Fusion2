@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "PLAYER CHECKS COMPLETE; receipt-seal cleanup refusal rolled back and recovered healthy; integrity-enabled receipt-preserving replacement and one further maintenance cycle await approval; eleven issues remain open",
-  "observed_utc": "2026-10-26T15:24:15.027068+00:00",
+  "status": "COMPLETE: eleven bounded item acceptance deliveries; four actual nursery hours, exact live-QA teardown, sealed audit retention and independent same-build health passed",
+  "observed_utc": "2026-10-27T01:29:37.350272+00:00",
   "environment": "PF2-Dev",
   "game_candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
   "migration": "0059_owned_trained_stat_nature",
@@ -57,7 +57,7 @@
           "remaining": 9
         }
       ],
-      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
+      "observed_utc": "2026-10-27T01:29:25.440991+00:00"
     },
     {
       "issue": 878,
@@ -92,7 +92,7 @@
           "remaining": 1
         }
       ],
-      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
+      "observed_utc": "2026-10-27T01:29:25.440991+00:00"
     },
     {
       "issue": 879,
@@ -127,7 +127,7 @@
           "remaining": 1
         }
       ],
-      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
+      "observed_utc": "2026-10-27T01:29:25.440991+00:00"
     },
     {
       "issue": 880,
@@ -174,7 +174,7 @@
           "remaining": 4
         }
       ],
-      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
+      "observed_utc": "2026-10-27T01:29:25.440991+00:00"
     },
     {
       "issue": 881,
@@ -221,7 +221,7 @@
           "remaining": 1
         }
       ],
-      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
+      "observed_utc": "2026-10-27T01:29:25.440991+00:00"
     },
     {
       "issue": 882,
@@ -256,7 +256,7 @@
           "remaining": 0
         }
       ],
-      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
+      "observed_utc": "2026-10-27T01:29:25.440991+00:00"
     },
     {
       "issue": 883,
@@ -303,7 +303,7 @@
           "remaining": 0
         }
       ],
-      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
+      "observed_utc": "2026-10-27T01:29:25.440991+00:00"
     },
     {
       "issue": 893,
@@ -338,7 +338,7 @@
           "remaining": 4
         }
       ],
-      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
+      "observed_utc": "2026-10-27T01:29:25.440991+00:00"
     },
     {
       "issue": 896,
@@ -379,7 +379,7 @@
           "remaining": 0
         }
       ],
-      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
+      "observed_utc": "2026-10-27T01:29:25.440991+00:00"
     },
     {
       "issue": 904,
@@ -516,11 +516,11 @@
           "remaining": 0
         }
       ],
-      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
+      "observed_utc": "2026-10-27T01:29:25.440991+00:00"
     }
   ],
   "effects": {
-    "status": "Untimed released outcome checks passed; actual four-hour nursery receipts separately passed; final cleanup remains incomplete",
+    "status": "Released untimed material outcomes passed; actual nursery and final teardown/health independently recorded in this report",
     "meaningful_assertions": 61,
     "claims": [
       "All independent observations preserve every protected original table",
@@ -1090,11 +1090,7 @@
   ],
   "socket_inputs_so_far": 1203,
   "published_ordinary_inputs": 1162,
-  "pending": [
-    "Approve exact receipt-preserving cleanup controller and one further guarded Evennia cycle",
-    "Exact live-QA teardown retaining sealed audit histories and independent final health/source verification",
-    "Final report/index, scoped commit/push, eleven child closures and tracker update"
-  ],
+  "pending": [],
   "nursery": {
     "all_four_actual_real_hour_flows_passed": true,
     "records": [
@@ -1181,23 +1177,30 @@
     ]
   },
   "cleanup": {
-    "complete": false,
-    "refused_by_egg_receipt_seal": true,
-    "transaction_rolled_back": true,
-    "tagged_accounts_retained": 4,
-    "tagged_owned_retained": 25,
-    "ordinary_players_logged_out": true,
-    "owned_tunnel_ended": true,
-    "maintenance_cycles_used": 3,
-    "additional_cycle_proposed": 1,
-    "approval_pending": true,
-    "proposed_retained_audit_receipts": {
+    "complete": true,
+    "removed_accounts": 4,
+    "removed_owned_pokemon": 25,
+    "removed_objects": 46,
+    "no_live_tagged_qa": true,
+    "retained_sealed_audit_receipts": {
       "breeding_cycles": 1,
       "breeding_eggs": 1,
       "marketplace_listings": 1,
       "onboarding": 4
     },
-    "plan": "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json"
+    "permitted_nullable_qa_links_cleared_only": true,
+    "all_other_fields_and_rows_preserved": true,
+    "normalized_protected_digest_before": "bcb5b5ee8847246f17bf353fbf803e515adc9c9d57587f4e3e589244fcb796af",
+    "normalized_protected_digest_after": "bcb5b5ee8847246f17bf353fbf803e515adc9c9d57587f4e3e589244fcb796af",
+    "original_source_attributes_unchanged": true,
+    "refill": false,
+    "refunds": false,
+    "permanent_sources_removed": false,
+    "ordinary_players_logged_out": true,
+    "owned_tunnel_ended": true,
+    "explicitly_approved_maintenance_cycles": 4,
+    "approved_plan_commit": "cd4e6e221e6fa71093da72fe7743224901a5e1d0",
+    "controller_sha256": "03ac8a714785a0e191fa07dd36ee72d35e2f8dd59ac27fb5f279560247c66646"
   },
   "recovery_health": {
     "verification_completed_utc": "2026-10-27T01:07:58.886717+00:00",
@@ -1266,5 +1269,455 @@
     "fixture_ddl_sha256": "b7af33c5361a73823c8f57e30820ac3c590e1188a0d8c2bfa4242be69ea97d87",
     "live_catalog_export": false,
     "migration_executor_used": false
-  }
+  },
+  "prior_receipt_seal_refusal": {
+    "complete": false,
+    "refused_by_egg_receipt_seal": true,
+    "transaction_rolled_back": true,
+    "tagged_accounts_retained": 4,
+    "tagged_owned_retained": 25,
+    "ordinary_players_logged_out": true,
+    "owned_tunnel_ended": true,
+    "maintenance_cycles_used": 3,
+    "additional_cycle_proposed": 1,
+    "approval_pending": true,
+    "proposed_retained_audit_receipts": {
+      "breeding_cycles": 1,
+      "breeding_eggs": 1,
+      "marketplace_listings": 1,
+      "onboarding": 4
+    },
+    "plan": "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json"
+  },
+  "final_health": {
+    "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
+    "migration": "0059_owned_trained_stat_nature",
+    "python_sources": 1188,
+    "ports": [
+      4000,
+      4001,
+      4002,
+      4005,
+      4006
+    ],
+    "ordinary_greeting_received": true,
+    "ordinary_logins_enabled": true,
+    "protected": {
+      "tables": 43,
+      "all_original_columns_and_rows_unchanged": true,
+      "original_human_attributes_unchanged": true
+    },
+    "sources": [
+      {
+        "issue": 877,
+        "room": 122,
+        "stock": {
+          "Antidote": {
+            "price": 100,
+            "quantity": 19
+          },
+          "Paralyze Heal": {
+            "price": 200,
+            "quantity": 19
+          },
+          "Awakening": {
+            "price": 250,
+            "quantity": 9
+          },
+          "Burn Heal": {
+            "price": 250,
+            "quantity": 9
+          },
+          "Ice Heal": {
+            "price": 250,
+            "quantity": 9
+          },
+          "Full Heal": {
+            "price": 600,
+            "quantity": 9
+          }
+        }
+      },
+      {
+        "issue": 878,
+        "room": 125,
+        "stock": {
+          "Super Potion": {
+            "price": 700,
+            "quantity": 19
+          },
+          "Hyper Potion": {
+            "price": 1500,
+            "quantity": 9
+          },
+          "Revive": {
+            "price": 1500,
+            "quantity": 6
+          },
+          "Max Revive": {
+            "price": 4000,
+            "quantity": 1
+          }
+        }
+      },
+      {
+        "issue": 879,
+        "room": 128,
+        "stock": {
+          "Ether": {
+            "price": 1200,
+            "quantity": 6
+          },
+          "Max Ether": {
+            "price": 2400,
+            "quantity": 4
+          },
+          "Elixir": {
+            "price": 3000,
+            "quantity": 4
+          },
+          "Max Elixir": {
+            "price": 6000,
+            "quantity": 1
+          }
+        }
+      },
+      {
+        "issue": 880,
+        "room": 131,
+        "stock": {
+          "Water Stone": {
+            "price": 3000,
+            "quantity": 4
+          },
+          "Thunder Stone": {
+            "price": 3000,
+            "quantity": 4
+          },
+          "Leaf Stone": {
+            "price": 3000,
+            "quantity": 4
+          },
+          "Ice Stone": {
+            "price": 3000,
+            "quantity": 4
+          },
+          "Sun Stone": {
+            "price": 3000,
+            "quantity": 4
+          },
+          "Moon Stone": {
+            "price": 3000,
+            "quantity": 4
+          }
+        }
+      },
+      {
+        "issue": 881,
+        "room": 134,
+        "stock": {
+          "HP Up": {
+            "price": 10000,
+            "quantity": 1
+          },
+          "Protein": {
+            "price": 10000,
+            "quantity": 1
+          },
+          "Iron": {
+            "price": 10000,
+            "quantity": 1
+          },
+          "Calcium": {
+            "price": 10000,
+            "quantity": 1
+          },
+          "Zinc": {
+            "price": 10000,
+            "quantity": 1
+          },
+          "Carbos": {
+            "price": 10000,
+            "quantity": 1
+          }
+        }
+      },
+      {
+        "issue": 882,
+        "room": 137,
+        "stock": {
+          "PP Up": {
+            "price": 9800,
+            "quantity": 0
+          },
+          "PP Max": {
+            "price": 15000,
+            "quantity": 0
+          },
+          "Ability Capsule": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Ability Patch": {
+            "price": 30000,
+            "quantity": 0
+          }
+        }
+      },
+      {
+        "issue": 883,
+        "room": 140,
+        "stock": {
+          "Sitrus Berry": {
+            "price": 200,
+            "quantity": 9
+          },
+          "Lum Berry": {
+            "price": 600,
+            "quantity": 4
+          },
+          "Focus Sash": {
+            "price": 5000,
+            "quantity": 1
+          },
+          "Choice Band": {
+            "price": 5000,
+            "quantity": 0
+          },
+          "Choice Specs": {
+            "price": 5000,
+            "quantity": 0
+          },
+          "Choice Scarf": {
+            "price": 5000,
+            "quantity": 0
+          }
+        }
+      },
+      {
+        "issue": 893,
+        "room": 143,
+        "stock": {
+          "Cheri Berry": {
+            "price": 100,
+            "quantity": 4
+          },
+          "Pecha Berry": {
+            "price": 100,
+            "quantity": 4
+          },
+          "Rawst Berry": {
+            "price": 100,
+            "quantity": 4
+          },
+          "Aspear Berry": {
+            "price": 100,
+            "quantity": 4
+          }
+        }
+      },
+      {
+        "issue": 896,
+        "room": 146,
+        "stock": {
+          "Exp. Candy XS": {
+            "price": 100,
+            "quantity": 8
+          },
+          "Exp. Candy S": {
+            "price": 800,
+            "quantity": 9
+          },
+          "Exp. Candy M": {
+            "price": 3000,
+            "quantity": 4
+          },
+          "Exp. Candy L": {
+            "price": 10000,
+            "quantity": 1
+          },
+          "Exp. Candy XL": {
+            "price": 30000,
+            "quantity": 0
+          }
+        }
+      },
+      {
+        "issue": 904,
+        "room": 149,
+        "stock": {
+          "Lonely Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Adamant Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Naughty Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Brave Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Serious Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Bold Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Impish Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Lax Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Relaxed Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Modest Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Mild Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Rash Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Quiet Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Calm Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Gentle Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Careful Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Sassy Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Timid Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Hasty Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Jolly Mint": {
+            "price": 20000,
+            "quantity": 0
+          },
+          "Naive Mint": {
+            "price": 20000,
+            "quantity": 0
+          }
+        }
+      }
+    ],
+    "cleanup_complete": true,
+    "observed_utc": "2026-10-27T01:29:25.440991+00:00",
+    "retained_counts": {
+      "breeding_cycles": 1,
+      "breeding_eggs": 1,
+      "marketplace_listings": 1,
+      "onboarding": 4
+    }
+  },
+  "completed_issues": [
+    877,
+    878,
+    879,
+    880,
+    881,
+    882,
+    883,
+    888,
+    893,
+    896,
+    904
+  ],
+  "qualification": {
+    "qualified_python_sources": 1188,
+    "mandatory_fresh_orders": [
+      "combined",
+      "repeat",
+      "battle-first"
+    ],
+    "passed_each": 6613,
+    "skipped_each": 4028,
+    "exit_code": 0,
+    "full_log_sha256": "948db0e2d315de215a74a38513bb8a70c0b17dbfe65e9f70b353feeb50d9419b",
+    "note": "Exact frozen application source; no app Python changed during release, cleanup fixtures or documentation. Isolated tests remain distinct from live sockets."
+  },
+  "scope_preservation": {
+    "qualified_application_files": 1188,
+    "unrelated_shared_dirty_paths": 25,
+    "unchanged": true,
+    "plot_only_items_excluded": true
+  },
+  "original_supply_current": {
+    "room": 105,
+    "name": "Item Supply Corner",
+    "entrance": "supplies",
+    "return_exit": "back",
+    "stock": {
+      "Potion": {
+        "price": 300,
+        "quantity": 19
+      },
+      "Oran Berry": {
+        "price": 80,
+        "quantity": 19
+      },
+      "Fresh Water": {
+        "price": 200,
+        "quantity": 19
+      },
+      "Fire Stone": {
+        "price": 3000,
+        "quantity": 4
+      },
+      "Leftovers": {
+        "price": 4000,
+        "quantity": 1
+      },
+      "Smoke Ball": {
+        "price": 4000,
+        "quantity": 1
+      }
+    },
+    "marker": {
+      "version": 1,
+      "room": 105,
+      "entrance": 106,
+      "return_exit": 107
+    }
+  },
+  "availability_index": "docs/testing/item-availability-released-index-2026-10-26.json",
+  "world_offer_counts": {
+    "then_in_stock": 43,
+    "then_sold_out": 29,
+    "scoped_world_unverified": 421,
+    "dated_offers": 72
+  },
+  "sources_final_health_rechecked": true
 }

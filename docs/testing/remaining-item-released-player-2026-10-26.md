@@ -1,37 +1,26 @@
-# Remaining item released player acceptance (2026-10-26)
+# Remaining item released player acceptance (October26, 2026)
 
-**All eleven player-route checks passed; final cleanup remains incomplete and
-the issues stay open.** PF2-Dev deliberately runs
+**All eleven bounded item acceptance deliveries are complete:** #877–#883,
+#888, #893, #896 and #904. PF2-Dev runs the deliberately released frozen build
 **4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9**, upgraded atomically from Pokemon0058
-to0059 under the explicitly approved [release plan](remaining-item-release-plan-2026-10-26.md).
+to0059 under the approved [release plan](remaining-item-release-plan-2026-10-26.md).
+Final independent health was observed at **2026-10-27T01:29:25.440991+00:00**.
 
-Four growers completed all four genuine one-hour stages and harvested after
-their actual four-hour deadlines. Every yield was5; repeat harvest added nothing.
-Ordinary `+use` cured each grower's separately labelled paralysis/poison/burn/
-freeze, consumed one copy and left4. Healthy repeats consumed nothing. Exact
-planted/ready/observed UTC/cycle receipts are in the machine report. No clock was
-advanced; real breeding production/hatch waits also passed.
+All four crops completed their four real elapsed stages and actual harvest/use
+checks. The approved [receipt-preserving cleanup](remaining-item-retained-cleanup-plan-2026-10-26.md)
+removed **4 QA accounts,25 owned Pokemon and46 exact tagged objects**, including
+the private capture/crystal/helper world. Seven sealed audit rows remain as
+required: one closed breeding cycle, one hatched egg, one sold market listing
+and four onboarding receipts. Only permitted nullable QA links cleared; every
+immutable receipt field and all other protected data stayed unchanged.
 
-The account-link cleanup mismatch was explicitly approved and corrected. Its
-next live attempt reached a second mismatch: the database forbids deleting
-hatched egg and closed breeding/market receipts. The transaction rolled back;
-the approved recovery restored the same healthy build/0059/all1,188 hashes/five
-listeners/ordinary greeting/logins, protected original data and public sales.
-All four QA accounts and25 owned Pokemon remain intact and logged out, with
-their tunnel ended. Three approved maintenance cycles have now been used.
-
-The [receipt-preserving cleanup plan](remaining-item-retained-cleanup-plan-2026-10-26.md)
-retains one closed breeding cycle, one hatched egg receipt, one sold marketplace
-listing and four onboarding receipts. Only permitted NULL links into the exact
-QA deletion set may clear; every immutable field and all other data stay intact.
-The prior model-table fixture omitted migration-installed seals. The replacement
-passed13 cases with54 published repository integrity triggers enabled, including
-exact reproduction of the prior refusal, receipt preservation, price/delete
-protection and full rollback after partial deletion or unapproved receipt edits.
-No migration executor or live catalog export was used. The disposable cluster
-is stopped. This replacement hash and one further Evennia-only maintenance
-cycle still need explicit approval; all eleven item issues remain open until
-actual teardown and final independent health pass. No paid player flow was replayed.
+The same build,0059, all1,188 source hashes, five listeners, ordinary greeting/
+logins, absence of live QA fixtures, preserved audit rows and exact public stock
+passed independent verification. Original source attributes and all human data
+remain preserved. Players logged out and the owned socket driver/tunnel ended.
+No clocks, combat outcomes or genetics were forced. Permanent content and actual
+finite sales remain installed. All four maintenance cycles were explicitly
+approved, including bounded refusal recovery; no further operation is pending.
 
 ## Completed released routes
 
@@ -72,7 +61,7 @@ not certify permanent public acquisition of the crystal or every base species.
   Jolteon, Leafeon, Glaceon, Bellossom, Clefable and Vaporeon. The Water Stone
   followed Candy leveling and a later battle; Candy did not auto-evolve it.
 - Allfive EXP Candy sizes worked. XS also gave a same-level gain at50; level100
-  refused without debit. The new Eevee progressed5Ã¢â€ â€™6Ã¢â€ â€™10Ã¢â€ â€™15Ã¢â€ â€™24Ã¢â€ â€™35. Candy M left
+  refused without debit. The new Eevee progressed5→6→10→15→24→35. Candy M left
   labelled HP0 unchanged. Separate purchased Revive restored22/44, then L/XL
   retained the22-point deficit at43/65 and68/90. Reconnect retained progression
   and actual earned choices; an expired token refused, Quick Attack activated
@@ -93,9 +82,9 @@ not certify permanent public acquisition of the crystal or every base species.
   Naughty, with no Brave training overlay. The trained/Hyper Trained Mew passed
   a consent trade and inspected100-money marketplace return without resource or
   genetic changes. The Careful initial Fusion body fought and reconnected, then
-  ordinarily unfused. Wiki healed80Ã¢â€ â€™190 and caused actual confusion from genetic
+  ordinarily unfused. Wiki healed80→190 and caused actual confusion from genetic
   Jolly despite its opposite Sassy mint preference.
-- Held Sitrus restored143Ã¢â€ â€™228 and Lum cured labelled poison, consuming each copy.
+- Held Sitrus restored143→228 and Lum cured labelled poison, consuming each copy.
   Full-HP Magikarp survived an actual Psychic at1/18 HP using Focus Sash. Choice
   Band/Specs produced useful damage and alternate-move lock refusals; Scarf
   reversed ordinary equal-priority order. Each reusable Choice copy returned once.
@@ -129,13 +118,54 @@ the owned-actor guard refused the whole turn. The failed checkpoint is retained;
 the successful Dawn lifecycle ordinarily boxed that egg first. This is excluded
 from the item implementation; unrelated battle#915 remains untouched.
 
-All117 observations preserved the43 protected original tables and existing human
-Attributes/links. Only the exact tagged QA identities are fixtures. Private
-backups, raw controller evidence and credentials remain private. One post-logout
-read-only observer refused its attached-account assumption and produced no
-counted checkpoint; independent maintenance/recovery guards verified no active
-sessions/ownership work and preserved original data. Permanent content/sales
-remain installed. Only the exact live tagged QA fixtures await the receipt-preserving
-cleanup approval; sealed audit histories will remain as inert records. Plot-only items and all25 unrelated shared dirty paths remain
-excluded; all1,188 qualified application identities still match. The temporary
-QA crystal/capture helpers are not certified permanent public acquisition.
+All117 independent observations preserved the43 protected original tables and
+existing human Attributes/links. The successful teardown additionally proved
+an identical complete protected row digest after normalizing only the exact
+reviewed nullable QA links in the seven retained audit records. Every other
+field/row, public source identity/marker and actual finite sale was preserved.
+Private backups, credentials and raw human output stay private. Final evidence
+collection returned only the expressly approved bounded cleanup/health/public
+stock summary. All1,188 qualified application files and25 unrelated shared
+dirty paths remain unchanged; plot-only items remain excluded.
+
+## Actual nursery and current availability
+
+Four self-service growers planted Cheri/Pecha/Rawst/Aspear at11:06 UTC on
+October26, watered each real stage after reconnect, and harvested after the last
+15:06:40 UTC deadline. Actual elapsed times were14,458.727/14,472.494/14,486.315/
+14,499.797 seconds. Every yield was5; repeat harvest added nothing. Separate
+approved prerequisites labelled their own captured Mew's paralysis/poison/burn/
+freeze. Ordinary `+use` cured each and consumed one harvested copy, leaving4;
+healthy repeats consumed nothing. HP/PP, genetics, other owned rows, wallets,
+source stock and existing human data stayed unchanged. Exact cycle, planted,
+ready and checkpoint times remain in the machine receipts.
+
+The [dated released index](item-availability-released-index-2026-10-26.json)
+preserves all493 previous scoped definition fingerprints. It records66 new
+offers plus the retained six-item Supply Corner: **43 then in stock and29
+sold out**. All21 mints, four capacity/ability offers, three Choice offers and XL
+Candy sold out through real purchases. **421 scoped definitions remain world-
+unverified.** Other authored sources are not certified absent. No refill,
+refund, extra source or permanent Ultra-crystal supply is implied. Temporary QA
+capture/crystal helpers were removed; their player tests do not certify public
+acquisition of every base species or the crystal.
+
+## Cleanup diagnosis and audit retention
+
+The first cleanup fixture assumed normal logout retained the active-account FK.
+Its guard refused before deletion. The approved replacement then reached the
+real immutable egg-receipt seal and rolled back. Its eight model-table tests had
+omitted migration-installed triggers. Both failures and approved healthy
+recoveries are retained. No account link or seal was bypassed to make cleanup
+pass, and no paid player action was replayed.
+
+The final controller passed13 isolated cases with54 published repository
+integrity triggers enabled. They reproduce the old refusal, retain all receipt
+fields while clearing permitted NULL links, reject foreign/missing/attached
+identities and foreign receipt/form references, preserve unfamiliar occupants,
+reject market deletion/price rewrite, and roll back partial deletion or an
+unapproved retained-field edit. These tests used no migration executor or live
+catalog export. Automatic review rejected the proposed internal catalog/private
+recovery export; using published source DDL avoided it. The task-owned local
+cluster is stopped with zero disposable schemas/public tables. These are
+isolated SQL controls, separate from the released ordinary-player effects.

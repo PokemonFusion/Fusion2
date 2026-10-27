@@ -1,5 +1,12 @@
 # Native Ultra qualification (October25 item audit)
 
+**October26 released acceptance update:** Later approved PF2-Dev player checks,
+actual crop/breeding waits, receipt-preserving QA teardown and independent
+same-build health are complete. See the [released report](remaining-item-released-player-2026-10-26.md)
+and [dated availability index](item-availability-released-index-2026-10-26.json).
+The October25 source-only receipts and then-pending limits below remain
+historical records. Temporary QA helpers do not certify permanent stock.
+
 Local automated delivery for #885/#886/#887 is complete. #888 remains the
 deliberately released socket gate. [Player guide](../ultra-burst.md),
 [rules/reference](../design/ultra-burst.md), [machine receipts and observations](ultra-burst-2026-10-25.json).
