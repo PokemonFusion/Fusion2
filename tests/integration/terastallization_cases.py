@@ -111,8 +111,21 @@ class TerastallizationCases(unittest.TestCase):
         self.assertEqual((mon.terastallized, mon.types, mon.stellar_boosted_types), ("Stellar", ["Normal"], ["Water"]))
         self.command("tera", "A1")
         self.assertIn("already used", self.players[0].messages[-1])
+        from evennia.utils.ansi import strip_ansi
+
         text = display_battle_interface(self.players[0], self.players[1], session.state, viewer_team="A")
-        self.assertIn("A2: Tera Stellar", text)
+        plain = strip_ansi(text)
+        a1 = plain.split("YOU A1", 1)[1].split("YOU A2", 1)[0]
+        a2 = plain.split("YOU A2", 1)[1]
+        self.assertIn("[Tera Stellar]", a2)
+        self.assertNotIn("[Tera Stellar]", a1)
+        for style in ("legacy", "classic_modern", "pf1"):
+            with self.subTest(style=style):
+                classic = display_battle_interface(
+                    self.players[0], self.players[1], session.state,
+                    viewer_team="A", style=style,
+                )
+                self.assertIn("A2: Tera Stellar", strip_ansi(classic))
 
     def test_singles_command_and_independent_opposing_side(self):
         """An omitted actor works in singles; each side may use its own allowance."""
