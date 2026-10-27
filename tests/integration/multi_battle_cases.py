@@ -203,9 +203,32 @@ class MultiBattleCases(unittest.TestCase):
         hud = self.outputs[viewer.pk][start:]
         self.assertEqual(len(hud), 2)
         for block in hud:
-            self.assertIn('A2: ' + viewer.key, block)
-            self.assertIn('B2: ' + self.players['B2'].key, block)
-            self.assertNotIn('=== Team A ===', block)
+            plain = strip_ansi(block)
+            labels = {'A1': 'ALLY', 'A2': 'YOU', 'B1': 'FOE', 'B2': 'FOE'}
+            headings = {label: plain.index(role + ' ' + label) for label, role in labels.items()}
+            for label, offset in headings.items():
+                end = min((value for value in headings.values() if value > offset), default=len(plain))
+                card = plain[offset:end]
+                hp_line = next(line for line in card.splitlines() if line.startswith('HP ['))
+                participant = next(part for part in session.battle.participants if part.field_position == label)
+                if label == 'A2':
+                    mon = participant.active[0]
+                    self.assertIn(f'{mon.hp}/{mon.max_hp}', hp_line)
+                else:
+                    self.assertIn('Trainer: ' + self.players[label].key, card)
+                    self.assertRegex(hp_line, r'\d+%$')
+                    self.assertNotRegex(hp_line, r'\d+/\d+')
+        for style in ('legacy', 'classic_modern', 'pf1'):
+            viewer.db.battle_ui_style = style
+            start = len(self.outputs[viewer.pk])
+            send_interface_to(session, viewer)
+            broadcast_interfaces(session)
+            classic_hud = self.outputs[viewer.pk][start:]
+            self.assertEqual(len(classic_hud), 2)
+            for block in classic_hud:
+                self.assertIn('A2: ' + viewer.key, block)
+                self.assertIn('B2: ' + self.players['B2'].key, block)
+                self.assertNotIn('=== Team A ===', block)
         part = next(part for part in session.battle.participants if part.player == viewer)
         part.active = []
         empty = strip_ansi(render_effects_panel(session, viewer, focus='me'))
