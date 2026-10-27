@@ -131,6 +131,49 @@ def lookup_move(name: str) -> Optional[Dict[str, Any]]:
 # ---------- Card builder ----------
 
 
+class BattleMoveView:
+    """Read-only move presentation with the battler's authoritative PP."""
+
+    def __init__(self, move, current_pp, max_pp):
+        self.move = move
+        self.current_pp = self.pp = current_pp
+        self.max_pp = max_pp
+
+    def __getattr__(self, name):
+        """Keep move metadata on its original runtime object."""
+        return getattr(self.move, name)
+
+
+def battle_move_views(pokemon, moves=None):
+    """Read saved owned PP without confusing dex capacity or copied move PP."""
+    from pokemon.battle.copied_moves import BattleCopyState
+
+    manager = getattr(pokemon, "activemoveslot_set", None)
+    rows = list(manager.all() if hasattr(manager, "all") else manager or [])
+    result = []
+    for move in list(pokemon.moves if moves is None else moves)[:4]:
+        if move is None:
+            result.append(None)
+            continue
+        current = getattr(move, "current_pp", None)
+        if current is None:
+            current = getattr(move, "pp", None)
+        capacity = getattr(move, "max_pp", None)
+        if BattleCopyState.temporary_index(pokemon, move) is None:
+            key = _normalize_key(getattr(move, "name", str(move)))
+            row = next((row for row in rows
+                        if _normalize_key(getattr(getattr(row, "move", None), "name", "")) == key), None)
+            if row is not None:
+                saved = getattr(row, "current_pp", None)
+                if saved is not None:
+                    current = saved
+                maximum = getattr(getattr(row, "pokemon", None), "get_max_pp", None)
+                if callable(maximum):
+                    capacity = maximum(row.move.name)
+        result.append(BattleMoveView(move, current, capacity))
+    return result
+
+
 def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None) -> Dict[str, Any]:
 	"""Normalize different move inputs into a common dictionary model."""
 	if move is None:
@@ -184,7 +227,9 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
 	name = text_entry.get("name") or name
 	mtype = data.get("type")
 	cat = data.get("category") or "Status"
-	maxpp = data.get("pp") or 0
+	maxpp = (data.get("max_pp") if isinstance(move, dict) else getattr(move, "max_pp", None))
+	if maxpp is None:
+		maxpp = data.get("pp") or 0
 	curpp = current_pp if current_pp is not None else maxpp
 	acc = data.get("accuracy")
 	powr = data.get("power")

@@ -7,7 +7,7 @@ import pytest
 from pokemon.battle.interface import display_battle_interface, get_battle_ui_width
 from pokemon.battle.messaging import MessagingMixin
 from pokemon.ui.compact_battle import BattleText
-from pokemon.ui.move_gui import render_move_gui
+from pokemon.ui.move_gui import battle_move_views, render_move_gui
 from utils.battle_display import strip_ansi
 
 
@@ -156,6 +156,42 @@ def test_doubles_partial_choice_marks_queued_cell_and_guides_remaining_actor():
     output = strip_ansi(render(session, players[0]))
     assert "[QUEUED]" in output and "Your slots: A2" in output
     assert "Moves for A2:" in output and "+attack A2 A B1" in output
+
+
+@pytest.mark.parametrize("queued", [False, True])
+def test_reconnect_waiting_hint_does_not_override_owned_choices(queued):
+    """A shared waiting hint must not hide unchosen slots or queued actions."""
+    session, players, mons = battle()
+    if queued:
+        session.state.declare = {"A1": {"move": "tackle"}, "A2": {"move": "growl"}}
+    output = strip_ansi(render(session, players[0], waiting_on=mons[0]))
+    assert ("ACTION QUEUED" if queued else "YOUR MOVE") in output
+    assert "WAITING" not in output
+    if not queued:
+        assert "Waiting on Pikachu" not in output
+
+
+@pytest.mark.parametrize("remaining", [0, 7, 56])
+def test_name_only_owned_move_reads_saved_pp_and_boosted_capacity(remaining):
+    """Real owned runtime moves lack PP; the saved row includes boosts and zero."""
+    move = NS(name="Tackle")
+    row = NS(move=move, current_pp=remaining, pokemon=NS(get_max_pp=lambda _name: 56))
+    pokemon = NS(moves=[move], activemoveslot_set=NS(all=lambda: [row]))
+    output = strip_ansi(render_move_gui(battle_move_views(pokemon)))
+    assert f"{remaining}/56" in output
+    assert ("NO PP" in output) == (remaining == 0)
+    assert not hasattr(move, "pp") and row.current_pp == remaining
+
+
+def test_copied_move_pp_stays_independent_of_native_rows():
+    """A virtual copied move must not borrow PP or boosts from its native twin."""
+    move = NS(name="Tackle", pp=3)
+    row = NS(move=move, current_pp=0, pokemon=NS(get_max_pp=lambda _name: 56))
+    pokemon = NS(moves=[move], activemoveslot_set=NS(all=lambda: [row]),
+                 tempvals={"copy_state": {"original_slots": {"0": {}}}})
+    view = battle_move_views(pokemon)[0]
+    assert view.current_pp == 3 and view.max_pp is None
+    assert "NO PP" not in strip_ansi(render_move_gui([view]))
 
 
 def test_runtime_nicknames_and_illusion_appearance_remain_visible():

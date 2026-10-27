@@ -22,7 +22,7 @@ def attack_prompt(inst, caller, move_name, target=None, actor=None):
     from utils.battle_display import render_move_gui
     from pokemon.battle.interface import get_battle_ui_width
     from pokemon.ui.compact_battle import BattleText, screen_reader
-    from pokemon.ui.move_gui import render_move_details
+    from pokemon.ui.move_gui import battle_move_views, render_move_details
     try:
         choices = inst.choices_for(caller)
         position, pokemon = choices.actor(actor)
@@ -34,8 +34,8 @@ def attack_prompt(inst, caller, move_name, target=None, actor=None):
     legal = choices.legal_moves(pokemon)
     if legal and all(action.move.key.lower() == "struggle" for action in legal):
         slots = [legal[0].move]
-    pp = {index: next((value for value in (getattr(move, "current_pp", None), getattr(move, "pp", None))
-                       if value is not None), None) for index, move in enumerate(slots)}
+    views = battle_move_views(pokemon, slots)
+    pp = {index: getattr(move, "current_pp", None) for index, move in enumerate(views)}
     legal_keys = {_normalize_key(action.move.key) for action in legal}
     unavailable = {index: "UNAVAILABLE" for index, move in enumerate(slots)
                    if move is not None and _normalize_key(move.name) not in legal_keys}
@@ -58,7 +58,7 @@ def attack_prompt(inst, caller, move_name, target=None, actor=None):
             if detail is None:
                 caller.msg("Move details: ? A, ? B, ? C, or ? D.")
             else:
-                caller.msg(render_move_details(slots[detail], pp[detail], get_battle_ui_width(caller),
+                caller.msg(render_move_details(views[detail], pp[detail], get_battle_ui_width(caller),
                                                accessible=screen_reader(caller)))
             return True
         parts = text.rsplit(None, 1)
@@ -84,7 +84,7 @@ def attack_prompt(inst, caller, move_name, target=None, actor=None):
                        if LegalActions.conscious(pos.pokemon))
     width = get_battle_ui_width(caller)
     prompt = f"Move for {position} ({pokemon.name}):\n" + render_move_gui(
-        slots, pp_overrides=pp, total_width=width, viewer=caller, unavailable=unavailable)
+        views, pp_overrides=pp, total_width=width, viewer=caller, unavailable=unavailable)
     prompt += "\n" + fields + "\nChoose a letter/name and target (e.g. A B1). Self/spread moves need no target."
     prompt += "\nDetails: ? A. Cancel: cancel."
     text = BattleText(width, screen_reader(caller))
