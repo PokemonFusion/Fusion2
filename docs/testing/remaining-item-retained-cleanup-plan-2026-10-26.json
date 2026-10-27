@@ -1,0 +1,240 @@
+{
+  "status": "PROPOSAL ONLY; explicit approval required for replacement controller and one further guarded Evennia cycle",
+  "date": "2026-10-26",
+  "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
+  "operator_task_root": "/home/evennia/testing/.remaining-items-20261026-2259c9",
+  "original_plan_commit": "920b3a9eb18ba2443cf7e070858135d3e8a79d93",
+  "prior_logout_plan_commit": "65f31563bc4b4077bd2839746772263f475640d1",
+  "tag": "remaining-items-156fa4b2e9f94e18a344d300372259c9",
+  "names": [
+    "ItemCompleteDusk2259c9",
+    "ItemCompleteDawn2259c9",
+    "ItemCompleteRawst2259c9",
+    "ItemCompleteAspear2259c9"
+  ],
+  "controller_filename": "cleanup_retained.py",
+  "controller_sha256": "03ac8a714785a0e191fa07dd36ee72d35e2f8dd59ac27fb5f279560247c66646",
+  "controller_source": "\"\"\"Remove only receipted new QA identities/private objects while the game is stopped.\"\"\"\n\nimport hashlib\nimport json\nimport socket\nimport sys\n\n\ndef port_open(port):\n    \"\"\"Require the exact stopped instance before removing its temporary fixtures.\"\"\"\n    with socket.socket() as probe:\n        probe.settimeout(1)\n        return probe.connect_ex((\"127.0.0.1\", port)) == 0\n\n\ndef remove_qa(plan, players, world):\n    \"\"\"Collector proof and all-table comparison refuse any non-QA cascade/write.\"\"\"\n    from django.apps import apps\n    from django.db import connection, transaction\n    from django.db.models import Q\n    from django.db.models.deletion import Collector\n    from evennia.accounts.models import AccountDB\n    from evennia.objects.models import ObjectDB\n    from evennia.typeclasses.models import Attribute, Tag\n    from pokemon.models.breeding import BreedingCycle, BreedingEgg\n    from pokemon.models.core import OwnedPokemon\n    from pokemon.models.daycare import DaycareEntry\n    from pokemon.models.market import MarketListing\n    from pokemon.models.necrozma import NecrozmaCombination\n    from pokemon.models.onboarding import OnboardingCompletion\n    from pokemon.models.ownership import OwnershipTransfer, PokemonReservation\n    from pokemon.models.storage import PokemonPlacement\n\n    tag = plan[\"tagged_qa\"][\"tag\"]\n    names = plan[\"tagged_qa\"][\"ordinary_player_names\"]\n    assert players[\"tag\"] == world[\"tag\"] == tag\n    assert [row[\"name\"] for row in players[\"players\"]] == names\n    actorids = {row[\"player\"] for row in players[\"players\"]}\n    accountids = {row[\"account\"] for row in players[\"players\"]}\n    privateids = actorids | {row[\"id\"] for row in world[\"objects\"]}\n    assert len(actorids) == len(accountids) == 4\n\n    with transaction.atomic():\n        list(ObjectDB.objects.select_for_update().filter(pk__in=privateids).order_by(\"pk\"))\n        for row in players[\"players\"]:\n            actor = ObjectDB.objects.get(pk=row[\"player\"], db_key=row[\"name\"], db_tags__db_key=tag)\n            account = AccountDB.objects.get(pk=row[\"account\"], username=row[\"name\"], db_tags__db_key=tag)\n            # Ordinary unpuppet/logout clears the transient active account FK.\n            assert ObjectDB.objects.filter(pk=actor.pk).values_list(\"db_account_id\", flat=True).get() is None\n            account_state = AccountDB.objects.filter(pk=account.pk).values(\"db_is_connected\", \"is_superuser\").get()\n            assert not account_state[\"db_is_connected\"] and not account_state[\"is_superuser\"]\n            assert [value.pk for value in (account.attributes.get(\"_playable_characters\") or [])] == [actor.pk]\n            for other in AccountDB.objects.exclude(pk=account.pk):\n                assert actor.pk not in [value.pk for value in (other.attributes.get(\"_playable_characters\") or [])]\n            assert not account.db_is_connected and not actor.db.battle_id and not actor.db.battle_lock\n            assert not actor.contents\n        assert set(ObjectDB.objects.filter(db_tags__db_key=tag).values_list(\"pk\", flat=True)) == privateids\n        assert set(AccountDB.objects.filter(db_tags__db_key=tag).values_list(\"pk\", flat=True)) == accountids\n        assert not ObjectDB.objects.filter(db_account_id__in=accountids).exclude(pk__in=actorids).exists()\n        for row in world[\"objects\"]:\n            obj = ObjectDB.objects.get(pk=row[\"id\"], db_key=row[\"key\"])\n            assert obj.db_typeclass_path == row[\"typeclass\"]\n            assert obj.db_location_id == row[\"location\"] and obj.db_destination_id == row[\"destination\"]\n            assert not ObjectDB.objects.filter(Q(db_location_id=obj.pk) | Q(db_destination_id=obj.pk) | Q(db_home_id=obj.pk)).exclude(pk__in=privateids).exists()\n        owned = OwnedPokemon.objects.filter(trainer__user_id__in=actorids)\n        ownedids = set(owned.values_list(\"pk\", flat=True))\n        assert not NecrozmaCombination.objects.filter(Q(host_id__in=ownedids) | Q(companion_id__in=ownedids)).exists()\n        assert not PokemonReservation.objects.filter(pokemon_id__in=ownedids).exists()\n        # A normal permanent onboarding form remains reserved after +unfuse.\n        # Accept only inactive, fully consistent forms on these exact four QA owners.\n        from pokemon.services.fusion_transitions import FusionTransitions\n        forms = set()\n        for identifier in actorids:\n            actor = ObjectDB.objects.get(pk=identifier)\n            state = FusionTransitions(actor).inspect()\n            assert state[\"active\"] is None and not state[\"problems\"]\n            current = set(state[\"forms\"])\n            assert not (forms & current)\n            assert set(map(str, OwnedPokemon.objects.filter(trainer__user_id=identifier, pk__in=current).values_list(\"pk\", flat=True))) == current\n            forms.update(current)\n        assert set(map(str, PokemonPlacement.objects.filter(pokemon_id__in=ownedids, location_type=\"fusion\").values_list(\"pokemon_id\", flat=True))) == forms\n        assert not PokemonPlacement.objects.filter(pokemon_id__in=ownedids).exclude(location_type__in=(\"party\", \"box\", \"fusion\")).exists()\n        assert not DaycareEntry.objects.filter(storage__user_id__in=actorids, state=\"active\").exists()\n        assert not owned.exclude(held_item=\"\").exclude(held_item__isnull=True).exists()\n        cycles = BreedingCycle.objects.filter(origin_character_id__in=actorids)\n        assert not cycles.filter(state=\"producing\").exists()\n        eggs = BreedingEgg.objects.filter(cycle__in=cycles)\n        assert not eggs.exclude(pokemon_id__in=ownedids).exclude(pokemon__isnull=True).exists()\n        listings = MarketListing.objects.filter(seller_character_id__in=actorids)\n        assert not listings.filter(state=\"active\").exists()\n        assert not listings.exclude(buyer_character_id__in=actorids).exclude(buyer_character_id__isnull=True).exists()\n        transfers = OwnershipTransfer.objects.filter(Q(proposer_id__in=actorids) | Q(recipient_id__in=actorids))\n        assert not transfers.exclude(proposer_id__in=actorids).exists()\n        assert not transfers.exclude(recipient_id__in=actorids).exists()\n        assert not transfers.filter(state=\"pending\").exists()\n        onboarding = OnboardingCompletion.objects.filter(origin_character_id__in=actorids)\n        assert onboarding.count() == 4\n        objects = list(ObjectDB.objects.filter(pk__in=privateids))\n        accounts = list(AccountDB.objects.filter(pk__in=accountids))\n        tags = list(Tag.objects.filter(db_key=tag))\n        attrids = {attr.pk for obj in objects + accounts for attr in obj.db_attributes.all()}\n        models = [model for model in apps.get_models(include_auto_created=True)\n                  if model._meta.managed and not model._meta.proxy]\n\n        def snapshot():\n            \"\"\"Keep full private row values only in memory for this atomic comparison.\"\"\"\n            return {model._meta.db_table: (model._meta.pk.attname,\n                    list(model._base_manager.order_by(\"pk\").values())) for model in models}\n\n        all_before = snapshot()\n        # Immutable terminal receipts survive normal source/character deletion.\n        # Only their actual nullable FK links into this exact QA deletion set may clear.\n        storageids = set(owned.values_list(\"trainer__user__userstorage__pk\", flat=True))\n        daycareids = set(DaycareEntry.objects.filter(storage__user_id__in=actorids).values_list(\"pk\", flat=True))\n        retained = {}\n        for queryset, fields, domains in (\n            (cycles, (\"storage_id\", \"parent_a_id\", \"parent_b_id\"), (storageids, daycareids, daycareids)),\n            (eggs, (\"pokemon_id\",), (ownedids,)),\n            (listings, (\"seller_id\", \"buyer_id\", \"pokemon_id\"), (actorids, actorids, ownedids)),\n            (onboarding, (\"character_id\", \"pokemon_id\"), (actorids, ownedids)),\n        ):\n            table = queryset.model._meta.db_table\n            rows = {}\n            for row in queryset.values():\n                allowed = {}\n                for field, domain in zip(fields, domains):\n                    value = row[field]\n                    assert value is None or value in domain, (\"Foreign retained receipt link\", table, field)\n                    if value is not None:\n                        allowed[field] = value\n                rows[str(row[queryset.model._meta.pk.attname])] = allowed\n            retained[table] = rows\n        manual = {}\n        collector = Collector(using=\"default\")\n        collector.collect(list(owned))\n        collector.collect(objects)\n        collector.collect(accounts)\n        collector.collect(tags)\n\n        def deletions():\n            \"\"\"Resolve exact affected model PKs, including automatic relation tables.\"\"\"\n            result = {table: set(ids) for table, ids in manual.items()}\n            for model, rows in list(collector.data.items()) + [(qs.model, qs) for qs in collector.fast_deletes]:\n                result.setdefault(model._meta.db_table, set()).update(row.pk for row in rows)\n            return result\n\n        planned = deletions()\n        for table, rows in retained.items():\n            assert not (set(rows) & {str(value) for value in planned.get(table, set())})\n        # Delete only attributes whose every FK link is already in the QA deletion set.\n        removable = []\n        with connection.cursor() as cursor:\n            refs = []\n            for table in connection.introspection.table_names(cursor):\n                constraints = connection.introspection.get_constraints(cursor, table)\n                pkcols = next((value[\"columns\"] for value in constraints.values() if value.get(\"primary_key\")), [])\n                for value in constraints.values():\n                    if value.get(\"foreign_key\") == (\"typeclasses_attribute\", \"id\"):\n                        assert len(pkcols) == 1\n                        refs.append((table, value[\"columns\"][0], pkcols[0]))\n            for identifier in attrids:\n                safe = True\n                for table, column, pkcol in refs:\n                    quote = connection.ops.quote_name\n                    cursor.execute(\"SELECT \" + quote(pkcol) + \" FROM \" + quote(table) + \" WHERE \" + quote(column) + \"=%s\", [identifier])\n                    if not {row[0] for row in cursor.fetchall()} <= planned.get(table, set()):\n                        safe = False\n                        break\n                if safe:\n                    removable.append(identifier)\n        collector.collect(list(Attribute.objects.filter(pk__in=removable)))\n        planned = deletions()\n        assert planned.get(\"objects_objectdb\", set()) <= privateids\n        assert planned.get(\"accounts_accountdb\", set()) <= accountids\n        assert planned.get(\"pokemon_ownedpokemon\", set()) <= ownedids\n\n        def protected(data):\n            \"\"\"Every row outside the exact deletion set must retain all its fields.\"\"\"\n            result = {}\n            for table, (pk, rows) in data.items():\n                excluded = {str(value) for value in planned.get(table, set())}\n                kept = []\n                for row in rows:\n                    if str(row[pk]) in excluded:\n                        continue\n                    normalized = dict(row)\n                    for field, old in retained.get(table, {}).get(str(row[pk]), {}).items():\n                        assert normalized[field] in (old, None)\n                        normalized[field] = None\n                    kept.append(normalized)\n                result[table] = kept\n            return hashlib.sha256(json.dumps(result, sort_keys=True, default=str).encode()).hexdigest()\n\n        before = protected(all_before)\n        collector.delete()\n        with connection.cursor() as cursor:\n            cursor.execute(\"SET CONSTRAINTS ALL IMMEDIATE\")\n        all_after = snapshot()\n        for table, rows in retained.items():\n            pk, values = all_after[table]\n            current = {str(row[pk]): row for row in values}\n            assert set(rows) <= set(current)\n            for identifier, fields in rows.items():\n                assert all(current[identifier][field] is None for field in fields)\n        after = protected(all_after)\n        assert after == before\n        assert not ObjectDB.objects.filter(pk__in=privateids).exists()\n        assert not AccountDB.objects.filter(pk__in=accountids).exists()\n        assert not OwnedPokemon.objects.filter(pk__in=ownedids).exists()\n        assert not ObjectDB.objects.filter(db_tags__db_key=tag).exists()\n        result = dict(removed_accounts=sorted(accountids), removed_objects=sorted(privateids),\n                      removed_pokemon=sorted(map(str, ownedids)), protected_digest_before=before,\n                      protected_digest_after=after, all_other_rows_unchanged=True,\n                      retained_receipts={table: sorted(rows) for table, rows in retained.items()},\n                      permitted_nullable_links_cleared_only=True, refunds=False, refill=False, public_sources_removed=False)\n    return result\n\n\nif __name__ == \"__main__\":\n    from atomic_upgrade import authorize, TASK, CANDIDATE\n\n    assert sys.argv[1:] == [\"--cleanup-approved\"]\n    authorize()\n    supplement = json.loads((TASK / \"retained-cleanup-approval.json\").read_text())\n    assert supplement[\"approved\"] is True and supplement[\"candidate\"] == CANDIDATE\n    assert supplement[\"scope\"] == \"exact tagged QA cleanup retaining sealed receipts and one guarded maintenance cycle\"\n    from pathlib import Path\n    assert hashlib.sha256(Path(__file__).read_bytes()).hexdigest() == supplement[\"controller_sha256\"]\n    import evennia\n\n    evennia._init()\n    assert all(not port_open(port) for port in (4000, 4001, 4002, 4005, 4006))\n    plan = json.loads((TASK / \"reviewed-plan.json\").read_text())\n    players = json.loads((TASK / \"qa-player-prerequisites.json\").read_text())\n    world = json.loads((TASK / \"qa-world-receipt.json\").read_text())\n    result = remove_qa(plan, players, world)\n    result[\"candidate\"] = CANDIDATE\n    with (TASK / \"qa-cleanup-receipt.json\").open(\"x\", encoding=\"utf-8\") as stream:\n        stream.write(json.dumps(result, indent=2) + \"\\n\")\n    print(\"TAGGED_QA_REMOVED\", CANDIDATE, \"all other rows and public stock preserved\")\n",
+  "isolated_sql": {
+    "exit": false,
+    "cases": 13,
+    "controller_sha256": "03ac8a714785a0e191fa07dd36ee72d35e2f8dd59ac27fb5f279560247c66646",
+    "observations": [
+      {
+        "case": "test_active_fusion_refuses_then_ordinary_unfuse_allows_exact_cleanup",
+        "active_refused": true,
+        "ordinary_unfuse": true,
+        "inactive_owned_form_removed": true,
+        "other_rows_unchanged": true
+      },
+      {
+        "case": "test_exact_cleanup_preserves_existing_people_and_public_stock",
+        "receipt": {
+          "removed_accounts": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "removed_objects": [
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "removed_pokemon": [
+            "3d411d1a-14c1-41d5-8b5c-9c2cb0f324ac",
+            "5965fbb5-812a-463b-8877-c871419627e7",
+            "602fa929-3082-44b3-a9b9-a34ae58f77fe",
+            "9c1c394d-ac91-41a2-bc0c-d5d4015c7d24",
+            "a3e86d50-086e-4468-aead-09a61d892bbd",
+            "c00c0780-82db-4335-9d1b-b6cc73bb8181"
+          ],
+          "protected_digest_before": "05b1fc92f396bd8a530291568bec5a1ce589d7735b1db30eddefaf960b742340",
+          "protected_digest_after": "05b1fc92f396bd8a530291568bec5a1ce589d7735b1db30eddefaf960b742340",
+          "all_other_rows_unchanged": true,
+          "retained_receipts": {
+            "pokemon_breedingcycle": [
+              "4fbb2664-f5a5-43e2-a095-e95aaf4b8dc1"
+            ],
+            "pokemon_breedingegg": [
+              "602fa929-3082-44b3-a9b9-a34ae58f77fe"
+            ],
+            "pokemon_marketlisting": [
+              "0f8e8118-df7f-4209-ab18-f118ab14faf7"
+            ],
+            "pokemon_onboardingcompletion": [
+              "272efdc8-10fa-4984-b96f-0a288c8cad92",
+              "7c3513ec-a2c0-482c-a6b7-005b5789a15f",
+              "9c78e1de-464c-4169-82f4-430206eb61b9",
+              "be28f8b1-c882-4cb7-93e4-5973cd4ff18c"
+            ]
+          },
+          "permitted_nullable_links_cleared_only": true,
+          "refunds": false,
+          "refill": false,
+          "public_sources_removed": false
+        },
+        "preexisting_source_and_actors_preserved": true
+      },
+      {
+        "case": "test_foreign_account_roster_reference_refuses_without_any_write",
+        "all_rows_unchanged": true
+      },
+      {
+        "case": "test_foreign_form_refuses_without_removing_any_rows",
+        "foreign_form_refused": true,
+        "all_objects_and_owned_rows_preserved": true
+      },
+      {
+        "case": "test_foreign_retained_receipt_link_refuses_without_write",
+        "all_rows_unchanged": true,
+        "guards": {
+          "ddl_sha256": "b7af33c5361a73823c8f57e30820ac3c590e1188a0d8c2bfa4242be69ea97d87",
+          "noninternal_triggers": 54,
+          "migration_executor_used": false,
+          "live_catalog_export": false
+        }
+      },
+      {
+        "case": "test_market_delete_and_price_rewrite_are_rejected",
+        "delete_and_rewrite_refused": true,
+        "guards": {
+          "ddl_sha256": "b7af33c5361a73823c8f57e30820ac3c590e1188a0d8c2bfa4242be69ea97d87",
+          "noninternal_triggers": 54,
+          "migration_executor_used": false,
+          "live_catalog_export": false
+        }
+      },
+      {
+        "case": "test_missing_persistent_roster_refuses_without_any_write",
+        "all_rows_unchanged": true
+      },
+      {
+        "case": "test_partial_delete_failure_rolls_back_all_rows",
+        "all_rows_unchanged": true
+      },
+      {
+        "case": "test_previous_controller_reproduces_egg_seal_and_rolls_back",
+        "actual_published_egg_seal_reproduced": true,
+        "all_rows_unchanged": true,
+        "guards": {
+          "ddl_sha256": "b7af33c5361a73823c8f57e30820ac3c590e1188a0d8c2bfa4242be69ea97d87",
+          "noninternal_triggers": 54,
+          "migration_executor_used": false,
+          "live_catalog_export": false
+        }
+      },
+      {
+        "case": "test_retained_receipts_survive_with_only_nullable_qa_links_cleared",
+        "retained_counts": {
+          "pokemon_breedingcycle": 1,
+          "pokemon_breedingegg": 1,
+          "pokemon_marketlisting": 1,
+          "pokemon_onboardingcompletion": 4
+        },
+        "all_immutable_fields_preserved": true,
+        "guards": {
+          "ddl_sha256": "b7af33c5361a73823c8f57e30820ac3c590e1188a0d8c2bfa4242be69ea97d87",
+          "noninternal_triggers": 54,
+          "migration_executor_used": false,
+          "live_catalog_export": false
+        }
+      },
+      {
+        "case": "test_still_attached_account_refuses_without_any_write",
+        "all_rows_unchanged": true
+      },
+      {
+        "case": "test_unapproved_retained_field_write_rolls_back_whole_cleanup",
+        "unapproved_retained_write_refused": true,
+        "all_rows_unchanged": true,
+        "guards": {
+          "ddl_sha256": "b7af33c5361a73823c8f57e30820ac3c590e1188a0d8c2bfa4242be69ea97d87",
+          "noninternal_triggers": 54,
+          "migration_executor_used": false,
+          "live_catalog_export": false
+        }
+      },
+      {
+        "case": "test_unreviewed_occupant_refuses_before_any_cleanup",
+        "refused_before_write": true,
+        "subsequent_exact_cleanup": true
+      }
+    ],
+    "published_integrity_ddl": true,
+    "existing_game_changed": false,
+    "migrations_run": false
+  },
+  "published_guard_fixture": {
+    "ddl_sha256": "b7af33c5361a73823c8f57e30820ac3c590e1188a0d8c2bfa4242be69ea97d87",
+    "noninternal_triggers": 54,
+    "migration_executor_used": false,
+    "live_catalog_export": false
+  },
+  "test_sources": {
+    "fixture_integrity.py": "\"\"\"Install published integrity DDL only in this test's random disposable schema.\"\"\"\nimport hashlib\nimport importlib\nfrom django.db import connection\n\ndef guard_sql():\n    \"\"\"Use repository definitions; no migration executor or live-server export.\"\"\"\n    names=['0041_placement_integrity_triggers','0048_ownership_integrity','0050_market_integrity',\n           '0052_daycare_integrity','0054_breeding_integrity','0058_necrozma_integrity']\n    modules=[importlib.import_module('pokemon.migrations.'+name) for name in names]\n    statements=[modules[0].CHECK_SQL,modules[1].SQL,modules[2].NEW_SEAL+modules[2].SQL,\n                modules[3].NEW_CHECK+modules[3].SQL,modules[4].SQL,modules[5].SQL]\n    native=modules[-1]\n    for index,table in enumerate(native.FROZEN_TABLES):\n        statements.append(f'CREATE TRIGGER pf2_necrozma_freeze_{index} BEFORE INSERT OR UPDATE OR DELETE ON pokemon_{table} FOR EACH ROW EXECUTE FUNCTION pf2_necrozma_source_freeze();')\n    for index,table in enumerate(native.TABLES):\n        statements.append(f'CREATE CONSTRAINT TRIGGER pf2_necrozma_{index} AFTER INSERT OR UPDATE OR DELETE ON pokemon_{table} DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION pf2_necrozma_guard();')\n    return statements\n\ndef install():\n    \"\"\"Add actual published guards after separately prepared valid local fixtures.\"\"\"\n    statements=guard_sql()\n    with connection.cursor() as cursor:\n        cursor.execute('SELECT current_schema()')\n        assert cursor.fetchone()[0].startswith('pf2_recovery_test_')\n        for statement in statements:cursor.execute(statement)\n        cursor.execute(\"SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=current_schema() AND NOT t.tgisinternal\")\n        count=cursor.fetchone()[0]\n    return dict(ddl_sha256=hashlib.sha256('\\n'.join(statements).encode()).hexdigest(),noninternal_triggers=count,migration_executor_used=False,live_catalog_export=False)\n\ndef remove():\n    \"\"\"Remove only this disposable schema's fixture guard functions after a test.\"\"\"\n    with connection.cursor() as cursor:\n        cursor.execute('SELECT current_schema()');schema=cursor.fetchone()[0]\n        assert schema.startswith('pf2_recovery_test_')\n        cursor.execute(\"SELECT p.proname,pg_get_function_identity_arguments(p.oid) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname=%s AND p.proname LIKE 'pf2_%%'\",[schema])\n        rows=cursor.fetchall()\n        quote=connection.ops.quote_name\n        for name,args in rows:\n            cursor.execute('DROP FUNCTION IF EXISTS '+quote(schema)+'.'+quote(name)+'('+args+') CASCADE')\n",
+    "check_retained_cleanup.py": "\"\"\"Rehearse exact QA cleanup against only a fresh local disposable schema.\"\"\"\nimport hashlib\nimport importlib.util\nimport json\nimport os\nfrom pathlib import Path\nimport sys\nimport unittest\nfrom uuid import uuid4\n\nART = Path(__file__).resolve().parent\nROOT = ART.parents[1]\nsys.path[:0] = [str(ROOT), str(ROOT / \"tests/integration\")]\nfixture = json.loads(Path(r\"H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\postgres-fixture.json\").read_text())\nassert not fixture[\"stopped\"]\nos.environ[\"PF2_TEST_POSTGRES_DSN\"] = fixture[\"dsn\"]\nfrom isolated_postgres import IsolatedPostgres\nimport item_availability_cases as acquisition\n\nspec = importlib.util.spec_from_file_location(\"reviewed_cleanup\", ART / \"cleanup_retained_template.py\")\ncleanup = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(cleanup)\nobservations = []\n\n\nclass CleanupCases(unittest.TestCase):\n    \"\"\"Source/owned fixtures are setup only; this tests guarded deletion, not gameplay.\"\"\"\n\n    native = acquisition.AcquisitionCases.native\n\n    def setUp(self):\n        acquisition.AcquisitionCases.setUp(self)\n        suffix = uuid4().hex\n        self.tag = \"cleanup-fixture-\" + suffix\n        names = [\"ItemCleanup\" + str(i) + suffix[:6] for i in range(4)]\n        self.plan = {\"tagged_qa\": {\"tag\": self.tag, \"ordinary_player_names\": names}}\n        people = []\n        self.owned = []\n        for name in names:\n            account = AccountDB.objects.create(username=name, db_key=name)\n            actor = ObjectDB.objects.create(db_key=name, db_account=account, db_typeclass_path=\"pokemon.user.User\")\n            account.attributes.add(\"_playable_characters\", [actor])\n            actor.db_account = None\n            actor.save(update_fields=[\"db_account\"])\n            account.tags.add(self.tag)\n            actor.tags.add(self.tag)\n            highest = Trainer.objects.order_by(\"-trainer_number\").values_list(\"trainer_number\", flat=True).first() or 0\n            trainer, _ = Trainer.objects.get_or_create(user=actor, defaults={\"trainer_number\": highest + 1})\n            storage, _ = UserStorage.objects.get_or_create(user=actor)\n            mon = create_owned_pokemon(\"Eevee\", trainer, 50, nature=\"Hardy\", ability=\"Run Away\",\n                                       gender=\"M\", ivs=[0]*6, evs=[0]*6, active_move_names=[\"Tackle\"])\n            PlacementService(storage).to_party(mon, 3)\n            self.owned.append(mon)\n            OnboardingCompletion.objects.create(character=actor, origin_character_id=actor.pk,\n                pokemon=mon, pokemon_uuid=mon.pk, kind=\"human\")\n            people.append(dict(name=name, player=actor.pk, account=account.pk, trainer=trainer.pk))\n        self.people = {\"tag\": self.tag, \"players\": people}\n        room = create_object(\"typeclasses.rooms.Room\", key=\"cleanup-private-center-\" + suffix, nohome=True)\n        room.tags.add(self.tag)\n        self.private_room = room\n        self.world = {\"tag\": self.tag, \"objects\": [dict(id=room.pk, key=room.key,\n            typeclass=room.db_typeclass_path, location=room.db_location_id, destination=room.db_destination_id)]}\n        # A closed receipt with nullable parent links exercises PROTECT ordering.\n        mother = create_owned_pokemon(\"Eevee\", self.owned[0].trainer, 50, nature=\"Hardy\", ability=\"Run Away\",\n            gender=\"F\", ivs=[0]*6, evs=[0]*6, active_move_names=[\"Tackle\"])\n        storage = UserStorage.objects.get(user_id=people[0][\"player\"])\n        PlacementService(storage).to_party(mother, 4)\n        egg = create_owned_pokemon(\"Eevee\", self.owned[0].trainer, 1, nature=\"Hardy\", ability=\"Run Away\",\n            gender=\"M\", ivs=[0]*6, evs=[0]*6, active_move_names=[\"Tackle\"])\n        PlacementService(storage).to_party(egg, 5)\n        now = timezone.now()\n        cycle = BreedingCycle.objects.create(storage=storage, origin_character_id=people[0][\"player\"],\n            parent_a_uuid=self.owned[0].pk, parent_b_uuid=mother.pk, egg_uuid=egg.pk, state=\"collected\",\n            plan={\"rule_version\":\"1\", \"is_shiny\":False}, started_at=now, ready_at=now, next_ready_at=now, closed_at=now)\n        BreedingEgg.objects.create(id=egg.pk, cycle=cycle, pokemon=egg, collected_at=now,\n                                  hatch_ready_at=now, hatched_at=now, hatch_owner_id=people[0][\"player\"])\n\n\n        first=DaycareEntry.objects.create(storage=storage,pokemon=self.owned[0],owned_id=self.owned[0].pk,saved_name=\"QA father\",\n            state=\"retrieved\",place=1,retrieved_at=now)\n        second=DaycareEntry.objects.create(storage=storage,pokemon=mother,owned_id=mother.pk,saved_name=\"QA mother\",\n            state=\"retrieved\",place=2,retrieved_at=now)\n        BreedingCycle.objects.filter(pk=cycle.pk).update(parent_a=first,parent_b=second)\n        identifier=uuid4();purchase=uuid4()\n        self.market=MarketListing.objects.create(id=identifier,seller_id=people[0][\"player\"],seller_character_id=people[0][\"player\"],\n            seller_name=people[0][\"name\"],pokemon=self.owned[0],owned_id=self.owned[0].pk,request_selector=str(self.owned[0].pk),\n            snapshot={},price=100,state=\"sold\",created_at=now,expires_at=now,closed_at=now,buyer_id=people[1][\"player\"],\n            buyer_character_id=people[1][\"player\"],purchase_id=purchase,\n            receipt=dict(purchase=str(purchase),listing=str(identifier),buyer=str(people[1][\"player\"]),seller=str(people[0][\"player\"]),price=\"100\"))\n        if self._testMethodName==\"test_foreign_retained_receipt_link_refuses_without_write\":\n            MarketListing.objects.filter(pk=self.market.pk).update(pokemon=self.mon)\n        import fixture_integrity\n        self.addCleanup(fixture_integrity.remove)\n        self.guard_receipt=fixture_integrity.install()\n\n    def tearDown(self):\n        import fixture_integrity\n        fixture_integrity.remove()\n        acquisition.AcquisitionCases.tearDown(self)\n\n    def test_exact_cleanup_preserves_existing_people_and_public_stock(self):\n        before_stock = BattleRewards.stored_attribute(public_shop, \"store_inventory\")\n        original_ids = [player.pk for player in self.players]\n        result = cleanup.remove_qa(self.plan, self.people, self.world)\n        self.assertTrue(result[\"all_other_rows_unchanged\"])\n        self.assertEqual(result[\"protected_digest_before\"], result[\"protected_digest_after\"])\n        self.assertEqual(ObjectDB.objects.filter(pk__in=original_ids).count(), 2)\n        self.assertEqual(BattleRewards.stored_attribute(public_shop, \"store_inventory\"), before_stock)\n        self.assertEqual(len(result[\"removed_pokemon\"]), 6)\n        observations.append(dict(case=self._testMethodName, receipt=result, preexisting_source_and_actors_preserved=True))\n\n    def test_unreviewed_occupant_refuses_before_any_cleanup(self):\n        foreign = create_object(\"typeclasses.objects.Object\", key=\"non-QA-occupant-\" + uuid4().hex,\n                                location=self.private_room, nohome=True)\n        before = set(ObjectDB.objects.values_list(\"pk\", flat=True))\n        with self.assertRaises(AssertionError):\n            cleanup.remove_qa(self.plan, self.people, self.world)\n        self.assertEqual(set(ObjectDB.objects.values_list(\"pk\", flat=True)), before)\n        foreign.delete()\n        result = cleanup.remove_qa(self.plan, self.people, self.world)\n        observations.append(dict(case=self._testMethodName, refused_before_write=True,\n                                 subsequent_exact_cleanup=result[\"all_other_rows_unchanged\"]))\n\n    def test_active_fusion_refuses_then_ordinary_unfuse_allows_exact_cleanup(self):\n        from pokemon.services.fusion_transitions import FusionTransitions\n        from utils.fusion import deactivate_fusion\n        actor = ObjectDB.objects.get(pk=self.people[\"players\"][2][\"player\"])\n        source = self.owned[2]\n        PlacementService(actor.storage).reserve_for_fusion(source)\n        actor.db.fusion_forms = [str(source.pk)]\n        actor.db.fusion_id = str(source.pk)\n        actor.db.fusion_kind = \"permanent\"\n        with self.assertRaises(AssertionError):\n            cleanup.remove_qa(self.plan, self.people, self.world)\n        self.assertTrue(OwnedPokemon.objects.filter(pk=source.pk).exists())\n        ok, _ = deactivate_fusion(actor)\n        self.assertTrue(ok)\n        state = FusionTransitions(actor).inspect()\n        self.assertIsNone(state[\"active\"])\n        self.assertEqual(state[\"forms\"], [str(source.pk)])\n        result = cleanup.remove_qa(self.plan, self.people, self.world)\n        self.assertTrue(result[\"all_other_rows_unchanged\"])\n        observations.append(dict(case=self._testMethodName, active_refused=True,\n            ordinary_unfuse=True, inactive_owned_form_removed=True, other_rows_unchanged=True))\n\n    def test_foreign_form_refuses_without_removing_any_rows(self):\n        actor = ObjectDB.objects.get(pk=self.people[\"players\"][2][\"player\"])\n        actor.db.fusion_forms = [str(self.mon.pk)]\n        objects = set(ObjectDB.objects.values_list(\"pk\", flat=True))\n        pokemon = set(OwnedPokemon.objects.values_list(\"pk\", flat=True))\n        with self.assertRaises(AssertionError):\n            cleanup.remove_qa(self.plan, self.people, self.world)\n        self.assertEqual(set(ObjectDB.objects.values_list(\"pk\", flat=True)), objects)\n        self.assertEqual(set(OwnedPokemon.objects.values_list(\"pk\", flat=True)), pokemon)\n        observations.append(dict(case=self._testMethodName, foreign_form_refused=True,\n            all_objects_and_owned_rows_preserved=True))\n\n\n    def assert_refusal_preserves_all_rows(self):\n        from django.apps import apps\n        models=[model for model in apps.get_models(include_auto_created=True) if model._meta.managed and not model._meta.proxy]\n        def snapshot():\n            return {model._meta.db_table:list(model._base_manager.order_by(\"pk\").values()) for model in models}\n        before=snapshot()\n        with self.assertRaises(AssertionError):\n            cleanup.remove_qa(self.plan,self.people,self.world)\n        self.assertEqual(snapshot(),before)\n\n    def test_missing_persistent_roster_refuses_without_any_write(self):\n        account=AccountDB.objects.get(pk=self.people[\"players\"][0][\"account\"])\n        account.attributes.remove(\"_playable_characters\")\n        self.assert_refusal_preserves_all_rows()\n        observations.append(dict(case=self._testMethodName,all_rows_unchanged=True))\n\n    def test_foreign_account_roster_reference_refuses_without_any_write(self):\n        account=AccountDB.objects.get(pk=self.people[\"players\"][1][\"account\"])\n        actor=ObjectDB.objects.get(pk=self.people[\"players\"][0][\"player\"])\n        account.attributes.add(\"_playable_characters\",[actor])\n        self.assert_refusal_preserves_all_rows()\n        observations.append(dict(case=self._testMethodName,all_rows_unchanged=True))\n\n    def test_still_attached_account_refuses_without_any_write(self):\n        row=self.people[\"players\"][0]\n        ObjectDB.objects.filter(pk=row[\"player\"]).update(db_account_id=row[\"account\"])\n        self.assert_refusal_preserves_all_rows()\n        observations.append(dict(case=self._testMethodName,all_rows_unchanged=True))\n\n    def test_partial_delete_failure_rolls_back_all_rows(self):\n        from unittest.mock import patch\n        from django.apps import apps\n        from django.db.models.deletion import Collector\n        models=[model for model in apps.get_models(include_auto_created=True) if model._meta.managed and not model._meta.proxy]\n        def snapshot():\n            return {model._meta.db_table:list(model._base_manager.order_by(\"pk\").values()) for model in models}\n        before=snapshot()\n        original=Collector.delete\n        def fail_after_delete(collector):\n            original(collector)\n            raise RuntimeError(\"injected after collector deletion\")\n        with patch.object(Collector,\"delete\",fail_after_delete):\n            with self.assertRaises(RuntimeError):\n                cleanup.remove_qa(self.plan,self.people,self.world)\n        self.assertEqual(snapshot(),before)\n        observations.append(dict(case=self._testMethodName,all_rows_unchanged=True))\n\n\n    def test_previous_controller_reproduces_egg_seal_and_rolls_back(self):\n        from django.db import IntegrityError\n        from django.apps import apps\n        previous_spec=importlib.util.spec_from_file_location(\"previous_cleanup\",ART/\"cleanup_logged_out_template.py\")\n        previous=importlib.util.module_from_spec(previous_spec);previous_spec.loader.exec_module(previous)\n        models=[model for model in apps.get_models(include_auto_created=True) if model._meta.managed and not model._meta.proxy]\n        def snapshot():return {model._meta.db_table:list(model._base_manager.order_by(\"pk\").values()) for model in models}\n        before=snapshot()\n        with self.assertRaisesRegex(IntegrityError,\"Egg and hatch receipts must be retained\"):\n            previous.remove_qa(self.plan,self.people,self.world)\n        self.assertEqual(snapshot(),before)\n        observations.append(dict(case=self._testMethodName,actual_published_egg_seal_reproduced=True,all_rows_unchanged=True,guards=self.guard_receipt))\n\n    def test_market_delete_and_price_rewrite_are_rejected(self):\n        from django.db import IntegrityError,transaction\n        for action in (\"delete\",\"price\"):\n            with self.assertRaises(IntegrityError):\n                with transaction.atomic():\n                    if action==\"delete\":MarketListing.objects.filter(pk=self.market.pk).delete()\n                    else:MarketListing.objects.filter(pk=self.market.pk).update(price=101)\n        self.assertEqual(MarketListing.objects.get(pk=self.market.pk).price,100)\n        observations.append(dict(case=self._testMethodName,delete_and_rewrite_refused=True,guards=self.guard_receipt))\n\n    def test_foreign_retained_receipt_link_refuses_without_write(self):\n        self.assert_refusal_preserves_all_rows()\n        observations.append(dict(case=self._testMethodName,all_rows_unchanged=True,guards=self.guard_receipt))\n\n    def test_retained_receipts_survive_with_only_nullable_qa_links_cleared(self):\n        before={model._meta.db_table:list(queryset.values()) for model,queryset in (\n            (BreedingCycle,BreedingCycle.objects.filter(origin_character_id__in=[row[\"player\"] for row in self.people[\"players\"]])),\n            (BreedingEgg,BreedingEgg.objects.filter(cycle__origin_character_id__in=[row[\"player\"] for row in self.people[\"players\"]])),\n            (MarketListing,MarketListing.objects.filter(pk=self.market.pk)),\n            (OnboardingCompletion,OnboardingCompletion.objects.filter(origin_character_id__in=[row[\"player\"] for row in self.people[\"players\"]])))}\n        result=cleanup.remove_qa(self.plan,self.people,self.world)\n        allowed={\"pokemon_breedingcycle\":{\"storage_id\",\"parent_a_id\",\"parent_b_id\"},\"pokemon_breedingegg\":{\"pokemon_id\"},\n            \"pokemon_marketlisting\":{\"seller_id\",\"buyer_id\",\"pokemon_id\"},\"pokemon_onboardingcompletion\":{\"character_id\",\"pokemon_id\"}}\n        for model in (BreedingCycle,BreedingEgg,MarketListing,OnboardingCompletion):\n            table=model._meta.db_table\n            for row in before[table]:\n                now=model.objects.values().get(pk=row[model._meta.pk.attname])\n                for key,value in row.items():self.assertEqual(now[key],None if key in allowed[table] else value)\n        self.assertTrue(result[\"permitted_nullable_links_cleared_only\"])\n        observations.append(dict(case=self._testMethodName,retained_counts={table:len(rows) for table,rows in before.items()},\n            all_immutable_fields_preserved=True,guards=self.guard_receipt))\n\n    def test_unapproved_retained_field_write_rolls_back_whole_cleanup(self):\n        from unittest.mock import patch\n        from django.db.models.deletion import Collector\n        from django.apps import apps\n        models=[model for model in apps.get_models(include_auto_created=True) if model._meta.managed and not model._meta.proxy]\n        def snapshot():return {model._meta.db_table:list(model._base_manager.order_by(\"pk\").values()) for model in models}\n        before=snapshot();original=Collector.delete\n        def tamper(collector):\n            result=original(collector)\n            OnboardingCompletion.objects.filter(origin_character_id=self.people[\"players\"][0][\"player\"]).update(choices={\"unapproved\":True})\n            return result\n        with patch.object(Collector,\"delete\",tamper):\n            with self.assertRaises(AssertionError):cleanup.remove_qa(self.plan,self.people,self.world)\n        self.assertEqual(snapshot(),before)\n        observations.append(dict(case=self._testMethodName,unapproved_retained_write_refused=True,all_rows_unchanged=True,guards=self.guard_receipt))\n\n\nif __name__ == \"__main__\":\n    with IsolatedPostgres() as database:\n        database.create_model_tables()\n        acquisition.load_runtime()\n        from django.utils import timezone\n        from django.contrib.contenttypes.models import ContentType\n        from evennia.accounts.models import AccountDB\n        from evennia.objects.models import ObjectDB\n        from evennia.utils.create import create_object\n        from pokemon.helpers.pokemon_helpers import create_owned_pokemon\n        from pokemon.models.breeding import BreedingCycle, BreedingEgg\n        from pokemon.models.market import MarketListing\n        from pokemon.models.daycare import DaycareEntry\n        from pokemon.models.core import OwnedPokemon\n        from pokemon.models.onboarding import OnboardingCompletion\n        from pokemon.models.storage import UserStorage\n        from pokemon.models.trainer import Trainer\n        from pokemon.services.placement import PlacementService\n        from pokemon.services.battle_rewards import BattleRewards\n        from pokemon.services.item_supply import ItemSupplyRoute\n\n        ContentType.objects.get_for_model(ObjectDB)\n        ContentType.objects.get_for_model(AccountDB)\n        public_hub = create_object(\"typeclasses.rooms.FusionRoom\", key=\"protected-public-hub\", nohome=True)\n        public_shop = ItemSupplyRoute.install(public_hub)\n        result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(CleanupCases))\n    path = ART / (os.environ.get(\"PF2_CONTROLLER_LABEL\", \"cleanup-rehearsal\") + \".json\")\n    assert not path.exists()\n    path.write_text(json.dumps(dict(exit=not result.wasSuccessful(), cases=result.testsRun,\n        controller_sha256=hashlib.sha256((ART / \"cleanup_retained_template.py\").read_bytes()).hexdigest(),\n        observations=observations, published_integrity_ddl=True, existing_game_changed=False, migrations_run=False), indent=2)+\"\\n\")\n    raise SystemExit(not result.wasSuccessful())\n"
+  },
+  "isolated_log_sha256": "db86bc224dbbe718073520e2e126ebf8d21f2bf4ecb07d9f54d708b28809912f",
+  "expected_retained_receipts": {
+    "breeding_cycles": 1,
+    "breeding_eggs": 1,
+    "marketplace_listings": 1,
+    "onboarding": 4
+  },
+  "retained_fields_allowed_to_clear": {
+    "pokemon_breedingcycle": [
+      "storage_id",
+      "parent_a_id",
+      "parent_b_id"
+    ],
+    "pokemon_breedingegg": [
+      "pokemon_id"
+    ],
+    "pokemon_marketlisting": [
+      "seller_id",
+      "buyer_id",
+      "pokemon_id"
+    ],
+    "pokemon_onboardingcompletion": [
+      "character_id",
+      "pokemon_id"
+    ]
+  },
+  "recovery": {
+    "verification_completed_utc": "2026-10-27T01:07:58.886717+00:00",
+    "verification_log_sha256": "063199f4f76adf6aa1adf2c8241fa4d972403bbb2f8fedc5573efdbc3c4b72bf",
+    "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
+    "migration": "0059_owned_trained_stat_nature",
+    "qualified_python_sources": 1188,
+    "ordinary_greeting_and_logins": true,
+    "ports": [
+      4000,
+      4001,
+      4002,
+      4005,
+      4006
+    ],
+    "original_data_and_public_sales_preserved": true,
+    "cleanup_complete": false,
+    "qa_accounts_retained": 4,
+    "qa_owned_retained": 25,
+    "maintenance_cycles_used": 3
+  },
+  "original_controllers_unchanged": true,
+  "game_source_changes": false,
+  "migrations": false,
+  "new_release": false,
+  "stock_or_refill_changes": false,
+  "additional_evennia_cycles": 1,
+  "total_cycles_after_success": 4,
+  "diagnostic": "Approved logout cleanup reached the actual immutable egg receipt trigger and rolled back. Its explicitly approved recovery restored the same healthy game. Prior model-table tests omitted integrity triggers; new thirteen-case fixture enables 54 triggers from public repository SQL and reproduces that exact refusal before testing receipt retention. Automatic approval review refused a live catalog/private-receipt export, so no such export occurred.",
+  "approval_template": {
+    "approved": false,
+    "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
+    "controller_sha256": "03ac8a714785a0e191fa07dd36ee72d35e2f8dd59ac27fb5f279560247c66646",
+    "scope": "exact tagged QA cleanup retaining sealed receipts and one guarded maintenance cycle"
+  }
+}

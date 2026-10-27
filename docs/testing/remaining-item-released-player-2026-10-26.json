@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "PLAYER CHECKS COMPLETE; guarded cleanup refused before deletion; recovered healthy; replacement controller and one additional maintenance cycle await explicit approval; eleven issues remain open",
+  "status": "PLAYER CHECKS COMPLETE; receipt-seal cleanup refusal rolled back and recovered healthy; integrity-enabled receipt-preserving replacement and one further maintenance cycle await approval; eleven issues remain open",
   "observed_utc": "2026-10-26T15:24:15.027068+00:00",
   "environment": "PF2-Dev",
   "game_candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
@@ -1091,9 +1091,9 @@
   "socket_inputs_so_far": 1203,
   "published_ordinary_inputs": 1162,
   "pending": [
-    "Explicit approval of exact logged-out cleanup controller and one additional guarded Evennia stop/start cycle",
-    "Exact tagged QA cleanup and independent same-build final health/source verification",
-    "Final released availability index/report, scoped commit/push, eleven child closures and tracker update"
+    "Approve exact receipt-preserving cleanup controller and one further guarded Evennia cycle",
+    "Exact live-QA teardown retaining sealed audit histories and independent final health/source verification",
+    "Final report/index, scoped commit/push, eleven child closures and tracker update"
   ],
   "nursery": {
     "all_four_actual_real_hour_flows_passed": true,
@@ -1182,6 +1182,52 @@
   },
   "cleanup": {
     "complete": false,
+    "refused_by_egg_receipt_seal": true,
+    "transaction_rolled_back": true,
+    "tagged_accounts_retained": 4,
+    "tagged_owned_retained": 25,
+    "ordinary_players_logged_out": true,
+    "owned_tunnel_ended": true,
+    "maintenance_cycles_used": 3,
+    "additional_cycle_proposed": 1,
+    "approval_pending": true,
+    "proposed_retained_audit_receipts": {
+      "breeding_cycles": 1,
+      "breeding_eggs": 1,
+      "marketplace_listings": 1,
+      "onboarding": 4
+    },
+    "plan": "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json"
+  },
+  "recovery_health": {
+    "verification_completed_utc": "2026-10-27T01:07:58.886717+00:00",
+    "verification_log_sha256": "063199f4f76adf6aa1adf2c8241fa4d972403bbb2f8fedc5573efdbc3c4b72bf",
+    "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
+    "migration": "0059_owned_trained_stat_nature",
+    "qualified_python_sources": 1188,
+    "ordinary_greeting_and_logins": true,
+    "ports": [
+      4000,
+      4001,
+      4002,
+      4005,
+      4006
+    ],
+    "original_data_and_public_sales_preserved": true,
+    "cleanup_complete": false,
+    "qa_accounts_retained": 4,
+    "qa_owned_retained": 25,
+    "maintenance_cycles_used": 3
+  },
+  "post_logout_observer_diagnosis": "One extra read-only snapshot refused its attached-account assumption after logout; no checkpoint was counted. The maintenance/recovery guards independently verified disconnection and original data. No paid player action was repeated.",
+  "separate_battle_findings": [
+    {
+      "issue": 918,
+      "status": "open; separately authorized battle finding; ordinary boxing used for this item walkthrough"
+    }
+  ],
+  "prior_account_link_cleanup_refusal": {
+    "complete": false,
     "refused_before_deletion": true,
     "diagnosis": "Normal logout cleared the transient active account FK required by the prior cleanup; its transaction refused before deletion. The replacement checks the persistent roster and current SQL attachment state.",
     "tagged_accounts_retained": 4,
@@ -1192,7 +1238,7 @@
     "additional_cycle_proposed": 1,
     "approval_pending": true
   },
-  "recovery_health": {
+  "prior_recovery_health": {
     "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
     "migration": "0059_owned_trained_stat_nature",
     "qualified_python_sources": 1188,
@@ -1213,11 +1259,12 @@
     },
     "cleanup_complete": false
   },
-  "post_logout_observer_diagnosis": "One extra read-only snapshot refused its attached-account assumption after logout; no checkpoint was counted. The maintenance/recovery guards independently verified disconnection and original data. No paid player action was repeated.",
-  "separate_battle_findings": [
-    {
-      "issue": 918,
-      "status": "open; separately authorized battle finding; ordinary boxing used for this item walkthrough"
-    }
-  ]
+  "cleanup_proposal_integrity_checks": {
+    "cases": 13,
+    "passed": true,
+    "noninternal_triggers": 54,
+    "fixture_ddl_sha256": "b7af33c5361a73823c8f57e30820ac3c590e1188a0d8c2bfa4242be69ea97d87",
+    "live_catalog_export": false,
+    "migration_executor_used": false
+  }
 }

@@ -12,23 +12,26 @@ freeze, consumed one copy and left4. Healthy repeats consumed nothing. Exact
 planted/ready/observed UTC/cycle receipts are in the machine report. No clock was
 advanced; real breeding production/hatch waits also passed.
 
-After ordinary logout the approved Fusion cleanup refused **before deletion**:
-logout clears the transient account FK, while that controller expected it to
-remain attached. Its transaction rolled back. The already approved second start
-restored the exact game; all1,188 hashes,0059, five listeners, ordinary greeting/
-logins and protected original-data checks passed independently. The four QA
-accounts and25 owned Pokemon remain intact, logged out, and their tunnel ended.
-Both originally approved maintenance cycles are used. No cleanup receipt was
-forged and no account link, source, stock, refill or game rule was rewritten.
+The account-link cleanup mismatch was explicitly approved and corrected. Its
+next live attempt reached a second mismatch: the database forbids deleting
+hatched egg and closed breeding/market receipts. The transaction rolled back;
+the approved recovery restored the same healthy build/0059/all1,188 hashes/five
+listeners/ordinary greeting/logins, protected original data and public sales.
+All four QA accounts and25 owned Pokemon remain intact and logged out, with
+their tunnel ended. Three approved maintenance cycles have now been used.
 
-The [tested logged-out cleanup plan](remaining-item-logout-cleanup-plan-2026-10-26.md)
-proposes a fresh persistent-roster guard and one additional guarded Evennia-only
-cycle. Eight isolated SQL cases pass, including every-other-row preservation,
-missing/foreign/attached identity refusal, active/foreign Fusion protections,
-unfamiliar occupants and full rollback after injected partial deletion. The
-first proposal exposed stale FK cache behavior; fresh SQL fixed it. Those tests
-are separate from live deletion and authorize no operation. Explicit approval,
-actual cleanup and final independent health remain required before closure.
+The [receipt-preserving cleanup plan](remaining-item-retained-cleanup-plan-2026-10-26.md)
+retains one closed breeding cycle, one hatched egg receipt, one sold marketplace
+listing and four onboarding receipts. Only permitted NULL links into the exact
+QA deletion set may clear; every immutable field and all other data stay intact.
+The prior model-table fixture omitted migration-installed seals. The replacement
+passed13 cases with54 published repository integrity triggers enabled, including
+exact reproduction of the prior refusal, receipt preservation, price/delete
+protection and full rollback after partial deletion or unapproved receipt edits.
+No migration executor or live catalog export was used. The disposable cluster
+is stopped. This replacement hash and one further Evennia-only maintenance
+cycle still need explicit approval; all eleven item issues remain open until
+actual teardown and final independent health pass. No paid player flow was replayed.
 
 ## Completed released routes
 
@@ -69,7 +72,7 @@ not certify permanent public acquisition of the crystal or every base species.
   Jolteon, Leafeon, Glaceon, Bellossom, Clefable and Vaporeon. The Water Stone
   followed Candy leveling and a later battle; Candy did not auto-evolve it.
 - Allfive EXP Candy sizes worked. XS also gave a same-level gain at50; level100
-  refused without debit. The new Eevee progressed5â†’6â†’10â†’15â†’24â†’35. Candy M left
+  refused without debit. The new Eevee progressed5Ã¢â€ â€™6Ã¢â€ â€™10Ã¢â€ â€™15Ã¢â€ â€™24Ã¢â€ â€™35. Candy M left
   labelled HP0 unchanged. Separate purchased Revive restored22/44, then L/XL
   retained the22-point deficit at43/65 and68/90. Reconnect retained progression
   and actual earned choices; an expired token refused, Quick Attack activated
@@ -90,9 +93,9 @@ not certify permanent public acquisition of the crystal or every base species.
   Naughty, with no Brave training overlay. The trained/Hyper Trained Mew passed
   a consent trade and inspected100-money marketplace return without resource or
   genetic changes. The Careful initial Fusion body fought and reconnected, then
-  ordinarily unfused. Wiki healed80â†’190 and caused actual confusion from genetic
+  ordinarily unfused. Wiki healed80Ã¢â€ â€™190 and caused actual confusion from genetic
   Jolly despite its opposite Sassy mint preference.
-- Held Sitrus restored143â†’228 and Lum cured labelled poison, consuming each copy.
+- Held Sitrus restored143Ã¢â€ â€™228 and Lum cured labelled poison, consuming each copy.
   Full-HP Magikarp survived an actual Psychic at1/18 HP using Focus Sash. Choice
   Band/Specs produced useful damage and alternate-move lock refusals; Scarf
   reversed ordinary equal-priority order. Each reusable Choice copy returned once.
@@ -132,7 +135,7 @@ backups, raw controller evidence and credentials remain private. One post-logout
 read-only observer refused its attached-account assumption and produced no
 counted checkpoint; independent maintenance/recovery guards verified no active
 sessions/ownership work and preserved original data. Permanent content/sales
-remain installed. Only the exact closed tagged QA fixtures await the proposed
-cleanup approval. Plot-only items and all25 unrelated shared dirty paths remain
+remain installed. Only the exact live tagged QA fixtures await the receipt-preserving
+cleanup approval; sealed audit histories will remain as inert records. Plot-only items and all25 unrelated shared dirty paths remain
 excluded; all1,188 qualified application identities still match. The temporary
 QA crystal/capture helpers are not certified permanent public acquisition.
