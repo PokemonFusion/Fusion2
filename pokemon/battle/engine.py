@@ -3923,6 +3923,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def _move_stage_holders(self, user, target=None):
         """Return holders that may react to pre-move gating events."""
 
+        from .effect_context import EffectContext
+
         holders: list[tuple[str | None, Any, Optional[Dict[str, Any]], Any]] = []
 
         def add_holder(relation, holder, state, owner) -> None:
@@ -3933,7 +3935,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             add_holder(None, self._pokemon_status_handler(user), getattr(user, "status_state", None), user)
             for volatile_name, handler in self._pokemon_volatile_handlers(user):
                 add_holder(None, handler, getattr(user, "volatiles", {}).get(volatile_name), user)
-            add_holder(None, _resolve_ability(getattr(user, "ability", None)), getattr(user, "ability_state", None), user)
+            add_holder(None, EffectContext.ability(user), getattr(user, "ability_state", None), user)
             add_holder(None, self._holder_item(user), getattr(user, "item_state", None), user)
 
         user_participant = self.participant_for(user) if user is not None else None
@@ -3947,7 +3949,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 add_holder(relation, self._pokemon_status_handler(pokemon), getattr(pokemon, "status_state", None), pokemon)
                 for volatile_name, handler in self._pokemon_volatile_handlers(pokemon):
                     add_holder(relation, handler, getattr(pokemon, "volatiles", {}).get(volatile_name), pokemon)
-                add_holder(relation, _resolve_ability(getattr(pokemon, "ability", None)), getattr(pokemon, "ability_state", None), pokemon)
+                add_holder(relation, EffectContext.ability(pokemon), getattr(pokemon, "ability_state", None), pokemon)
                 add_holder(relation, self._holder_item(pokemon), getattr(pokemon, "item_state", None), pokemon)
         return holders
 
@@ -4868,8 +4870,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 return
             if not was_charging:
                 self.deduct_pp(user, action.move, target=target)
-            if action.move.raw.get("selfdestruct") == "always":
-                user.hp = 0
+            # A TryMove prevention (for example Damp) stops execution before
+            # self-sacrifice. Protection/misses after execution retain their
+            # separate selfdestruct handling below.
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
                 f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"

@@ -24,6 +24,54 @@ class UltraBattleCases(preparation.UltraPreparationCases):
 
         self.room.db_attributes = ObjectDB.objects.get(pk=self.room.pk).db_attributes
 
+    def egg_roster_flow(self, companion):
+        """Keep a genuine owned egg outside the roster during both Ultra guarded turns."""
+        from pokemon.helpers.pokemon_helpers import create_owned_pokemon
+        from pokemon.services.placement import PlacementService
+
+        launch = self.launch
+        eggs = []
+
+        def launch_with_egg(battle_format="single"):
+            """Separate an unhatched egg prerequisite from normal player startup."""
+            egg = create_owned_pokemon(
+                "Eevee", self.player.trainer, 1, nature="Hardy", ability="Run Away",
+                ivs=[0] * 6, evs=[0] * 6, active_move_names=["Tackle"],
+            )
+            egg.is_egg = True
+            egg.save(update_fields=("is_egg",))
+            PlacementService(self.player.storage).to_party(egg, slot=1)
+            eggs.append(OwnedPokemon.objects.filter(pk=egg.pk).values().get())
+            native.core.EVIDENCE.append(dict(
+                event="separate-unhatched-party-egg-prerequisite", row=eggs[-1],
+            ))
+            launch(battle_format)
+            self.assertNotIn("owned:" + str(egg.pk), [mon.model_id for part in
+                             self.session.battle.participants for mon in part.pokemons])
+
+        self.launch = launch_with_egg
+        self.activate(companion)
+        self.attacks(signature=True)
+        self.rebuild()
+        self.refresh_actor()
+        self.assertEqual(self.actor.species, "Necrozma-Ultra")
+        self.assertEqual(OwnedPokemon.objects.filter(pk=eggs[0]["unique_id"]).values().get(), eggs[0])
+        self.assertFalse(self.session.turn_state.get("error"), self.session.turn_state)
+        self.assertFalse(getattr(self.session.battle, "_callback_failures", []))
+        native.core.EVIDENCE.append(dict(
+            event="accepted-ultra-signature-with-excluded-party-egg", companion=companion,
+            egg_before=eggs[0], egg_after=OwnedPokemon.objects.filter(pk=eggs[0]["unique_id"]).values().get(),
+            after=self.observation(),
+        ))
+
+    def test_dawn_ultra_guarded_turns_exclude_party_egg(self):
+        """Dawn Ultra activation and its signature leave the real party egg untouched."""
+        self.egg_roster_flow("Lunala")
+
+    def test_dusk_ultra_guarded_turns_exclude_party_egg(self):
+        """Dusk uses the same repaired roster and persistent whole-turn guards."""
+        self.egg_roster_flow("Solgaleo")
+
     def refresh_actor(self):
         """Follow the current restored engine instead of retaining stale adapters."""
         self.participant = self.session.battle.participants[0]

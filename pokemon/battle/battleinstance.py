@@ -1049,8 +1049,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         obj.teamA = team_a_objs
         obj.teamB = team_b_objs
         from .necrozma import NativeNecrozmaBattle
+        from .roster_eligibility import BattleRosterEligibility
 
-        NativeNecrozmaBattle.validate_roster(obj.battle)
+        roster_recovery = BattleRosterEligibility.quarantine(obj)
+        if not roster_recovery:
+            NativeNecrozmaBattle.validate_roster(obj.battle)
 
         log_info(
             f"Restore complete: player={getattr(obj.captainA, 'key', obj.captainA)} "
@@ -1083,9 +1086,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if getattr(obj.state, 'multi', None):
             from .multi_state import attach_players
             attach_players(obj)
-        obj._restore_declarations()
-        obj._bind_reward_delivery()
-        obj.storage.set("state", obj._compact_state_for_persist(obj.state.to_dict()))
+        if not roster_recovery:
+            obj._restore_declarations()
+            obj._bind_reward_delivery()
+            obj.storage.set("state", obj._compact_state_for_persist(obj.state.to_dict()))
+        else:
+            obj.msg(f"Battle #{battle_id} is paused for egg-roster recovery. Ask staff; no saved choices were replayed.")
         return obj
 
     def start(self) -> None:
@@ -1481,7 +1487,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         encounters that override health when constructing temporary teams.
         """
         log_info(f"Preparing party for {getattr(trainer, 'key', trainer)} (full_heal={full_heal})")
-        party = get_battle_party_with_fusion(trainer)
+        from .roster_eligibility import BattleRosterEligibility
+        from pokemon.helpers.party_helpers import pokemon_is_usable
+
+        party = BattleRosterEligibility.models(get_battle_party_with_fusion(trainer))
+        if not party or (not full_heal and not any(pokemon_is_usable(mon) for mon in party)):
+            raise ValueError("You don't have any Pokemon able to battle.")
         pokemons: List[Pokemon] = []
         for poke in party:
             battle_poke = build_battle_pokemon_from_model(poke, full_heal=full_heal)
@@ -1663,6 +1674,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
     def _sync_player_pokemon_state(self, *, strict=False) -> None:
         """Keep protected Mega ownership checks locked through their owned writes."""
+        from .roster_eligibility import BattleRosterEligibility
+
+        BattleRosterEligibility.require(self)
         guarded = any(getattr(poke, "mega_guard_stone", None) or getattr(poke, "z_guard_crystal", None) or getattr(poke, "ultra_guard_crystal", None)
                       or (getattr(poke, "native_origin", None) or {}).get("necrozma")
                       for participant in getattr(self.battle, "participants", [])
@@ -1796,6 +1810,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """End the battle and clean up."""
         if getattr(self, "_ended", False):
             return
+        from .roster_eligibility import BattleRosterEligibility
+
+        BattleRosterEligibility.require(self)
         if getattr(getattr(self, 'state', None), 'multi', None):
             from .multi_battle import outcomes
             outcomes(self, reason='completed' if self.battle.battle_over else 'aborted')
@@ -2107,6 +2124,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 ids = sorted(BattleRewards.character(player).pk for player in controllers.values()
                              if BattleRewards.supports(player))
                 list(ObjectDB.objects.select_for_update().filter(pk__in=ids).order_by("pk"))
+                from .roster_eligibility import BattleRosterEligibility
+
+                BattleRosterEligibility.require(self)
                 from .necrozma import NativeNecrozmaBattle
 
                 NativeNecrozmaBattle.lock_sources(self.battle)
@@ -2198,6 +2218,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     def choices_for(self, caller):
         """Return the player's authoritative view of legal per-slot choices."""
         from .player_choices import PlayerChoices
+        from .roster_eligibility import BattleRosterEligibility
+
+        BattleRosterEligibility.require(self)
         if getattr(getattr(self, 'state', None), 'multi', None):
             from pokemon.services.battle_rewards import BattleRewards
             saved = BattleRewards.stored_attribute(self.room, self.storage._key('state')) or {}

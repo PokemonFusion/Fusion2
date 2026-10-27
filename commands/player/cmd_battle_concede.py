@@ -108,6 +108,13 @@ class CmdBattleConcede(Command):
         """Carry out the concession once confirmation has been received."""
 
         battle_id = self._extract_battle_id(inst)
+        from pokemon.battle.roster_eligibility import BattleRosterEligibility, BattleRosterRecoveryRequired
+
+        try:
+            BattleRosterEligibility.require(inst)
+        except BattleRosterRecoveryRequired as error:
+            self.caller.msg(str(error))
+            return
         try:
             if getattr(getattr(inst, 'state', None), 'multi', None):
                 from pokemon.battle.multi_battle import forfeit

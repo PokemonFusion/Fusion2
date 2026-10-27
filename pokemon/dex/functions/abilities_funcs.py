@@ -98,23 +98,17 @@ class Aerilate:
 
 class Aftermath:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		"""Damage the attacker when hit by a contact move.
-
-		In the official games Aftermath activates only if the Pokémon
-		faints from the attack.  The simplified battle engine used in the
-		tests does not model fainting logic in detail, so this implementation
-		applies the recoil whenever a contact move connects.  This ensures the
-		ability still produces an observable effect during automated testing.
-		"""
+		"""Apply contact-KO damage through the recipient's prevention events."""
 
 		if source is None or move is None:
 			return
 		if getattr(target, "hp", 1) > 0:
 			return
 		if getattr(move, "flags", {}).get("contact"):
+			from pokemon.battle.indirect_damage import IndirectEffect, apply_indirect_damage
+
 			recoil = getattr(source, "max_hp", 0) // 4
-			if hasattr(source, "hp"):
-				source.hp = max(0, source.hp - recoil)
+			apply_indirect_damage(source, recoil, source=target, effect=IndirectEffect("aftermath"))
 
 
 class Airlock:
@@ -689,13 +683,21 @@ class Cutecharm:
 
 
 class Damp:
+	"""Prevent explosive sources using the shared normalized effect identity."""
+
 	def onAnyDamage(self, damage, target=None, source=None, effect=None):
-		if effect and effect.id in {"aftermath", "explosion", "mindblown", "selfdestruct"}:
+		"""Preserve unrelated weather, status, recoil and ordinary move damage."""
+		from pokemon.battle.effect_context import EffectContext
+
+		if EffectContext.key(effect) in {"aftermath", "explosion", "mindblown", "mistyexplosion", "selfdestruct"}:
 			return 0
 		return damage
 
 	def onAnyTryMove(self, pokemon=None, target=None, move=None):
-		if move and move.id in {"explosion", "selfdestruct", "mindblown"}:
+		"""Block the attempt before damage or self-sacrifice can execute."""
+		from pokemon.battle.effect_context import EffectContext
+
+		if EffectContext.key(move) in {"explosion", "selfdestruct", "mindblown", "mistyexplosion"}:
 			return False
 
 
