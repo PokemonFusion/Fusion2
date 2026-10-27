@@ -4341,6 +4341,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def eat_item(self, pokemon, *, source=None, effect=None, force: bool = False):
         """Consume ``pokemon``'s held item following Showdown-style gates."""
 
+        from .effect_context import EffectContext
+
         item_obj = self._holder_item(pokemon)
         if not item_obj:
             return False
@@ -4354,7 +4356,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 for foe in getattr(part, "active", []) or []:
                     if getattr(foe, "hp", 0) <= 0:
                         continue
-                    ability = _resolve_ability(getattr(foe, "ability", None))
+                    ability = (None if getattr(foe, "volatiles", {}).get("gastroacid") else
+                               _resolve_ability(EffectContext.ability(foe)))
                     if ability and hasattr(ability, "call"):
                         if ability.call("onFoeTryEatItem", item=item_obj, pokemon=pokemon, source=foe, effect=effect, battle=self) is False:
                             return False
@@ -4364,8 +4367,6 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 return False
         item_name = getattr(item_obj, "name", str(item_obj))
         hp_before_berry = getattr(pokemon, "hp", 0)
-        from .effect_context import EffectContext
-
         ripen_berry = (EffectContext.key(EffectContext.ability(pokemon)) == "ripen"
                        and "berry" in EffectContext.key(item_obj))
         if ripen_berry:

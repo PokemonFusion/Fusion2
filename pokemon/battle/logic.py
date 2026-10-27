@@ -146,6 +146,9 @@ class BattleLogic:
 		from .battle_boosters import BattleBoosters
 
 		BattleBoosters.recover(battle, getattr(state, "booster_effects", {}))
+		from .item_consumption import ItemUseHistory
+
+		ItemUseHistory.restore_sides(battle, getattr(state, "used_item_history", {}))
 		for index, participant in enumerate(battle.participants):
 			team = getattr(participant, "team", None) or ("A" if index == 0 else "B")
 			participant.flee_attempts = getattr(state, "flee_attempts", {}).get(team, 0)
@@ -201,6 +204,9 @@ class BattleLogic:
 		from .battle_boosters import BattleBoosters
 
 		self.state.booster_effects = BattleBoosters.freeze(self.battle)
+		from .item_consumption import ItemUseHistory
+
+		self.state.used_item_history = ItemUseHistory.freeze_sides(self.battle)
 		teams = [
 			(getattr(part, "team", None) or ("A" if index == 0 else "B"), part)
 			for index, part in enumerate(self.battle.participants)

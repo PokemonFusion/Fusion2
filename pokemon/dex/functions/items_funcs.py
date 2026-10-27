@@ -1318,11 +1318,17 @@ class Ironplate:
 
 class Jabocaberry:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if source and move and move.category == "Physical":
+		"""Retaliate only after a real physical hit and permitted berry use."""
+		from pokemon.battle.item_consumption import ReactiveItemConsumption
+		if source and move and move.category == "Physical" and damage > 0 and source.hp > 0:
+			battle = getattr(target, "battle", None)
+			participant = battle.participant_for(source) if battle else None
+			if not participant or source not in participant.active:
+				return
+			if not ReactiveItemConsumption.eat(target, source=source, effect=move, allow_fainted=True):
+				return
 			if hasattr(source, "hp") and hasattr(source, "max_hp"):
 				source.hp = max(source.hp - source.max_hp // 8, 0)
-			if target and hasattr(target, "item"):
-				target.item = None
 
 	def onEat(self, pokemon=None):
 		return
@@ -1357,14 +1363,16 @@ class Kebiaberry:
 
 class Keeberry:
 	def onAfterMoveSecondary(self, target=None, source=None, move=None):
-		if target and source and target is not source and move and move.category == "Physical":
-			if hasattr(target, "boosts"):
-				target.boosts["def"] = target.boosts.get("def", 0) + 1
-			if hasattr(target, "item"):
-				target.item = None
+		"""Eat after an actual physical hit; the eating hook owns the effect."""
+		from pokemon.battle.item_consumption import ReactiveItemConsumption
+		if (target and source and target is not source and move and move.category == "Physical"
+				and getattr(move, "total_damage", 0) > 0):
+			ReactiveItemConsumption.eat(target, source=source, effect=move)
 
 	def onEat(self, pokemon=None):
-		return
+		"""Keep the existing stage effect pending the separate boost repair."""
+		if pokemon and hasattr(pokemon, "boosts"):
+			pokemon.boosts["def"] = pokemon.boosts.get("def", 0) + 1
 
 
 class Kingsrock:
@@ -1607,14 +1615,16 @@ class Manectite:
 
 class Marangaberry:
 	def onAfterMoveSecondary(self, target=None, source=None, move=None):
-		if target and source and target is not source and move and move.category == "Special":
-			if hasattr(target, "boosts"):
-				target.boosts["spd"] = target.boosts.get("spd", 0) + 1
-			if hasattr(target, "item"):
-				target.item = None
+		"""Eat after an actual special hit; the eating hook owns the effect."""
+		from pokemon.battle.item_consumption import ReactiveItemConsumption
+		if (target and source and target is not source and move and move.category == "Special"
+				and getattr(move, "total_damage", 0) > 0):
+			ReactiveItemConsumption.eat(target, source=source, effect=move)
 
 	def onEat(self, pokemon=None):
-		return
+		"""Keep the existing stage effect pending the separate boost repair."""
+		if pokemon and hasattr(pokemon, "boosts"):
+			pokemon.boosts["spd"] = pokemon.boosts.get("spd", 0) + 1
 
 
 class Mawilite:
@@ -2918,11 +2928,17 @@ class Roseliberry:
 
 class Rowapberry:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if source and move and move.category == "Special":
+		"""Retaliate only after a real special hit and permitted berry use."""
+		from pokemon.battle.item_consumption import ReactiveItemConsumption
+		if source and move and move.category == "Special" and damage > 0 and source.hp > 0:
+			battle = getattr(target, "battle", None)
+			participant = battle.participant_for(source) if battle else None
+			if not participant or source not in participant.active:
+				return
+			if not ReactiveItemConsumption.eat(target, source=source, effect=move, allow_fainted=True):
+				return
 			if hasattr(source, "hp") and hasattr(source, "max_hp"):
 				source.hp = max(source.hp - source.max_hp // 8, 0)
-			if target and hasattr(target, "item"):
-				target.item = None
 
 	def onEat(self, pokemon=None):
 		return
@@ -3278,10 +3294,13 @@ class Thickclub:
 
 class Throatspray:
 	def onAfterMoveSecondarySelf(self, source=None, target=None, move=None):
-		if move and move.flags.get("sound") and source and hasattr(source, "item"):
+		"""A permitted sound use consumes through UseItem/removal bookkeeping."""
+		from pokemon.battle.item_consumption import ReactiveItemConsumption
+		if (move and move.flags.get("sound") and source
+				and (move.category == "Status" or getattr(move, "total_damage", 0) > 0)
+				and ReactiveItemConsumption.use(source, source=source, effect=move)):
 			if hasattr(source, "boosts"):
 				source.boosts["spa"] = source.boosts.get("spa", 0) + 1
-			source.item = None
 
 
 class Toxicorb:
@@ -3389,12 +3408,15 @@ class Waveincense:
 
 class Weaknesspolicy:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if target and move and getattr(target, "hp", 0) > 0 and type_effectiveness(target, move) > 1:
+		"""Consume only after a surviving, ordinary super-effective damaging hit."""
+		from pokemon.battle.item_consumption import ReactiveItemConsumption
+		if (target and move and damage > 0 and getattr(target, "hp", 0) > 0
+				and not (move.raw.get("damage") or move.raw.get("damageCallback"))
+				and type_effectiveness(target, move) > 1
+				and ReactiveItemConsumption.use(target, source=source, effect=move)):
 			if hasattr(target, "boosts"):
 				target.boosts["atk"] = min(target.boosts.get("atk", 0) + 2, 6)
 				target.boosts["spa"] = min(target.boosts.get("spa", 0) + 2, 6)
-			if hasattr(target, "item"):
-				target.item = None
 
 
 class Wellspringmask:

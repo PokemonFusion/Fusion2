@@ -547,7 +547,7 @@ class Beatup:
 class Belch:
 	def onDisableMove(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
-		consumed = getattr(user, "consumed_berry", False)
+		consumed = getattr(user, "ate_berry", False) or getattr(user, "consumed_berry", False)
 		return not consumed
 
 
@@ -5301,7 +5301,7 @@ class Razorwind:
 
 class Recycle:
 	def onHit(self, user, target, battle):
-		"""Restore the last used berry if none is held."""
+		"""Restore one used item and retire its shared recovery aliases."""
 		if getattr(user, "item", None) or getattr(user, "held_item", None):
 			return False
 		item = getattr(user, "last_used_item", None)
@@ -5317,7 +5317,8 @@ class Recycle:
 		else:
 			setattr(user, "item", item)
 			setattr(user, "held_item", item)
-		user.last_used_item = None
+		from pokemon.battle.item_consumption import ItemUseHistory
+		ItemUseHistory.recovered(user)
 		return True
 
 

@@ -1054,6 +1054,9 @@ class Pokemon:
             "z_guard_crystal": getattr(self, "z_guard_crystal", None),
             "last_move": snapshot_battle_value(getattr(self, "last_move", None)),
         }
+        from .item_consumption import ItemUseHistory
+
+        info["item_use_history"] = ItemUseHistory.freeze(self)
 
         if self.model_id:
             info["model_id"] = self.model_id
@@ -1266,6 +1269,9 @@ class Pokemon:
         obj.z_activated = data.get("z_activated", False)
         obj.z_guard_crystal = data.get("z_guard_crystal")
         obj.last_move = snapshot_battle_value(data.get("last_move"))
+        from .item_consumption import ItemUseHistory
+
+        ItemUseHistory.restore(obj, data.get("item_use_history"))
         if "types" in data and data["types"] is not None:
             obj.types = list(data["types"])
         obj.transformed = bool(data.get("transformed", False))

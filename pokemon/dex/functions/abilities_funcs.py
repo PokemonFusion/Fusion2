@@ -1373,16 +1373,15 @@ class Harvest:
 			return
 		chance = 1.0 if getattr(pokemon, "effective_weather", lambda: "")() in {"sunnyday", "desolateland"} else 0.5
 		if random() < chance:
+			from pokemon.battle.item_consumption import ItemUseHistory
 			battle = getattr(pokemon, "battle", None)
 			if battle and hasattr(battle, "set_item"):
 				if battle.set_item(pokemon, berry, source=pokemon, effect="ability:harvest"):
-					pokemon.consumed_berry = None
-					pokemon.berry_consumed = None
+					ItemUseHistory.recovered(pokemon)
 			else:
 				pokemon.item = berry
 				pokemon.held_item = getattr(berry, "name", str(berry))
-				pokemon.consumed_berry = None
-				pokemon.berry_consumed = None
+				ItemUseHistory.recovered(pokemon)
 
 
 class Healer:
@@ -2266,17 +2265,25 @@ class Pickpocket:
 class Pickup:
 	def onResidual(self, pokemon=None):
 		if pokemon and not getattr(pokemon, "item", None) and not getattr(pokemon, "held_item", None):
+			from pokemon.battle.item_consumption import ItemUseHistory
 			side = getattr(pokemon, "side", None)
 			used = getattr(side, "used_items", []) if side else []
 			if used:
 				item = used[-1]
+				owners = ItemUseHistory.recovery_owners(side, item)
+				if len(owners) > 1:
+					return
 				battle = getattr(pokemon, "battle", None)
 				if battle and hasattr(battle, "set_item"):
 					if battle.set_item(pokemon, item, source=pokemon, effect="ability:pickup"):
+						for owner in owners:
+							ItemUseHistory.recovered(owner, retire_side=False)
 						used.pop()
 				else:
 					pokemon.item = item
 					pokemon.held_item = getattr(item, "name", str(item))
+					for owner in owners:
+						ItemUseHistory.recovered(owner, retire_side=False)
 					used.pop()
 
 
