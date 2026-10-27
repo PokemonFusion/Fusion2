@@ -223,8 +223,6 @@ class CompactBattleRenderer:
             return "WATCHING"
         if (getattr(self.session, "turn_state", None) or {}).get("error"):
             return "RETRY REQUIRED"
-        if self.waiting_on:
-            return "WAITING"
         owned = [
             entry
             for entry in self.entries
@@ -233,7 +231,7 @@ class CompactBattleRenderer:
             and getattr(entry.pokemon, "hp", 0) > 0
         ]
         if not owned:
-            return "REPLACEMENT NEEDED"
+            return "WAITING" if self.waiting_on else "REPLACEMENT NEEDED"
         declarations = getattr(getattr(self.session, "state", None), "declare", {}) or {}
         if owned and all(entry.position in declarations for entry in owned):
             return "ACTION QUEUED"
@@ -375,7 +373,7 @@ class CompactBattleRenderer:
         if len(pending) == 1 and self._phase() == "YOUR MOVE":
             moves = list(getattr(pending[0].pokemon, "moves", []) or [])[:4]
             if moves:
-                from pokemon.ui.move_gui import render_compact_moves
+                from pokemon.ui.move_gui import battle_move_views, render_compact_moves
 
                 if len(owned) > 1:
                     self.text.add(f"Moves for {pending[0].position}:")
@@ -386,7 +384,7 @@ class CompactBattleRenderer:
                 }
                 self.text.add(
                     render_compact_moves(
-                        moves,
+                        battle_move_views(pending[0].pokemon, moves),
                         total_width=self.text.width,
                         unavailable=unavailable,
                         accessible=self.text.accessible,
@@ -409,7 +407,7 @@ class CompactBattleRenderer:
                 )
                 self.text.add("Move details: +movedex <move>")
                 self.text.rule()
-        if self.waiting_on:
+        if self.waiting_on and self._phase() != "YOUR MOVE":
             self.text.add(
                 "Waiting on " + str(getattr(self.waiting_on, "name", self.waiting_on)) + "..."
             )

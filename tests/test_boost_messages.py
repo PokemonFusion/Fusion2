@@ -57,7 +57,7 @@ def test_boost_message_on_success():
 	expected = (
 		DEFAULT_TEXT["default"]["boost"].replace("[POKEMON]", "User").replace("[STAT]", DEFAULT_TEXT["atk"]["statName"])
 	)
-	assert expected in logs
+	assert logs.count(expected) == 1
 
 
 def test_boost_message_at_cap():
@@ -70,7 +70,7 @@ def test_boost_message_at_cap():
 		.replace("[POKEMON]", "User")
 		.replace("[STAT]", DEFAULT_TEXT["atk"]["statName"])
 	)
-	assert expected in logs
+	assert logs.count(expected) == 1
 
 
 def test_secondary_debuff_message_on_hit():
@@ -85,7 +85,7 @@ def test_secondary_debuff_message_on_hit():
 		.replace("[POKEMON]", "Target")
 		.replace("[STAT]", DEFAULT_TEXT["def"]["statName"])
 	)
-	assert expected in logs
+	assert logs.count(expected) == 1
 
 
 def test_no_message_when_secondary_fails_with_damage():

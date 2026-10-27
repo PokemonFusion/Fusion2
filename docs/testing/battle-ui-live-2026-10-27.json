@@ -1,0 +1,76 @@
+{
+  "kind": "local ordinary-player socket and browser evidence; not production acceptance",
+  "initial_candidate": "195f82494a7c0e973b53ca0f0e6f3244bf7873d8",
+  "final_gameplay_candidate": "7e78f6859b2f2b2c271f993a349da34cf0597949",
+  "players": 4,
+  "permissions": "ordinary Player; no account elevated",
+  "staff_prerequisites": "Separate new world, known-move level-5 rosters in physical slots 2/4/6, finite PP Up stock, labelled wallet and one labelled PP0 move. Personal Fusion generated through ordinary chargen and kept separate.",
+  "normal_transport_commands": 300,
+  "explicit_text_assertions_passed": 75,
+  "multi_ownership": [
+    {
+      "player": "Birch",
+      "own_position": "A1",
+      "cards": 4,
+      "exact_hp_only_for_owner": true,
+      "ally_and_foe_percent_only": true
+    },
+    {
+      "player": "Aster",
+      "own_position": "A2",
+      "cards": 4,
+      "exact_hp_only_for_owner": true,
+      "ally_and_foe_percent_only": true
+    },
+    {
+      "player": "Cedar",
+      "own_position": "B1",
+      "cards": 4,
+      "exact_hp_only_for_owner": true,
+      "ally_and_foe_percent_only": true
+    },
+    {
+      "player": "Dawn",
+      "own_position": "B2",
+      "cards": 4,
+      "exact_hp_only_for_owner": true,
+      "ally_and_foe_percent_only": true
+    }
+  ],
+  "self_target_announcements": [
+    {
+      "viewer": "Cedar",
+      "stat_change_lines": 1,
+      "observed_stage": "+1"
+    },
+    {
+      "viewer": "Dawn",
+      "stat_change_lines": 1,
+      "observed_stage": "+1"
+    }
+  ],
+  "scenarios": [
+    "Human and personal Fusion chargen",
+    "Singles, natural KOs, reserve send-outs and victory",
+    "Two-controller doubles, four physical cells and Fusion lead",
+    "Move letters, details, cancel, target refusal, zero-PP rejection",
+    "Saved and boosted PP including 42/42, 41/42 and 40/42",
+    "Sparse party-slot switch in A2; active-reserve rejection",
+    "Legacy, classic_modern, PF1, ASCII, Unicode and screenreader",
+    "Logout/reconnect through Telnet and WebSocket; retained turn and choices",
+    "Four-controller consenting Multi with Fusion; foreign actor rejected",
+    "Observer privacy, Fusion participation/order and separate party counts",
+    "Normal concession, cleared battle route, movement and Center healing",
+    "Real browser quickbar clicks open +party and +sheet",
+    "Fresh normal Withdraw: one Defense rise line, actual stage +1"
+  ],
+  "runner_limits": [
+    "Initial virgin-server setup reset interrupted registration; creation was retried after ready.",
+    "Normal two-accounts-per-IP throttle was preserved; remaining accounts were created after QA update.",
+    "Initial wallet fixture was incorrectly saved; purchase correctly refused. Labelled fixture corrected.",
+    "Initial PP Up input used an unsupported inline selector; corrected to the documented two-step +use prompt.",
+    "An initial used-Tackle expectation assumed 35; actual remaining PP was correctly 34."
+  ],
+  "evidence_limits": "Tagged disposable local fixtures only. No PF2-Dev, existing game database, human character, human Pokemon, or existing service changed. No existing-game reload claim.",
+  "automated_qualification": "47 focused checks passed; final full mandatory and hosted results are supplied with the PR."
+}
