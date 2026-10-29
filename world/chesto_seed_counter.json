@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "key": "chesto-berry-seed-counter-v1",
+  "room": "Chesto Nursery",
+  "entrance": "chestoseed",
+  "return_exit": "back",
+  "description": "A sign offers finite Chesto Berry seeds. Use +store to buy, then +berry plant Chesto Berry. The nursery also grows your bag Sitrus and Lum Berries from the existing Held Item Counter. Water once per hourly stage; harvest after four hours. The back exit returns to the hub. No refill or resale.",
+  "buy_only": true,
+  "refill": "none",
+  "room_attributes": {"berry_nursery": true},
+  "offers": [{"item": "Chesto Berry", "price": 200, "quantity": 5}]
+}

@@ -189,6 +189,12 @@ jobs:
         run: python tests/integration/field_food_cases.py
       - name: Field berry feeding, EV reduction, friendship and transactional persistence
         run: python tests/integration/field_berry_cases.py
+      - name: Focused Training Grounds, free EV reset, earned milestones and real elapsed session
+        run: python -B tests/integration/training_grounds_cases.py
+      - name: Named training Finder drops, real use and explicit public activity routes
+        run: python -B tests/integration/training_finder_cases.py
+      - name: Chesto Sitrus Lum growing masks, source travel and atomic harvests
+        run: python -B tests/integration/nursery_next_three_cases.py
       - name: Legacy recovery berry field routes, guards, rollback and final-copy use
         run: python tests/integration/legacy_berry_cases.py
       - name: Vitamin and feather field training, caps, HP and atomic concurrent use

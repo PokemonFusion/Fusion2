@@ -1,5 +1,11 @@
 # Reviewed berry growing and flavor snacks
 
+Growing also accepts **Chesto, Sitrus and Lum Berry** under the same four-hour
+cycle, one bag seed and water-based yield rules. The separately authored Chesto
+Nursery recipe offers Chesto for200 each, five finite copies. Sitrus and Lum use
+the existing Held Item Counter sources; those offers and sales are unchanged.
+The new recipe is opt-in authoring, not an installed source or automatic refill.
+
 At a configured **Berry Nursery**, follow its `nursery` exit from the selected
 public hub and use `back` to return. `+store` → **Buy items** offers Oran Berry
 and Razz Berry for 100 each, initially five of each. Stock is finite, with no

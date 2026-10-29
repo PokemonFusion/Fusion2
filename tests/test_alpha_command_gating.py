@@ -55,6 +55,7 @@ IMPORTS = {
     ],
     "commands.player.cmd_sheet": ["CmdSheet", "CmdSheetPokemon"],
     "commands.player.cmd_trainer_xp": ["CmdTrainerXP"],
+    "commands.player.cmd_train": ["CmdTrain"],
     "commands.player.cmd_vendor": ["CmdVend"],
     "pokemon.adventures.commands": ["CmdAdventure"],
 }
@@ -128,6 +129,7 @@ def test_pokemon_core_cmdset_hides_alpha_commands_when_gate_disabled():
     assert "+alphalearn" not in keys
     assert any(isinstance(command, mod.CmdCaptureNickname) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdBerry) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdTrain) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdMarket) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdDaycare) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdBreed) for command in cmdset.added)
@@ -145,6 +147,7 @@ def test_pokemon_core_cmdset_registers_alpha_commands_when_gate_enabled():
     assert "+alphalearn" in keys
     assert any(isinstance(command, mod.CmdCaptureNickname) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdBerry) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdTrain) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdMarket) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdDaycare) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdBreed) for command in cmdset.added)

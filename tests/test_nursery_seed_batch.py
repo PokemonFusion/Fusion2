@@ -9,7 +9,8 @@ from tests.test_berry_growing import crop
 
 
 @pytest.mark.parametrize(
-    "name", ["Oran Berry", "Cheri Berry", "Pecha Berry", "Rawst Berry", "Aspear Berry"]
+    "name", ["Oran Berry", "Cheri Berry", "Pecha Berry", "Rawst Berry", "Aspear Berry",
+             "Chesto Berry", "Sitrus Berry", "Lum Berry"]
 )
 @pytest.mark.parametrize(
     "seconds,stage",
@@ -47,8 +48,8 @@ def test_every_seed_keeps_exact_identity_and_real_elapsed_stage(name, seconds, s
         "Cheri Berry 2",
         "Razz Berry",
         "Bluk Berry",
-        "Lum Berry",
-        "Sitrus Berry",
+        "Persim Berry",
+        "Leppa Berry",
         "Bicycle",
     ],
 )
