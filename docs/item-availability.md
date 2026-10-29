@@ -1,5 +1,18 @@
 # Finding and using items
 
+## October 29 bounded additions
+
+[Six additional Z source mappings](testing/z-next-six-sources-2026-10-29.md) bring
+the local registry to69 mappings on35 crystals. The [four field recovery medicines](remedy-recovery.md)
+add Remedy, Fine Remedy, Superb Remedy and Jubilife Muffin through `+use`.
+Their [receipt](testing/item-additions-2026-10-29.md) records the tested local
+candidate and its separate publication/deployment limits. The new
+[source-only index](testing/item-availability-additions-index-2026-10-29.json)
+contains646 definitions and498 scoped items; all498 world entries remain
+unverified in that artifact. No new permanent source or stock is installed.
+The [remaining scope decisions](design/item-backlog-next-batches-2026-10-29.md)
+keep later features and intentional hunt-item deferrals explicit.
+
 ## October 29 repair candidate
 
 The [held-item guide](held-item-repairs.md) describes the repaired stat,
@@ -95,8 +108,8 @@ The later [47-pair Mega route](mega-evolution.md) supplies ordinary `+mega` befo
 10,000-price Counter recipe. Its local automated acceptance is separate from
 deployment and permanent public stock; the [per-stone matrix](design/mega-stones.md)
 records accepted effects, source limits and the remaining CAP/required-move exclusions.
-The later [Z route](z-moves.md) accepts63 explicit source mappings on35
-existing crystals through `+zmove`, including 14 status sources,16 unchanged
+The later [Z route](z-moves.md) accepts69 explicit source mappings on35
+existing crystals through `+zmove`, including 15 status sources,16 unchanged
 signatures and one separately guarded [Ultra signature](ultra-burst.md).
 The [matrix](design/z-crystals.md) names the older exact native/source
 limits; other unreviewed source moves remain deferred. The native
@@ -206,7 +219,7 @@ command/SQL effects do not complete #893's four real elapsed hours or certify
 permanent public stock.
 
 The later EXP Candy, manual battle boosters and21 nature mints retain their
-separate guides and dated local receipts. The newest [source-only index](testing/item-availability-ultra-index-2026-10-25.json)
+separate guides and dated local receipts. The October25 [source-only index](testing/item-availability-ultra-index-2026-10-25.json)
 preserves all493 scoped definition fingerprints and adds the explicitly guarded
 [Ultra route](ultra-burst.md):63 mappings on35 crystals, including the unchanged
 16 signatures and one separate native Ultra profile. All493 world entries stay

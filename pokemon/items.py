@@ -33,15 +33,19 @@ class FieldRecoveryItem(GameplayItem):
     effect: str
     amount: int | None = None
     target_scope: str = "single"
+    friendship_cost: tuple[int, int] | None = None
     category: str = "Medicine"
 
     @property
     def raw(self) -> dict[str, object]:
         """Expose the same metadata interface used by itemdex and inventory."""
-        return {**super().raw, "price": self.price, "category": self.category,
+        data = {**super().raw, "price": self.price, "category": self.category,
                 "effect": self.effect, "amount": self.amount,
                 "targetScope": self.target_scope,
                 "fieldOnly": normalize_name(self.name) not in BATTLE_RECOVERY_FOODS}
+        if self.friendship_cost is not None:
+            data["friendshipCost"] = list(self.friendship_cost)
+        return data
 
 
 @dataclass(frozen=True)
@@ -250,6 +254,30 @@ FIELD_RECOVERY_EQUIVALENTS = {
         "Hopo Berry", "Field use: restores up to 10 PP to one selected active move. "
         "Use +use Hopo Berry=<target>/<move name or actual slot>. No held or lure effect.",
         price=300, effect="pp", amount=10, category="Berries",
+    ),
+    "remedy": FieldRecoveryItem(
+        "Remedy", "Field use: restores up to 20 HP to one living owned Pokemon. "
+        "Bitter medicine reduces friendship by 5 below 200 or 10 at 200+. "
+        "Use +use Remedy=<target>. No held or manual battle effect.",
+        price=150, effect="heal", amount=20, friendship_cost=(5, 10),
+    ),
+    "fineremedy": FieldRecoveryItem(
+        "Fine Remedy", "Field use: restores up to 60 HP to one living owned Pokemon. "
+        "Bitter medicine reduces friendship by 10 below 200 or 15 at 200+. "
+        "Use +use Fine Remedy=<target>. No held or manual battle effect.",
+        price=150, effect="heal", amount=60, friendship_cost=(10, 15),
+    ),
+    "superbremedy": FieldRecoveryItem(
+        "Superb Remedy", "Field use: restores up to 120 HP to one living owned Pokemon. "
+        "Bitter medicine reduces friendship by 15 below 200 or 20 at 200+. "
+        "Use +use Superb Remedy=<target>. No held or manual battle effect.",
+        price=750, effect="heal", amount=120, friendship_cost=(15, 20),
+    ),
+    "jubilifemuffin": FieldRecoveryItem(
+        "Jubilife Muffin", "Field use: cures one living owned Pokemon's major status. "
+        "Preserves HP and friendship. Use +use Jubilife Muffin=<target>. "
+        "No held or manual battle effect.",
+        price=250, effect="status",
     ),
 }
 

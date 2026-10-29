@@ -111,8 +111,8 @@ def test_current_allowlists_preserve_bounded_sources_and_cap_ultra_exclusions():
     assert rows["ultranecroziumz"]["world_availability"]["status"] == "unverified"
     firium = next(route for route in rows["firiumz"]["routes"] if route["kind"] == "z_move")
     assert any(p["source"] == "Ember" and p["power"] == 100 for p in firium["profiles"])
-    assert not any(p["source"] == "Fire Blast" for p in firium["profiles"])
-    assert ZProfiles.get("Firium Z", "Fire Blast") is None
+    assert not any(p["source"] == "Fire Punch" for p in firium["profiles"])
+    assert ZProfiles.get("Firium Z", "Fire Punch") is None
     assert 864 in rows["firiumz"]["followups"]
 
 
@@ -157,8 +157,8 @@ def test_six_special_z_sources_have_their_own_evidence_without_public_stock():
     """New explicit mappings cannot silently inherit an older acceptance receipt."""
     result = ItemAvailabilityAudit().build()
     rows = {row["key"]: row for row in result["items"]}
-    assert result["current_registries"]["z_mappings"] == 63
-    assert result["current_registries"]["z_kinds"] == {"generic": 32, "status": 14, "signature": 16, "ultra": 1}
+    assert result["current_registries"]["z_mappings"] == 69
+    assert result["current_registries"]["z_kinds"] == {"generic": 37, "status": 15, "signature": 16, "ultra": 1}
     for crystal, source, power in (("electriumz", "Thunderbolt", 175), ("iciumz", "Ice Beam", 175),
                                   ("grassiumz", "Energy Ball", 175), ("psychiumz", "Psychic", 175),
                                   ("ghostiumz", "Shadow Ball", 160), ("poisoniumz", "Sludge Bomb", 175)):

@@ -329,6 +329,10 @@ class CmdUseItem(Command):
       +use Fresh Water=3
       +use Max Honey=6
       +use Sacred Ash=party
+      +use Remedy=3
+      +use Fine Remedy=3
+      +use Superb Remedy=fusion
+      +use Jubilife Muffin=3
 
     Notes:
       Field medicine heals HP, cures status, revives fainted Pokemon and

@@ -121,6 +121,10 @@ class ItemAvailabilityAudit:
         from pokemon.names import normalize_name
 
         batches = {
+            "z-next-six-sources-2026-10-29": (
+                ("Firium Z", "Fire Blast"), ("Firium Z", "Flare Blitz"),
+                ("Waterium Z", "Hydro Pump"), ("Electrium Z", "Thunder"),
+                ("Groundium Z", "Earth Power"), ("Psychium Z", "Calm Mind")),
             "ultra-burst-2026-10-25": (("Ultranecrozium Z", "Photon Geyser"),),
             "z-existing-sources-2026-10-25": (("Firium Z", "Flamethrower"), ("Waterium Z", "Surf")),
             "z-six-special-sources-2026-10-25": (

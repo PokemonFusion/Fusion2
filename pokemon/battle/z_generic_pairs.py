@@ -1,4 +1,4 @@
-"""Thirty-one reviewed damage additions; no automatic all-move release."""
+"""Thirty-six reviewed damage additions; no automatic all-move release."""
 
 from .z_profiles import ZProfile
 
@@ -35,4 +35,9 @@ GENERIC_PAIRS = (
     ZProfile("Groundium Z", "Earthquake", "Tectonic Rage", 180, "Ground", "Physical"),
     ZProfile("Rockium Z", "Rock Slide", "Continental Crush", 140, "Rock", "Physical"),
     ZProfile("Steelium Z", "Iron Head", "Corkscrew Crash", 160, "Steel", "Physical"),
+    ZProfile("Firium Z", "Fire Blast", "Inferno Overdrive", 185, "Fire", "Special"),
+    ZProfile("Firium Z", "Flare Blitz", "Inferno Overdrive", 190, "Fire", "Physical"),
+    ZProfile("Waterium Z", "Hydro Pump", "Hydro Vortex", 185, "Water", "Special"),
+    ZProfile("Electrium Z", "Thunder", "Gigavolt Havoc", 185, "Electric", "Special"),
+    ZProfile("Groundium Z", "Earth Power", "Tectonic Rage", 175, "Ground", "Special"),
 )

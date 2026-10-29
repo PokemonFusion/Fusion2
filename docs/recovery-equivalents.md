@@ -1,5 +1,8 @@
 # Rage Candy Bar and Hopo Berry field equivalents (#778)
 
+The later [four remedies/Muffin](remedy-recovery.md) use the same guarded field
+boundary. This original two-item policy retains its dated scope.
+
 Recorded before implementation, October 22, 2026. PF2 selects exactly two
 non-plot **field recovery equivalents** through ordinary `+use`:
 

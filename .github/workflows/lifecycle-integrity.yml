@@ -129,6 +129,10 @@ jobs:
         run: python tests/integration/item_repair_cases.py
       - name: Indirect item damage, blocked residual healing, Gene and manual medicine Embargo
         run: python tests/integration/item_medicine_and_hp_cases.py
+      - name: Six explicit Z source additions, owned payment, native learning and rollback
+        run: python tests/integration/z_next_six_sources_cases.py
+      - name: Four field recovery equivalents, friendship costs and atomic final-copy use
+        run: python tests/integration/remedy_recovery_cases.py
       - name: Peat Block purchase, ordinary Ursaluna evolution and atomic retries
         run: python tests/integration/peat_block_cases.py
       - name: Kubfu Scroll purchase, both Urshifu styles and atomic retries
