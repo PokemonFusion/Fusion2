@@ -1,0 +1,1264 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "status": "completed",
+  "observed_utc": "2026-10-29T19:17:15.316383+00:00",
+  "tested_runtime_commit": "332113b746a677d72243b9ebcbf4a5dfc2a62580",
+  "publication_document_base": "be0eeca78a902a4f94b1fea32a5ee9f0743687ea",
+  "initial_audit": {
+    "total": 176,
+    "closed_retained": 151,
+    "open": 25,
+    "artifact": "docs/testing/item-issue-audit-2026-10-29.json"
+  },
+  "generated_training_implementation_issues": [
+    953,
+    954,
+    955
+  ],
+  "completed_plan_issues": [
+    919,
+    922,
+    923,
+    924,
+    925,
+    926,
+    927,
+    928,
+    929,
+    930,
+    931,
+    932,
+    933,
+    934,
+    935,
+    936,
+    937,
+    938,
+    939,
+    947,
+    948,
+    949,
+    950,
+    951,
+    952,
+    953,
+    954,
+    955
+  ],
+  "final_issue_snapshot": {
+    "observed_utc": "2026-10-29 19:17:07 UTC",
+    "scope": "All [Items]-prefixed issues, open and closed; literal item/items labels also checked.",
+    "queries": [
+      {
+        "part": "open",
+        "query": "repo:PokemonFusion/Fusion2 is:issue in:title \"[Items]\" is:open",
+        "count": 0
+      },
+      {
+        "part": "early",
+        "query": "repo:PokemonFusion/Fusion2 is:issue in:title \"[Items]\" is:closed created:<2026-10-23",
+        "count": 67
+      },
+      {
+        "part": "middle",
+        "query": "repo:PokemonFusion/Fusion2 is:issue in:title \"[Items]\" is:closed created:2026-10-23..2026-10-25",
+        "count": 82
+      },
+      {
+        "part": "late",
+        "query": "repo:PokemonFusion/Fusion2 is:issue in:title \"[Items]\" is:closed created:>=2026-10-26",
+        "count": 30
+      },
+      {
+        "part": "item_label",
+        "query": "repo:PokemonFusion/Fusion2 is:issue label:item",
+        "count": 0
+      },
+      {
+        "part": "items_label",
+        "query": "repo:PokemonFusion/Fusion2 is:issue label:items",
+        "count": 0
+      }
+    ],
+    "open": [],
+    "closed_partition_counts": [
+      67,
+      82,
+      30
+    ],
+    "closed": [
+      {
+        "number": 747,
+        "title": "[Items][Tracker] Repair existing gameplay items before adding missing support",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/747",
+        "state": "closed"
+      },
+      {
+        "number": 748,
+        "title": "[Items][P1] Enable field medicine and party/reserve revival targeting",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/748",
+        "state": "closed"
+      },
+      {
+        "number": 749,
+        "title": "[Items][P1] Connect existing PP restoratives and herbal medicines",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/749",
+        "state": "closed"
+      },
+      {
+        "number": 750,
+        "title": "[Items][P1] Repair existing berry healing, PP, status and conditional triggers",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/750",
+        "state": "closed"
+      },
+      {
+        "number": 751,
+        "title": "[Items][P1] Repair Shell Bell healing and Eviolite eligibility",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/751",
+        "state": "closed"
+      },
+      {
+        "number": 752,
+        "title": "[Items][P1] Repair held-item protection and weather suppression",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/752",
+        "state": "closed"
+      },
+      {
+        "number": 753,
+        "title": "[Items][P1] Complete conditional held-item and type-Gem effects",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/753",
+        "state": "closed"
+      },
+      {
+        "number": 754,
+        "title": "[Items][P2] Enable existing berry feeding and EV-reduction effects",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/754",
+        "state": "closed"
+      },
+      {
+        "number": 755,
+        "title": "[Items][P2] Complete evolution support for existing trade-held items",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/755",
+        "state": "closed"
+      },
+      {
+        "number": 756,
+        "title": "[Items][P2] Make the seven existing Sweets usable for Alcremie evolution",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/756",
+        "state": "closed"
+      },
+      {
+        "number": 757,
+        "title": "[Items][P2] Reconcile remaining held-item support into bounded verification batches",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/757",
+        "state": "closed"
+      },
+      {
+        "number": 758,
+        "title": "[Items][P3] Add missing healing food, drink and revival equivalents",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/758",
+        "state": "closed"
+      },
+      {
+        "number": 759,
+        "title": "[Items][P3] Add Smoke Ball as a functional held escape item",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/759",
+        "state": "closed"
+      },
+      {
+        "number": 760,
+        "title": "[Items][P3] Add Peat Block with an authoritative Ursaluna evolution rule",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/760",
+        "state": "closed"
+      },
+      {
+        "number": 761,
+        "title": "[Items][P3] Add Leader's Crest qualification and Kingambit evolution evidence",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/761",
+        "state": "closed"
+      },
+      {
+        "number": 762,
+        "title": "[Items][P3] Define non-plot Kubfu evolution item equivalents",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/762",
+        "state": "closed"
+      },
+      {
+        "number": 763,
+        "title": "[Items][Tracker] Finish remaining non-plot item support after the October 22 audit",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/763",
+        "state": "closed"
+      },
+      {
+        "number": 764,
+        "title": "[Items][P1] Make Rare Candy use atomic and validate current owned targets",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/764",
+        "state": "closed"
+      },
+      {
+        "number": 765,
+        "title": "[Items][P1] Fix PP Up and PP Max capacity rules, target safety and move selection",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/765",
+        "state": "closed"
+      },
+      {
+        "number": 766,
+        "title": "[Items][P2] Reject unsupported battle items before spending an action",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/766",
+        "state": "closed"
+      },
+      {
+        "number": 767,
+        "title": "[Items][P2] Enable field use for nine existing legacy recovery berries",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/767",
+        "state": "closed"
+      },
+      {
+        "number": 768,
+        "title": "[Items][P2] Support existing vitamins and feathers through safe field use",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/768",
+        "state": "closed"
+      },
+      {
+        "number": 769,
+        "title": "[Items][P2] Implement existing Ability Capsule and Ability Patch field routes",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/769",
+        "state": "closed"
+      },
+      {
+        "number": 770,
+        "title": "[Items][P2] Give existing Bottle Caps a bounded Hyper Training player route",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/770",
+        "state": "closed"
+      },
+      {
+        "number": 771,
+        "title": "[Items][P2] Verify five excluded incense boosters through ordinary battles",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/771",
+        "state": "closed"
+      },
+      {
+        "number": 772,
+        "title": "[Items][P2][QA] Record obtainable item coverage and current player-route acceptance",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/772",
+        "state": "closed"
+      },
+      {
+        "number": 773,
+        "title": "[Items][P3] Add reviewed manual battle use for existing recovery foods and berries",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/773",
+        "state": "closed"
+      },
+      {
+        "number": 774,
+        "title": "[Items][P3][DESIGN] Scope a non-plot player activation slice for existing Mega Stones",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/774",
+        "state": "closed"
+      },
+      {
+        "number": 775,
+        "title": "[Items][P3][DESIGN] Scope a non-plot player activation slice for existing Z-Crystals",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/775",
+        "state": "closed"
+      },
+      {
+        "number": 776,
+        "title": "[Items][P3][DESIGN] Define bounded player routes for berry growing and flavor-berry use",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/776",
+        "state": "closed"
+      },
+      {
+        "number": 777,
+        "title": "[Items][P3] Add non-plot Gimmighoul Coin qualification and Gholdengo evolution",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/777",
+        "state": "closed"
+      },
+      {
+        "number": 778,
+        "title": "[Items][P3] Add medicinal Rage Candy Bar and Hopo Berry field equivalents",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/778",
+        "state": "closed"
+      },
+      {
+        "number": 779,
+        "title": "[Items][P2] Replace the Itemfinder message-only result with a bounded real acquisition route",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/779",
+        "state": "closed"
+      },
+      {
+        "number": 780,
+        "title": "[Items][P2] Add a reviewed authored wild held-item acquisition slice",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/780",
+        "state": "closed"
+      },
+      {
+        "number": 781,
+        "title": "[Items][P2][CONTENT] Author a small discoverable non-plot item supply route",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/781",
+        "state": "closed"
+      },
+      {
+        "number": 782,
+        "title": "[Items][P2][QA] Walk the current item routes on an intentionally released build",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/782",
+        "state": "closed"
+      },
+      {
+        "number": 783,
+        "title": "[Items][QA] Refresh Hyper Training contention fixtures before asserting committed flags",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/783",
+        "state": "closed"
+      },
+      {
+        "number": 784,
+        "title": "[Items][P3] Add guarded Venusaurite Mega effects and side reservations",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/784",
+        "state": "closed"
+      },
+      {
+        "number": 785,
+        "title": "[Items][P3] Persist Mega state and integrate Tera, switches and cleanup",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/785",
+        "state": "closed"
+      },
+      {
+        "number": 786,
+        "title": "[Items][P3] Enable and accept the Venusaurite +mega player route",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/786",
+        "state": "closed"
+      },
+      {
+        "number": 787,
+        "title": "[Items][P3] Author an opt-in Venusaurite shop and purchase-to-Mega walkthrough",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/787",
+        "state": "closed"
+      },
+      {
+        "number": 788,
+        "title": "[Items][P3] Enable six contact and offensive Mega Stone pairs",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/788",
+        "state": "closed"
+      },
+      {
+        "number": 789,
+        "title": "[Items][P3] Enable six weather, entry and speed Mega Stone pairs",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/789",
+        "state": "closed"
+      },
+      {
+        "number": 790,
+        "title": "[Items][P3] Enable six type-conversion and Skill Link Mega Stone pairs",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/790",
+        "state": "closed"
+      },
+      {
+        "number": 791,
+        "title": "[Items][P3] Enable six move-power and coverage Mega Stone pairs",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/791",
+        "state": "closed"
+      },
+      {
+        "number": 792,
+        "title": "[Items][P3] Enable six reflection, priority and trapping Mega Stone pairs",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/792",
+        "state": "closed"
+      },
+      {
+        "number": 793,
+        "title": "[Items][P3] Enable six defensive and immunity Mega Stone pairs",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/793",
+        "state": "closed"
+      },
+      {
+        "number": 794,
+        "title": "[Items][P3] Enable six environment, support and accuracy Mega Stone pairs",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/794",
+        "state": "closed"
+      },
+      {
+        "number": 795,
+        "title": "[Items][P3] Enable Ampharosite and both Mewtwonite branches",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/795",
+        "state": "closed"
+      },
+      {
+        "number": 796,
+        "title": "[Items][P3] Enable Kangaskhanite with real Parental Bond turn effects",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/796",
+        "state": "closed"
+      },
+      {
+        "number": 797,
+        "title": "[Items][P3] Implement guarded Normalium Z / Tackle action effects",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/797",
+        "state": "closed"
+      },
+      {
+        "number": 798,
+        "title": "[Items][P3] Persist Z declarations and integrate battle mechanic budgets",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/798",
+        "state": "closed"
+      },
+      {
+        "number": 799,
+        "title": "[Items][P3] Accept the Normalium Z player command and opt-in source",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/799",
+        "state": "closed"
+      },
+      {
+        "number": 800,
+        "title": "[Items][P3] Accept 6 generic Z-Crystal damage slices (1)",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/800",
+        "state": "closed"
+      },
+      {
+        "number": 801,
+        "title": "[Items][P3] Accept 6 generic Z-Crystal damage slices (2)",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/801",
+        "state": "closed"
+      },
+      {
+        "number": 802,
+        "title": "[Items][P3] Accept 5 generic Z-Crystal damage slices (3)",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/802",
+        "state": "closed"
+      },
+      {
+        "number": 803,
+        "title": "[Items][P3] Accept bounded Z status boosts and self-healing effects",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/803",
+        "state": "closed"
+      },
+      {
+        "number": 804,
+        "title": "[Items][P3] Accept bounded special Z status effects and move restrictions",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/804",
+        "state": "closed"
+      },
+      {
+        "number": 805,
+        "title": "[Items][P3] Accept four existing signature Z-Crystal routes (1)",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/805",
+        "state": "closed"
+      },
+      {
+        "number": 806,
+        "title": "[Items][P3] Accept four existing signature Z-Crystal routes (2)",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/806",
+        "state": "closed"
+      },
+      {
+        "number": 807,
+        "title": "[Items][P3] Accept four existing signature Z-Crystal routes (3)",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/807",
+        "state": "closed"
+      },
+      {
+        "number": 808,
+        "title": "[Items][P3] Accept four existing signature Z-Crystal routes (4)",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/808",
+        "state": "closed"
+      },
+      {
+        "number": 809,
+        "title": "[Items][P3] Persist one Oran Berry bed and atomic growth operations",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/809",
+        "state": "closed"
+      },
+      {
+        "number": 810,
+        "title": "[Items][P3] Add ordinary Oran growing commands and opt-in nursery content",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/810",
+        "state": "closed"
+      },
+      {
+        "number": 811,
+        "title": "[Items][P3] Add the bounded Razz Berry field snack equivalent",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/811",
+        "state": "closed"
+      },
+      {
+        "number": 812,
+        "title": "[Items][P3] Accept durable Oran growth and independent Razz snack player slices",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/812",
+        "state": "closed"
+      },
+      {
+        "number": 813,
+        "title": "[Items][P2] Make ordinary shop purchases atomic across stock, money and bag",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/813",
+        "state": "closed"
+      },
+      {
+        "number": 814,
+        "title": "[Items][P2] Correct boosted PP displays and evolution success messages",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/814",
+        "state": "closed"
+      },
+      {
+        "number": 815,
+        "title": "[Items][Prerequisite] Run new Mega abilities once with correct startup context",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/815",
+        "state": "closed"
+      },
+      {
+        "number": 816,
+        "title": "[Items][Prerequisite] Honor effective ability suppression in Mega effect consumers",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/816",
+        "state": "closed"
+      },
+      {
+        "number": 817,
+        "title": "[Items][Prerequisite] Give Trace and Healer owned initialization and private battle RNG",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/817",
+        "state": "closed"
+      },
+      {
+        "number": 818,
+        "title": "[Items][Prerequisite] Complete Prankster, Shadow Tag and Parental Bond qualification rules",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/818",
+        "state": "closed"
+      },
+      {
+        "number": 819,
+        "title": "[Items][Prerequisite] Gate Technician by the actual move power",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/819",
+        "state": "closed"
+      },
+      {
+        "number": 820,
+        "title": "[Items][Deferred native prerequisite] Review fused Necrozma lifecycle before fused Z holders",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/820",
+        "state": "closed"
+      },
+      {
+        "number": 821,
+        "title": "[Items][P3] Preserve damaging Z types through conversion abilities",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/821",
+        "state": "closed"
+      },
+      {
+        "number": 822,
+        "title": "[Items][P3] Resolve paid Z spread targets independently",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/822",
+        "state": "closed"
+      },
+      {
+        "number": 823,
+        "title": "[Items][P3] Preserve original Z source PP in reconstructed move history",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/823",
+        "state": "closed"
+      },
+      {
+        "number": 824,
+        "title": "[Items][P3] Preserve Z target ability immunity before substitute damage",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/824",
+        "state": "closed"
+      },
+      {
+        "number": 825,
+        "title": "[Items][P3] Add canonical Necrozma pair and companion reservations",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/825",
+        "state": "closed"
+      },
+      {
+        "number": 826,
+        "title": "[Items][P3] Enforce Necrozma reservations across conflicting operations",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/826",
+        "state": "closed"
+      },
+      {
+        "number": 827,
+        "title": "[Items][P3] Implement atomic Necrozma combine and separate",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/827",
+        "state": "closed"
+      },
+      {
+        "number": 828,
+        "title": "[Items][P3] Preserve Necrozma form-move slots and PP across player routes",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/828",
+        "state": "closed"
+      },
+      {
+        "number": 829,
+        "title": "[Items][P3] Add the ordinary Necrozma combine/separate player flow",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/829",
+        "state": "closed"
+      },
+      {
+        "number": 830,
+        "title": "[Items][P3] Accept fused Necrozma battles and existing Z signatures",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/830",
+        "state": "closed"
+      },
+      {
+        "number": 831,
+        "title": "[Items][QA] Verify Necrozma lifecycle on an intentionally released build",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/831",
+        "state": "closed"
+      },
+      {
+        "number": 852,
+        "title": "[Items][Tracker] October 25 audit: repair existing items before extending support",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/852",
+        "state": "closed"
+      },
+      {
+        "number": 853,
+        "title": "[Items][Fix] Use native identity for nine species-specific stat and critical-hit items",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/853",
+        "state": "closed"
+      },
+      {
+        "number": 854,
+        "title": "[Items][Fix] Correct native eligibility for seven legendary held-item boosters",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/854",
+        "state": "closed"
+      },
+      {
+        "number": 855,
+        "title": "[Items][Fix] Remove nickname-based theft protection from the 17 Plates",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/855",
+        "state": "closed"
+      },
+      {
+        "number": 856,
+        "title": "[Items][Fix] Correct theft eligibility for 17 Memories and four Drives",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/856",
+        "state": "closed"
+      },
+      {
+        "number": 857,
+        "title": "[Items][Fix] Correct removal protection for seven Origin, Primal and Rusted items",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/857",
+        "state": "closed"
+      },
+      {
+        "number": 858,
+        "title": "[Items][Fix] Reconcile held Pecha, PSN Cure and Burnt Berry status effects",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/858",
+        "state": "closed"
+      },
+      {
+        "number": 859,
+        "title": "[Items][Docs] Rebuild current support and availability reporting after the held-item repairs",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/859",
+        "state": "closed"
+      },
+      {
+        "number": 860,
+        "title": "[Items][QA] Release the repaired item candidate and verify ordinary player routes",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/860",
+        "state": "closed"
+      },
+      {
+        "number": 861,
+        "title": "[Items][Scope] Plan sustainable non-plot item acquisition in bounded source batches",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/861",
+        "state": "closed"
+      },
+      {
+        "number": 862,
+        "title": "[Items][Sources] Make the existing six-item Supply Corner reachable to ordinary players",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/862",
+        "state": "closed"
+      },
+      {
+        "number": 863,
+        "title": "[Items][Support] Add Flamethrower and Surf to the existing generic Z player route",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/863",
+        "state": "closed"
+      },
+      {
+        "number": 864,
+        "title": "[Items][Scope] Plan remaining generic and status Z sources in small tested batches",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/864",
+        "state": "closed"
+      },
+      {
+        "number": 865,
+        "title": "[Items][Scope] Define a safe non-plot Ultra Burst route for Ultranecrozium Z",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/865",
+        "state": "closed"
+      },
+      {
+        "number": 866,
+        "title": "[Items][Scope] Define feeding equivalents for the 13 remaining flavor berries",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/866",
+        "state": "closed"
+      },
+      {
+        "number": 867,
+        "title": "[Items][Scope] Plan additional nursery seeds beyond Oran in small berry batches",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/867",
+        "state": "closed"
+      },
+      {
+        "number": 868,
+        "title": "[Items][Scope] Define EXP Candy items and an atomic ordinary-player leveling route",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/868",
+        "state": "closed"
+      },
+      {
+        "number": 869,
+        "title": "[Items][Scope] Define nature-mint training while preserving genetic nature",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/869",
+        "state": "closed"
+      },
+      {
+        "number": 870,
+        "title": "[Items][Scope] Define EV mochi and a safe Fresh-Start reset route",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/870",
+        "state": "closed"
+      },
+      {
+        "number": 871,
+        "title": "[Items][Scope] Define eight manual battle stat and protection boosters",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/871",
+        "state": "closed"
+      },
+      {
+        "number": 872,
+        "title": "[Items][Fix] Preserve real ability callbacks across held-item form entry",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/872",
+        "state": "closed"
+      },
+      {
+        "number": 873,
+        "title": "[Items][Fix] Prevent Synchronize status reflection loops around held berry cures",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/873",
+        "state": "closed"
+      },
+      {
+        "number": 874,
+        "title": "[Items][Fix] Reconnect held-item update handlers without replaying battle entry",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/874",
+        "state": "closed"
+      },
+      {
+        "number": 875,
+        "title": "[Items][Fix] Expire Embargo so held recovery can resume",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/875",
+        "state": "closed"
+      },
+      {
+        "number": 876,
+        "title": "[Items][Build] Add explicit capped operator replenishment for opted-in sources",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/876",
+        "state": "closed"
+      },
+      {
+        "number": 877,
+        "title": "[Items][Build] Author a finite public source for six status medicines",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/877",
+        "state": "closed"
+      },
+      {
+        "number": 878,
+        "title": "[Items][Build] Author a finite public source for four stronger healing/revival medicines",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/878",
+        "state": "closed"
+      },
+      {
+        "number": 879,
+        "title": "[Items][Build] Author a finite public source for four PP recovery medicines",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/879",
+        "state": "closed"
+      },
+      {
+        "number": 880,
+        "title": "[Items][Build] Author a finite public source for six evolution stones",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/880",
+        "state": "closed"
+      },
+      {
+        "number": 881,
+        "title": "[Items][Build] Author a finite public source for six vitamins",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/881",
+        "state": "closed"
+      },
+      {
+        "number": 882,
+        "title": "[Items][Build] Author a finite public source for PP capacity and ability items",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/882",
+        "state": "closed"
+      },
+      {
+        "number": 883,
+        "title": "[Items][Build] Author a finite public source for six held staples",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/883",
+        "state": "closed"
+      },
+      {
+        "number": 884,
+        "title": "[Items][Build] Qualify named Potion finder and Rattata/Oran renewable sources",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/884",
+        "state": "closed"
+      },
+      {
+        "number": 885,
+        "title": "[Items][Build] Bind Ultra eligibility and legitimate active Photon preparation",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/885",
+        "state": "closed"
+      },
+      {
+        "number": 886,
+        "title": "[Items][Build] Persist Ultra declaration and reversible battle lifecycle",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/886",
+        "state": "closed"
+      },
+      {
+        "number": 887,
+        "title": "[Items][Build] Add guarded Ultra command and Light That Burns the Sky",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/887",
+        "state": "closed"
+      },
+      {
+        "number": 888,
+        "title": "[Items][Build] Qualify both Ultra lifecycles on a released build",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/888",
+        "state": "closed"
+      },
+      {
+        "number": 889,
+        "title": "[Items][Build] Add explicit flavor berry snack batch 1",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/889",
+        "state": "closed"
+      },
+      {
+        "number": 890,
+        "title": "[Items][Build] Add explicit flavor berry snack batch 2",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/890",
+        "state": "closed"
+      },
+      {
+        "number": 891,
+        "title": "[Items][Build] Add explicit flavor berry snack batch 3",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/891",
+        "state": "closed"
+      },
+      {
+        "number": 892,
+        "title": "[Items][Build] Grow Cheri, Pecha, Rawst and Aspear through the durable nursery",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/892",
+        "state": "closed"
+      },
+      {
+        "number": 893,
+        "title": "[Items][Build] Deliver four seed sources and real elapsed nursery acceptance",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/893",
+        "state": "closed"
+      },
+      {
+        "number": 894,
+        "title": "[Items][Build] Add five EXP Candy definitions and atomic field progression",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/894",
+        "state": "closed"
+      },
+      {
+        "number": 895,
+        "title": "[Items][Build] Preserve crossed-level EXP Candy learning and reconnect choices",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/895",
+        "state": "closed"
+      },
+      {
+        "number": 896,
+        "title": "[Items][Build] Qualify EXP Candy acquisition, multi-level use and later gameplay",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/896",
+        "state": "closed"
+      },
+      {
+        "number": 897,
+        "title": "[Items][Build] Store mint training separately from genetic Nature",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/897",
+        "state": "closed"
+      },
+      {
+        "number": 898,
+        "title": "[Items][Build] Integrate trained Nature across stats, forms, displays and custody",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/898",
+        "state": "closed"
+      },
+      {
+        "number": 899,
+        "title": "[Items][Build] Add nature mint item batch 1",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/899",
+        "state": "closed"
+      },
+      {
+        "number": 900,
+        "title": "[Items][Build] Add nature mint item batch 2",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/900",
+        "state": "closed"
+      },
+      {
+        "number": 901,
+        "title": "[Items][Build] Add nature mint item batch 3",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/901",
+        "state": "closed"
+      },
+      {
+        "number": 902,
+        "title": "[Items][Build] Add nature mint item batch 4",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/902",
+        "state": "closed"
+      },
+      {
+        "number": 903,
+        "title": "[Items][Build] Add nature mint item batch 5",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/903",
+        "state": "closed"
+      },
+      {
+        "number": 904,
+        "title": "[Items][Build] Qualify all21 mints across training, genetics and released gameplay",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/904",
+        "state": "closed"
+      },
+      {
+        "number": 905,
+        "title": "[Items][Build] Add six EV mochi through safe shared field training",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/905",
+        "state": "closed"
+      },
+      {
+        "number": 906,
+        "title": "[Items][Build] Add Fresh-Start Mochi atomic reset and training acceptance",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/906",
+        "state": "closed"
+      },
+      {
+        "number": 907,
+        "title": "[Items][Build] Add six X items with guarded manual battle action persistence",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/907",
+        "state": "closed"
+      },
+      {
+        "number": 908,
+        "title": "[Items][Build] Implement Dire Hit with actual Focus Energy critical outcomes",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/908",
+        "state": "closed"
+      },
+      {
+        "number": 909,
+        "title": "[Items][Build] Implement Guard Spec. with timed source-aware Mist protection",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/909",
+        "state": "closed"
+      },
+      {
+        "number": 910,
+        "title": "[Items][Build] Qualify six special attacks through explicit Z mappings",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/910",
+        "state": "closed"
+      },
+      {
+        "number": 911,
+        "title": "[Items][Build] Qualify six physical attacks through explicit Z mappings",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/911",
+        "state": "closed"
+      },
+      {
+        "number": 912,
+        "title": "[Items][Build] Qualify six status sources through explicit Z mappings",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/912",
+        "state": "closed"
+      },
+      {
+        "number": 913,
+        "title": "[Items][Repair] Fix ordinary Roost and Synthesis prerequisites before new status Z sources",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/913",
+        "state": "closed"
+      },
+      {
+        "number": 914,
+        "title": "[Items][Repair] Correct ordinary Protect repeat probability before Z-Protect",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/914",
+        "state": "closed"
+      },
+      {
+        "number": 916,
+        "title": "[Items][Repair] Preserve Thunder Wave move-type immunity before its Z mapping",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/916",
+        "state": "closed"
+      },
+      {
+        "number": 919,
+        "title": "[Items][Tracker] Repair October 27 item-route defects before expanding support",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/919",
+        "state": "closed"
+      },
+      {
+        "number": 920,
+        "title": "[Items][P1][Repair] Use native identity for the 47 Mega Stone theft checks",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/920",
+        "state": "closed"
+      },
+      {
+        "number": 921,
+        "title": "[Items][P1][Repair] Restore guarded consumption and recovery history for six reactive items",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/921",
+        "state": "closed"
+      },
+      {
+        "number": 922,
+        "title": "[Items][P1][Repair] Apply canonical boost rules to six pinch-stat berries",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/922",
+        "state": "closed"
+      },
+      {
+        "number": 923,
+        "title": "[Items][P1][Repair] Apply canonical boost rules to eight reactive stat consumables",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/923",
+        "state": "closed"
+      },
+      {
+        "number": 924,
+        "title": "[Items][P1][Repair] Apply canonical boost rules to the four terrain seeds",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/924",
+        "state": "closed"
+      },
+      {
+        "number": 925,
+        "title": "[Items][P2][Repair] Route five held-item damage effects through indirect-damage guards",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/925",
+        "state": "closed"
+      },
+      {
+        "number": 926,
+        "title": "[Items][P2][Repair] Make Leftovers and Black Sludge respect Heal Block",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/926",
+        "state": "closed"
+      },
+      {
+        "number": 927,
+        "title": "[Items][P2][Repair] Enforce Embargo on manual battle medicine targets",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/927",
+        "state": "closed"
+      },
+      {
+        "number": 928,
+        "title": "[Items][P2][Repair] Correct the existing Berserk Gene effect and consumption lifecycle",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/928",
+        "state": "closed"
+      },
+      {
+        "number": 929,
+        "title": "[Items][P2][Gate] Reconcile item support evidence after the October 27 repairs",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/929",
+        "state": "closed"
+      },
+      {
+        "number": 930,
+        "title": "[Items][P2][Scope] Review depleted public offers and the next 15 existing-item sources",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/930",
+        "state": "closed"
+      },
+      {
+        "number": 931,
+        "title": "[Items][P3][Scope] Define ordinary non-plot access for contextual item evolutions",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/931",
+        "state": "closed"
+      },
+      {
+        "number": 932,
+        "title": "[Items][P3][Support] Qualify the next six explicit Z-Move source mappings",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/932",
+        "state": "closed"
+      },
+      {
+        "number": 933,
+        "title": "[Items][P3][Scope] Define the next bounded berry-growing expansion",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/933",
+        "state": "closed"
+      },
+      {
+        "number": 934,
+        "title": "[Items][P3][Scope] Define safe non-plot Mirror Herb egg-move teaching",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/934",
+        "state": "closed"
+      },
+      {
+        "number": 935,
+        "title": "[Items][P3][Add] Add four non-plot recovery equivalents through shared field medicine",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/935",
+        "state": "closed"
+      },
+      {
+        "number": 936,
+        "title": "[Items][P3][Scope] Define Soothe Bell and an authoritative friendship-item route",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/936",
+        "state": "closed"
+      },
+      {
+        "number": 937,
+        "title": "[Items][P3][Scope] Define non-plot Amulet Coin and Luck Incense reward support",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/937",
+        "state": "closed"
+      },
+      {
+        "number": 938,
+        "title": "[Items][P3][Scope] Define useful Cleanse Tag and Pure Incense behavior for PF2 hunts",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/938",
+        "state": "closed"
+      },
+      {
+        "number": 939,
+        "title": "[Items][P3][Scope] Define a consumable bag Link Cord for trade-only evolutions",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/939",
+        "state": "closed"
+      },
+      {
+        "number": 947,
+        "title": "[Items][P3][Access] Qualify three contextual held evolutions through public day/night locations",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/947",
+        "state": "closed"
+      },
+      {
+        "number": 948,
+        "title": "[Items][P3][Growing] Add Chesto, Sitrus and Lum to the private nursery",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/948",
+        "state": "closed"
+      },
+      {
+        "number": 949,
+        "title": "[Items][P3][Support] Implement guarded Mirror Herb egg-move teaching",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/949",
+        "state": "closed"
+      },
+      {
+        "number": 950,
+        "title": "[Items][P3][Support] Add Soothe Bell through the field friendship boundary",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/950",
+        "state": "closed"
+      },
+      {
+        "number": 951,
+        "title": "[Items][P3][Support] Add nonstacking Amulet Coin and Luck Incense NPC prize receipts",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/951",
+        "state": "closed"
+      },
+      {
+        "number": 952,
+        "title": "[Items][P2][Design] Define Training Grounds, affordable retraining and Item Finder rewards",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/952",
+        "state": "closed"
+      },
+      {
+        "number": 953,
+        "title": "[Items][P2][Build] Add persistent Training Grounds sessions and focused EV training",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/953",
+        "state": "closed"
+      },
+      {
+        "number": 954,
+        "title": "[Items][P2][Build] Add free confirmed EV retraining at Training Grounds",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/954",
+        "state": "closed"
+      },
+      {
+        "number": 955,
+        "title": "[Items][P2][Build] Add named training Finder drops and earned training milestones",
+        "url": "https://github.com/PokemonFusion/Fusion2/issues/955",
+        "state": "closed"
+      }
+    ],
+    "literal_label_counts": {
+      "item": 0,
+      "items": 0
+    }
+  },
+  "mandatory_gate": [
+    {
+      "order": "combined",
+      "passed": 8187,
+      "skipped": 4032,
+      "warnings": 2142,
+      "seconds": 707.81
+    },
+    {
+      "order": "repeat",
+      "passed": 8187,
+      "skipped": 4032,
+      "warnings": 2142,
+      "seconds": 702.99
+    },
+    {
+      "order": "battle-first",
+      "passed": 8187,
+      "skipped": 4032,
+      "warnings": 2162,
+      "seconds": 698.4
+    }
+  ],
+  "latest_disposable_sql_cases": 230,
+  "training_nursery_batch_disposable_sql_cases": 94,
+  "sql_counts_overlap": true,
+  "ordinary_private_socket_inputs": 100,
+  "real_elapsed_nursery": {
+    "crops": 3,
+    "minimum_seconds": 14402.493425,
+    "receipt": "docs/testing/nursery-next-three-real-elapsed-2026-10-29.json"
+  },
+  "hosted_ci": {
+    "observed_utc": "2026-10-29 19:16:16 UTC",
+    "runs": [
+      {
+        "id": 40886545399,
+        "commit": "2b3040bd0896a608f5d4ae7537dd22d31f63cbd0",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/PokemonFusion/Fusion2/actions/runs/40886545399",
+        "started_at": "2026-10-29T13:56:08Z",
+        "completed_updated_at": "2026-10-29T15:53:04Z"
+      },
+      {
+        "id": 40905821199,
+        "commit": "15bfe1a7489cfd4e5b6c62a23e3e88f535eeccb5",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/PokemonFusion/Fusion2/actions/runs/40905821199",
+        "started_at": "2026-10-29T15:51:48Z",
+        "completed_updated_at": "2026-10-29T17:12:07Z"
+      },
+      {
+        "id": 40919792959,
+        "commit": "332113b746a677d72243b9ebcbf4a5dfc2a62580",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/PokemonFusion/Fusion2/actions/runs/40919792959",
+        "started_at": "2026-10-29T17:16:48Z",
+        "completed_updated_at": "2026-10-29T19:14:09Z"
+      }
+    ]
+  },
+  "source_index": {
+    "definitions": 649,
+    "scoped": 501,
+    "current_world_unverified": 501,
+    "mega_pairs": 47,
+    "z_mappings": 69,
+    "z_crystals": 35,
+    "nursery_seeds": 8
+  },
+  "explicit_limits": [
+    "Cleanse Tag/Pure Incense encounter reduction remains intentionally deferred by completed scope #938.",
+    "Current-world installation, finite stock and companion/donor acquisition are not certified by source authoring or private fixtures.",
+    "Coarse capability labels do not establish complete support for all 501 items; historical facet limits remain explicit.",
+    "No game-database migration, shared service restart, world/source installation/refill, deployment or human fixture change occurred.",
+    "The earlier 151 closed issues retain their dated resolution evidence; they were not each freshly replayed during this execution.",
+    "All task-private schemas and socket processes were removed/stopped; only the verified task-owned PostgreSQL helper was stopped.",
+    "Two unrelated region-design drafts remain byte-identical and unstaged."
+  ],
+  "unrelated_drafts_preserved": true,
+  "fixture_cleanup": {
+    "status": "passed",
+    "actual_utc": "2026-10-29T18:23:03.332896+00:00",
+    "all_private_schemas_removed": true,
+    "private_socket_processes_stopped": true,
+    "task_owned_postgresql_stopped": true,
+    "shared_services_touched": false,
+    "logs_and_artifacts_retained": true,
+    "directory_and_pid_verified": true
+  }
+}
