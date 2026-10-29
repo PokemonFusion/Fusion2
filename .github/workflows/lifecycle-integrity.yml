@@ -127,6 +127,8 @@ jobs:
         run: python tests/integration/link_cord_cases.py
       - name: Held stat item rules, native abilities, consumption and checkpoint rollback
         run: python tests/integration/item_repair_cases.py
+      - name: Eighteen stat items, paired next-action damage and order after checkpoint restore
+        run: python tests/integration/item_next_action_cases.py
       - name: Indirect item damage, blocked residual healing, Gene and manual medicine Embargo
         run: python tests/integration/item_medicine_and_hp_cases.py
       - name: Six explicit Z source additions, owned payment, native learning and rollback
