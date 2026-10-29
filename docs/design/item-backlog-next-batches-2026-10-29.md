@@ -225,3 +225,131 @@ Record these as intentional missing-definition deferrals in the current support
 index, preserving existing hunts, finder/wild-held sources and scripted gates.
 Revisit only with a separately requested useful encounter-system policy. This
 decision needs no implementation/source issue until that prerequisite exists.
+
+## Current issue audit and resolution order
+
+The fresh GitHub audit covers **176 `[Items]` issues: 151 closed and 25 open**.
+There are no literal `item` or `items` labels; the title prefix identifies this
+backlog. Open and closed searches were partitioned below the connector's
+100-result limit. Each issue was fetched, its discussion read where present,
+and repository report references checked. The
+[complete per-issue inventory](../testing/item-issue-audit-2026-10-29.json)
+records status, evidence and next action for all 176.
+
+All 151 closed issues have retained resolution reports, with no missing report
+references. Keep them out of the new implementation queue unless a fresh scoped
+regression is reproduced. This documentary audit does not repeat every historic
+mechanics test or certify present live behavior.
+
+The current local candidate is `19f8eab5f4c7d2236542f3157e1791754b6921cf`.
+GitHub staging was independently read at
+`9c36beec68b2e3b6a413b2c4c93785f620831e48`; six later commits remain local.
+All 35 fingerprints in the recent repair/addition/next-action evidence still
+match. The prior candidate passed 8,135 tests / 4,032 skips in each of three
+mandatory processes and 374 SQL cases across three separate batches. Those
+are retained test results, not new executions in this audit. Running-game
+deployment and current public stock were not inspected here.
+
+### The 25 open issues
+
+| Issue | Current finding | Remaining action |
+| --- | --- | --- |
+| #919 | Aggregate tracker, still incomplete | Reconcile children after every delivery; keep genuine follow-ups explicit |
+| #922 | Pinch berries implemented and tested locally | Publish/accept existing work; do not recode |
+| #923 | Reactive stat consumables implemented and tested locally | Publish/accept existing work; do not recode |
+| #924 | Terrain seeds implemented and tested locally | Publish/accept existing work; do not recode |
+| #925 | Indirect item damage implemented and tested locally | Publish/accept existing work; do not recode |
+| #926 | Residual healing guards implemented and tested locally | Publish/accept existing work; do not recode |
+| #927 | Manual medicine Embargo implemented and tested locally | Publish/accept existing work; do not recode |
+| #928 | Berserk Gene implemented and tested locally | Publish/accept existing work; do not recode |
+| #929 | Repair reconciliation/gate closeout remains | Accept all nine repair dependencies on the final published candidate |
+| #930 | Access direction recorded; former training-shop proposal superseded | Review scope checklist and hand off to #952 |
+| #931 | Contextual evolution scope recorded | Review scope checklist and hand off to #947 |
+| #932 | Six Z mappings implemented and tested locally | Publish/accept existing work; no new crystal batch |
+| #933 | Three-berry growing scope recorded | Review scope checklist and hand off to #948 |
+| #934 | Mirror Herb teaching scope recorded | Review scope checklist and hand off to #949 |
+| #935 | Four recovery medicines implemented and tested locally | Publish/accept existing work; no live stock claim |
+| #936 | Soothe Bell scope recorded | Review scope checklist and hand off to #950 |
+| #937 | Prize-item scope recorded | Review scope checklist and hand off to #951 |
+| #938 | Cleanse Tag/Pure Incense intentionally deferred | Retain the documented reason; no implementation selected |
+| #939 | All 14 Link Cord mappings already published to staging | Acquisition plan/source and authorized logged-in live acceptance remain |
+| #947 | Evolution rules exist; proposed public day/night content is unfinished | Author/qualify three contextual evolution access routes |
+| #948 | Nursery still accepts only its original five seeds | Implement and accept Chesto, Sitrus and Lum growing |
+| #949 | Daycare has no Mirror Herb teaching route | Implement reviewed native egg-move teaching and confirmation |
+| #950 | EV-berry friendship still has no Soothe Bell modifier | Implement the bounded positive-gain modifier and useful evolution |
+| #951 | Reward receipts exist; held prize-item qualification is unfinished | Implement once-only nonstacking NPC prize support |
+| #952 | Training direction agreed; activity/balance/access design unfinished | Finish the design, then deliver bounded implementation batches |
+
+The six scope parents and #938 are scope/deferral closeout candidates, not proof
+that their generated runtime work is complete. Review their remaining criteria
+and links before closing them. No issue was changed or closed by this audit.
+
+### Recommended sequence
+
+1. **Clear completed work and the repair gate.** Reconcile #922–#928 against
+   their existing commits/reports. Publish the tested local candidate only when
+   authorized and verify its CI and evidence. Accept the exact nine repairs
+   #920–#928, then reconcile #929's source/facet matrix and intentional limits.
+   After clearing that gate, sign off the already implemented #932/#935 additions
+   and begin further feature implementation. Review
+   the six recorded scope handoffs and #938's explicit deferral so they do not
+   masquerade as duplicate coding tasks. Keep published, deployed and player
+   acceptance evidence distinct.
+2. **Finish #952's design.** Specify the Training Grounds activity, predictable
+   EV gain, representative sessions-to-build, fees if any, affordable partial/full
+   retraining, ordinary battle EV/EXP interaction, named Finder rules and advanced
+   milestones. Use actual PF2 stats and text-battle pacing. Keep all 15 item names
+   mapped; the removed shops and prices are not balance defaults.
+3. **Deliver the Training Grounds design in three bounded follow-ups.** First
+   focused EV training, then affordable retraining, then supplementary Finder
+   drops and advanced/milestone rewards. These implementation/acceptance issues
+   must be created from the completed design; they do not yet exist. Reuse field
+   training, Hyper Training and the guarded Finder foundations. Test useful
+   stats, caps, one committed gain/cost, stale targets, interruption, duplicate
+   completion, concurrency, rollback and reconnect. Finish with representative
+   NPC and agreed PvP build comparisons. Completing a design ticket alone does
+   not deliver these mechanics.
+4. **Finish #939's acquisition and live acceptance.** Select and author a
+   discoverable Link Cord source without assuming the training-item Finder
+   decision supplies it. Preserve all 14 published mappings and trade-held
+   behavior. Qualify acquisition → bag evolution → exact one-copy debit →
+   reconnect, including form/size and independent Karrablast/Shelmet controls.
+   Logged-in/shared-world checks require their separately reviewed setup.
+5. **Deliver #947 contextual evolution access.** Reuse current room context and
+   `EvolutionService`; author day/night locations and optional item supply for
+   Happiny, Sneasel and Gligar. Prove travel, native branches, wrong context,
+   useful evolution, one held debit, refusal preservation and reconnect. Treat
+   companion/item access and authored locations separately from installation.
+6. **Deliver #948's three nursery seeds.** Extend the existing allowlist and
+   source plan without replacing the growth system. Prove seed debit, stage
+   watering, useful harvest, cycle retries, contention and rollback. Keep a real
+   four-hour player run separate from controlled-clock tests; its elapsed wait
+   can overlap independent later work.
+7. **Deliver #950 Soothe Bell.** Add the positive-only EV-berry friendship
+   modifier to the existing field transaction, retaining rounding, caps,
+   ownership and HP/EV conservation. Prove the useful feed → inspect → friendship
+   evolution route, plus stale held state, no effect, retry and rollback.
+8. **Deliver #949 Mirror Herb teaching.** Reuse Daycare placement/move-edit locks
+   with reviewed native egg-move metadata, an empty active slot and actual donor
+   knowledge. Qualify review/confirm, donor/item/owner changes, full/already-known
+   refusals, concurrent edits, unchanged donor/unrelated PP and nonconsumption,
+   rollback and reconnect. Preserve existing breeding and battle Herb behavior.
+9. **Deliver #951 prize items last.** Extend the existing reward receipts with
+   durable genuine participation and a maximum ×2 standard NPC TRAINER prize.
+   Prove exact base/bonus money, multiple-holder nonstacking, bench/loss/zero
+   controls, item transfer timing, duplicate/interrupted outcomes, concurrent
+   payout, rollback and reconnect. Retain all PvP/wild/script/gym/Adventure and
+   non-prize exclusions. This has the broadest economy/persistence exposure.
+10. **Complete release/player reconciliation and #919.** After each code batch,
+    run the relevant focused and disposable SQL checks plus the mandatory gate
+    for runtime changes. Qualify actual acquisition/use/reconnect separately
+    from prepared fixtures and deployment. Update source/support evidence with
+    explicit unknowns and the intentional #938 deferral. Close the tracker only
+    after required implementation/acceptance children are reconciled, without
+    claiming every item or source works merely because scopes were written.
+
+#929 is the hard prerequisite. #952 design must precede its implementation
+batches. After #929, #947/#948/#950/#949/#951 are independent: the sequence above
+is a recommended delivery order based on reuse, complexity and economy exposure,
+not a set of invented hard dependencies. No push, release, stock write, migration,
+service restart or operation on human fixtures is authorized by this plan.
