@@ -58,7 +58,7 @@ def test_index_separates_supported_effects_from_uninspected_stock_and_deferred_s
     assert rows["potion"]["world_availability"]["status"] == "unverified"
     assert any(source["kind"] == "adventure_first_clear" for source in rows["potion"]["authored_acquisition"])
     assert any(source["kind"] == "opt_in_recipe_shop" for source in rows["freshwater"]["authored_acquisition"])
-    assert rows["rarecandy"]["authored_acquisition"][0]["kind"] == "alpha_recipe_vendor"
+    assert any(source["kind"] == "alpha_recipe_vendor" for source in rows["rarecandy"]["authored_acquisition"])
     assert rows["charizarditex"]["support_status"] == "capability_with_bounded_evidence"
     assert rows["charizarditex"]["followups"] == []
     assert any(route["kind"] == "mega" and route["native"] == "Charizard"
@@ -253,3 +253,29 @@ def test_exact_mints_have_field_training_without_battle_or_inferred_world_stock(
         assert row["world_availability"]["status"] == "unverified"
     assert not FieldMintUse.supports("Mint Berry")
     assert not any(route["kind"] == "nature_training" for route in rows["mintberry"]["routes"])
+
+
+def test_new_field_facets_and_training_sources_preserve_world_and_gameplay_boundaries():
+    """New capabilities do not inherit unrelated facets or certify installed sources."""
+    result = ItemAvailabilityAudit().build()
+    rows = {row["key"]: row for row in result["items"]}
+    expected = {"linkcord": "link_cord_evolution", "mirrorherb": "daycare_egg_move_teaching",
+                "soothebell": "field_friendship", "amuletcoin": "npc_prize", "luckincense": "npc_prize"}
+    for key, kind in expected.items():
+        assert any(route["kind"] == kind for route in rows[key]["routes"])
+        assert rows[key]["world_availability"]["status"] == "unverified"
+    for key in ("chestoberry", "sitrusberry", "lumberry"):
+        assert any(route["kind"] == "berry_growing" for route in rows[key]["routes"])
+    assert not any(route["kind"] == "berry_growing" for route in rows["pomegberry"]["routes"])
+    assert any("Chesto Berry" in limit for limit in rows["pomegberry"]["limits"])
+    finder = [(key, source) for key, row in rows.items() for source in row["authored_acquisition"]
+              if source["kind"] == "opt_in_training_finder"]
+    assert len(finder) == 15
+    assert sum(source["conditional_weight_percent"] for _, source in finder) == 100
+    assert {source["find_percent"] for _, source in finder} == {5}
+    assert all(not rows[key]["world_availability"]["sources"] for key, _ in finder)
+    for key in ("cleansetag", "pureincense"):
+        if key in rows:
+            assert any("#938" in limit for limit in rows[key]["limits"])
+    assert result["intentional_deferrals"][0]["items"] == ["Cleanse Tag", "Pure Incense"]
+    assert any(source["source"] == "world/link_cord_counter.json" for source in rows["linkcord"]["authored_acquisition"])

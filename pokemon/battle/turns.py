@@ -1021,9 +1021,16 @@ class TurnProcessor:
 					continue
 				if action_type is ActionType.MOVE and action.move:
 					actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
+					from .npc_prize_items import NPCPrizeItems
+
+					previous_prize_action = getattr(self, "_npc_prize_action", None)
+					self._npc_prize_action = NPCPrizeItems.action(self, action)
 					# use_move owns prevention checks, including direct move execution.
 					# Checking here too advances sleep/confusion and rolls paralysis twice.
-					self.use_move(action)
+					try:
+						self.use_move(action)
+					finally:
+						self._npc_prize_action = previous_prize_action
 					if actor_poke is not None:
 						try:
 							actor_poke.tempvals["moved"] = True

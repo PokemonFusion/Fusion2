@@ -338,6 +338,10 @@ class Pokemon:
                 )
                 if entry and ItemCls:
                     self.item = ItemCls.from_dict(str(self.item), entry)
+                elif entry is None:
+                    from pokemon.items import runtime_field_held_item
+
+                    self.item = runtime_field_held_item(self.item) or self.item
             except Exception:
                 pass
 

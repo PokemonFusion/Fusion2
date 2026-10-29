@@ -55,6 +55,17 @@ class EvolutionService:
         self.placement = PlacementService(caller.storage)
 
     @contextmanager
+    def _character_locked(self):
+        """Serialize ordinary movement before storage, matching other owner-first commands."""
+        from evennia.objects.models import ObjectDB
+        from pokemon.services.ownership import assert_character_free
+
+        with transaction.atomic():
+            owner = ObjectDB.objects.select_for_update(no_key=True).get(pk=self.caller.pk)
+            assert_character_free(owner)
+            yield owner
+
+    @contextmanager
     def locked(self, mon=None, slot=None, *, operation="evolution"):
         """Read fresh locked rows and restore Evennia's shared instance on failure."""
         from pokemon.models.core import OwnedPokemon
@@ -63,7 +74,7 @@ class EvolutionService:
 
         pokemon = cached = None
         try:
-            with self.placement.locked() as storage:
+            with self._character_locked(), self.placement.locked() as storage:
                 if storage.user_id != self.caller.pk:
                     raise EvolutionError("Storage does not belong to you.")
                 trainer = Trainer.objects.select_for_update().get(user_id=storage.user_id)
@@ -135,8 +146,14 @@ class EvolutionService:
         )
         party = list(storage.placements.filter(location_type="party").values_list("pokemon__species", flat=True))
         types = tuple(t for s in party if (data := lookup_species(s)) for t in data.types)
-        room = getattr(self.caller, "location", None)
-        db = getattr(room, "db", None)
+        from evennia.objects.models import ObjectDB
+        from pokemon.services.battle_rewards import BattleRewards
+
+        room_id = ObjectDB.objects.values_list("db_location_id", flat=True).get(pk=self.caller.pk)
+        room = ObjectDB.objects.filter(pk=room_id).first()
+        def context_value(key, default=""):
+            """Use saved room evidence even when a retained caller/location cache is stale."""
+            return BattleRewards.stored_attribute(room, key, default=default) if room is not None else default
         stats = get_stats(pokemon)
         kingambit_ready = False
         if normalize_name(pokemon.species) == "bisharp":
@@ -152,10 +169,10 @@ class EvolutionService:
             gender=pokemon.gender,
             ability=pokemon.ability,
             nature=pokemon.nature,
-            time=getattr(db, "time_of_day", "") or "",
-            weather=getattr(db, "weather", "") or "",
-            region=getattr(db, "region", "") or "",
-            magnetic_field=getattr(db, "magnetic_field", False) is True,
+            time=context_value("time_of_day") or "",
+            weather=context_value("weather") or "",
+            region=context_value("region") or "",
+            magnetic_field=context_value("magnetic_field", False) is True,
             party_species=tuple(party),
             party_types=types,
             stats={"atk": stats.get("attack"), "def": stats.get("defense")},
@@ -165,6 +182,8 @@ class EvolutionService:
         """Consume exactly one required item and persist one eligible transition."""
         item_key, display = resolve_item(item) if item else (None, None)
         with self.locked(mon) as (pokemon, trainer, storage):
+            if type(pokemon.level) is not int or not 1 <= pokemon.level <= 100:
+                raise EvolutionError("Invalid saved level; contact staff. Nothing was consumed.")
             # A repeated implicit command at the same level must not evolve a
             # second stage. An explicit different target expresses a new request.
             signature = f"{pokemon.level}:{item_key or ''}:{normalize_name(target or '')}"

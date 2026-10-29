@@ -144,8 +144,15 @@ class TrainingFinderCases(finder.ItemfinderCases):
             entrance = finder.ObjectDB.objects.get(db_location=hub, db_destination=room)
             returning = finder.ObjectDB.objects.get(db_location=room, db_destination=hub)
             for exit_row in (entrance, returning):
+                self.assertTrue(exit_row.access(self.player.character, "call", no_superuser_bypass=True))
                 self.assertTrue(exit_row.access(self.player.character, "traverse"))
                 self.assertTrue(exit_row.access(self.player.character, "view"))
+                self.assertFalse(exit_row.access(self.player.character, "get", no_superuser_bypass=True))
+            entrance.locks.add("call:false()")
+            with self.assertRaisesRegex(ValueError, "public access"):
+                route.install(hub)
+            self.assertFalse(entrance.access(self.player.character, "call", no_superuser_bypass=True))
+            entrance.locks.add("call:all()")
             self.player.character.move_to(hub, quiet=True)
             entrance.at_traverse(self.player.character, room)
             self.assertEqual(finder.ObjectDB.objects.values_list("db_location_id", flat=True).get(pk=self.player.pk), room.pk)

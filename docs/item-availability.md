@@ -1,5 +1,27 @@
 # Finding and using items
 
+## October 29 activity and field routes
+
+The [Training Grounds](training-grounds.md) provide free deliberate EV sessions
+and confirmed partial/full resets. The optional Training Trail has a five-percent
+named Finder chance, one item per successful search, with a three-second
+character cooldown. Its 15 items supplement training; useful completed sessions
+also earn Candy and Cap milestones. Neither waiting alone nor a reset earns
+progress or rewards.
+
+The private nursery now accepts Oran, Cheri, Pecha, Rawst, Aspear, Chesto, Sitrus
+and Lum. It retains one bed and seed, four one-hour stages and one to five berries.
+[Link Cord](link-cord-evolution.md) has separate finite source authoring.
+The [field-item guide](contextual-and-field-items.md) covers public day/night
+context recipes, reusable Soothe Bell feeding, confirmed Mirror Herb teaching
+at configured Daycares and nonstacking standard NPC prize bonuses.
+
+These recipes and activity flags require explicit world placement. Their
+command/SQL and private socket evidence is separate from the existing-world
+stock observation below. No automatic installation, refill or deployment follows
+from an item definition or these additions. Cleanse Tag and Pure Incense hunt
+reduction remain intentionally deferred by #938.
+
 ## October 29 bounded additions
 
 [Six additional Z source mappings](testing/z-next-six-sources-2026-10-29.md) bring

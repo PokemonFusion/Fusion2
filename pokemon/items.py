@@ -90,6 +90,32 @@ class HeldEscapeItem(GameplayItem):
 
 
 @dataclass(frozen=True)
+class HeldFieldFriendshipItem(GameplayItem):
+    """Describe the exact reusable field-feeding role without battle callbacks."""
+
+    price: int = 4000
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Keep inventory/equip metadata truthful about this bounded first effect."""
+        return {**super().raw, "price": self.price, "category": "Held Items",
+                "isPokeball": False, "heldEffect": "ev-berry-friendship", "consumed": False}
+
+
+@dataclass(frozen=True)
+class HeldNPCPrizeItem(GameplayItem):
+    """Describe one reusable, nonstacking participation-based NPC prize effect."""
+
+    price: int = 10000
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Keep the bounded prize condition distinct from competitive battle suppression."""
+        return {**super().raw, "price": self.price, "category": "Held Items",
+                "isPokeball": False, "heldEffect": "standard-npc-prize", "consumed": False}
+
+
+@dataclass(frozen=True)
 class EVTrainingItem(GameplayItem):
     """Describe a field-only EV supplement or one atomic all-stat reset."""
 
@@ -326,6 +352,21 @@ GAMEPLAY_ITEMS = {
         "Held-only copies do not activate it; existing trade-held items keep their own rules.",
         price=10000,
     ),
+    "amuletcoin": HeldNPCPrizeItem(
+        "Amulet Coin", "Held and reusable: eligible active entry or a completed ordinary move "
+        "qualifies for double standard NPC trainer prize money once. Does not stack with Luck Incense "
+        "or other holders. No bonus to wild, PvP, Multi, gym, Adventure, scripted prizes or Pay Day."
+    ),
+    "luckincense": HeldNPCPrizeItem(
+        "Luck Incense", "Held and reusable: the same nonstacking double standard NPC trainer "
+        "prize condition as Amulet Coin. Requires eligible participation while held; no bonus to "
+        "wild, PvP, Multi, gym, Adventure, scripted prizes or Pay Day."
+    ),
+    "soothebell": HeldFieldFriendshipItem(
+        "Soothe Bell", "Held and reusable: multiplies positive friendship from the six EV-reducing "
+        "berries by 1.5, rounded down before the 255 cap. Field feeding only; no walking, level-up "
+        "or battle friendship effect is implemented. Does not multiply herbal friendship losses."
+    ),
     "smokeball": HeldEscapeItem(
         "Smoke Ball", "Held: guarantees the acting holder's escape from eligible wild battles with +flee. "
         "Reusable; item suppression and trainer/scripted no-flee restrictions still apply. Not a capture ball."
@@ -337,6 +378,20 @@ GAMEPLAY_ITEMS = {
 def get_gameplay_item(name: object) -> GameplayItem | None:
     """Resolve complete normalized names; prefixes remain invalid."""
     return GAMEPLAY_ITEMS.get(normalize_name(name))
+
+
+def runtime_field_held_item(name: object):
+    """Represent only the three reviewed field/prize holders as inert battle items.
+
+    They retain physical ownership and ordinary transfer semantics. Their field
+    or prize services own the effects; no competitive callback is invented.
+    """
+    metadata = get_gameplay_item(name)
+    if isinstance(metadata, (HeldFieldFriendshipItem, HeldNPCPrizeItem)):
+        from pokemon.dex.entities import Item
+
+        return Item.from_dict(metadata.name, metadata.raw)
+    return None
 
 
 def is_capture_ball(name: object) -> bool:

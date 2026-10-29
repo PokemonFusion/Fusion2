@@ -173,6 +173,8 @@ class ItemAvailabilityAudit:
         from pokemon.services.finite_item_supply import FINITE_SUPPLY_ROUTES
         from pokemon.services.berry_snack import BerrySnack
         from pokemon.services.berry_growing import BerryGrowing
+        from pokemon.evolution_items import LinkCordEvolution
+        from pokemon.services.itemfinder import FinderProfile
 
         matrix = json.loads((ROOT / MATRIX).read_text(encoding="utf-8"))
         historical = {normalize_name(row["item"]): row for row in matrix["items"]}
@@ -189,7 +191,10 @@ class ItemAvailabilityAudit:
         recipes = []
         for filename in ("mega_stone_counter.json", "z_crystal_counter.json", "berry_nursery.json",
                          "berry_seed_counter.json", "ev_mochi_counter.json", "exp_candy_counter.json",
-                         "battle_booster_counter.json", "nature_mint_counter.json"):
+                         "battle_booster_counter.json", "nature_mint_counter.json",
+                         "link_cord_counter.json", "chesto_seed_counter.json",
+                         "contextual_evolution_counter.json", "soothe_bell_counter.json",
+                         "npc_prize_item_counter.json"):
             path = ROOT / "world" / filename
             recipe = json.loads(path.read_text(encoding="utf-8"))
             recipes.append(("world/" + filename, recipe))
@@ -228,8 +233,32 @@ class ItemAvailabilityAudit:
                                "limit": "PF2 up to 10 HP living field target; separate from +use/manual/held/growing"})
             if key in {normalize_name(seed) for seed in BerryGrowing.seeds}:
                 routes.append({"kind": "berry_growing", "command": "+berry plant " + name + " / water / harvest",
-                               "evidence_report": "berry-player-routes-2026-10-22" if key == "oranberry" else "nursery-seeds-2026-10-25",
+                               "evidence_report": "training-grounds-delivery-2026-10-29"
+                               if key in {"chestoberry", "sitrusberry", "lumberry"}
+                               else "berry-player-routes-2026-10-22" if key == "oranberry" else "nursery-seeds-2026-10-25",
                                "limit": "One private bed at configured nursery; one bag seed, four real hours, yield 1-5; no automatic replant; real elapsed released acceptance is separate"})
+            if key == "linkcord":
+                routes.append({"kind": "link_cord_evolution", "command": "+evolve <full ID> Link Cord",
+                    "mappings": list(LinkCordEvolution.transitions), "evidence_report": "link-cord-2026-10-29",
+                    "limit": "One actual bag copy, exact native 14 mappings, regional/size preservation and independent bugs; held trade items unchanged"})
+            if key in {"ovalstone", "razorclaw", "razorfang"}:
+                routes.append({"kind": "contextual_held_evolution", "command": "+hold then daygrove/nightgrove then +evolve",
+                    "evidence_report": "remaining-item-delivery-2026-10-29",
+                    "limit": "Happiny/day, native Sneasel/night and Gligar/night; actual saved room and held copy. Other form/companion/context access remains world-unverified"})
+            if key == "mirrorherb":
+                routes.append({"kind": "daycare_egg_move_teaching", "command": "+daycare herb <recipient>=<donor>/<exact move>, then +daycare herb confirm",
+                    "evidence_report": "remaining-item-delivery-2026-10-29",
+                    "limit": "Configured Daycare, two eligible owned party members, exact Gen 9 native egg data, actual donor knowledge and empty slot; reusable, preserves old PP; public donor/item acquisition separate"})
+            if key == "soothebell":
+                routes.append({"kind": "field_friendship", "command": "+hold then +use <EV berry>=<target>",
+                    "evidence_report": "remaining-item-delivery-2026-10-29",
+                    "limit": "Six positive EV-berry friendship events only, floor 1.5x before cap; reusable, no loss/walking/level-up/battle friendship claim"})
+            if key in {"amuletcoin", "luckincense"}:
+                routes.append({"kind": "npc_prize", "command": "+hold then eligible standard NPC TRAINER participation and win",
+                    "evidence_report": "remaining-item-delivery-2026-10-29",
+                    "limit": "Saved genuine entry/action proof, maximum 2x once-only standard static/random prize receipt; excludes bench-only, PvP/Multi, wild, gym/Adventure/script, Pay Day and other currencies"})
+            if key in {"cleansetag", "pureincense"}:
+                limits.append("Hunt encounter reduction intentionally deferred by #938; no held encounter-rate effect claimed")
             if BattleMedicineUse.supports(key):
                 routes.append({"kind": "manual_battle_medicine", "command": "+item",
                                "evidence_report": "battle-recovery-foods-2026-10-22"
@@ -299,7 +328,7 @@ class ItemAvailabilityAudit:
                             "Belue", "Durin", "Pamtre", "Spelon", "Watmel")}:
                     followups.append(866)
             if raw.get("isBerry") and key not in {normalize_name(seed) for seed in BerryGrowing.seeds}:
-                limits.append("Growing accepts only Oran/Cheri/Pecha/Rawst/Aspear; another berry is not an eligible seed")
+                limits.append("Growing accepts only " + ", ".join(BerryGrowing.seeds) + "; this berry is not an eligible seed")
             if field and not BattleMedicineUse.supports(key) and any(route["kind"] in {"berry", "food", "field_recovery_equivalent"} for route in field):
                 limits.append("Intentionally excluded from manual battle use by the reviewed item policy; rejects before spending an action")
             authored = []
@@ -321,6 +350,17 @@ class ItemAvailabilityAudit:
                 authored.append({"kind": "opt_in_itemfinder", "source": "pokemon/services/itemfinder.py",
                     "item": "Potion", "quantity": 1, "reference_rate_percent": 5,
                     "limit": "Requires reviewed named room source, enabled hunting and noitem false; no world population inferred"})
+            for training_name, weight in FinderProfile.training:
+                if normalize_name(training_name) == key:
+                    authored.append({"kind": "opt_in_training_finder", "source": "pokemon/services/item_activity_routes.py",
+                        "entry": "trainingtrail", "profile": "training-v1", "find_percent": 5,
+                        "conditional_weight_percent": weight, "quantity": 1,
+                        "limit": "Supplementary named drop; one attempt per character per three seconds. Authored source is not installed stock or world acquisition"})
+            if key in {"rarecandy", "bottlecap", "goldbottlecap"}:
+                authored.append({"kind": "training_milestone", "source": "pokemon/services/training_grounds.py",
+                    "useful_sessions": {"rarecandy": 6, "bottlecap": 12, "goldbottlecap": 60}[key],
+                    "repeat": key != "goldbottlecap",
+                    "limit": "Actual useful completed sessions only; resets/time alone grant none. Source requires explicitly configured Training Grounds; existing item-use eligibility remains"})
             if key == "oranberry":
                 authored.append({"kind": "opt_in_wild_held", "source": "pokemon/services/wild_held_items.py",
                     "species": "Rattata", "reference_chance_percent": 5,
@@ -351,6 +391,11 @@ class ItemAvailabilityAudit:
                           "pokemon/battle/z_profiles.py", "pokemon/battle/z_generic_pairs.py",
                           "pokemon/battle/z_status_pairs.py", "pokemon/battle/z_signature_pairs.py",
                           "pokemon/services/berry_snack.py", "pokemon/services/berry_growing.py",
+                          "pokemon/evolution_items.py", "pokemon/services/evolution.py",
+                          "pokemon/services/training_grounds.py", "pokemon/services/itemfinder.py",
+                          "pokemon/services/item_activity_routes.py", "pokemon/field_friendship.py",
+                          "pokemon/services/mirror_herb.py", "pokemon/mirror_herb.py",
+                          "pokemon/services/daycare_teaching_location.py", "pokemon/battle/npc_prize_items.py",
                           "pokemon/battle/battle_boosters.py", "pokemon/battle/accuracy.py",
                           "pokemon/dex/functions/moves/damage_moves.py",
                           "pokemon/services/necrozma.py", "pokemon/battle/necrozma.py",
@@ -360,6 +405,9 @@ class ItemAvailabilityAudit:
         identity_paths.extend(str(Path(sys.modules[service.__module__].__file__).relative_to(ROOT)).replace("\\", "/")
                               for service, _, _ in services)
         return {"schema_version": 2, "scope": "Non-plot evolution, recovery, berries/equivalents, training and held items; CAP/capture/TR/clutter excluded",
+                "intentional_deferrals": [{"issue": 938, "items": ["Cleanse Tag", "Pure Incense"],
+                    "status": "encounter_reduction_deferred",
+                    "limit": "No new definition, source or encounter-rate effect is inferred from the scope decision"}],
                 "definition_count": len(definitions), "scoped_count": len(rows),
                 "excluded_cap": sorted(definitions[key][0] for key in excluded_cap),
                 "current_registries": {"mega_pairs": len(mega_pairs), "z_mappings": len(z_profiles),

@@ -1552,6 +1552,13 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Move players to the battle room and notify watchers."""
         self._bind_reward_delivery()
         log_info(f"Setting up battle room for {self.battle_id}")
+        from .npc_prize_items import NPCPrizeItems
+
+        if self.battle and NPCPrizeItems.enabled(self.battle):
+            NPCPrizeItems.initial(self.battle)
+            if NPCPrizeItems.freeze(self.battle):
+                self.logic.sync_runtime_state()
+                self.storage.set("state", self._compact_state_for_persist(self.state.to_dict()))
         self.add_watcher(self.captainA)
         if self.captainB and getattr(self.captainB, "id", None) is not None:
             self.add_watcher(self.captainB)
@@ -1921,6 +1928,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if self.battle and self.state and BattleRewards.supports(self.captainA):
             self.battle.reward_delivery = BattleRewards(self.state.reward_id)
         metadata = getattr(self, "encounter_metadata", {}) or {}
+        if self.battle:
+            self.battle.prize_source_type = metadata.get("source_type")
         if self.battle and metadata.get("source_type") == "gym_leader" and metadata.get("reward_policy") == "badge_only":
             self.battle.award_xp = self.battle.award_txp = self.battle.award_prizes = False
             self.state.xp = self.state.txp = False
@@ -2110,8 +2119,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         from .battle_boosters import BattleBoosters
 
         from .ultra_burst import UltraBurst
+        from .npc_prize_items import NPCPrizeItems
 
-        if (BattleBoosters.tracked(self.battle) or UltraBurst.tracked(self.battle)) and connection.in_atomic_block:
+        if (BattleBoosters.tracked(self.battle) or UltraBurst.tracked(self.battle)
+                or NPCPrizeItems.tracked(self.battle)) and connection.in_atomic_block:
             raise ValueError("Submit this item or Ultra turn outside a containing transaction; no turn changed.")
         snapshot = self.logic.to_dict()
         adventure_result = getattr(self, "_adventure_result", None)
@@ -2135,15 +2146,18 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
                 NativeNecrozmaBattle.lock_sources(self.battle)
                 from .battle_boosters import BattleBoosters
+                from .npc_prize_items import NPCPrizeItems
 
-                if getattr(self.state, 'multi', None) or BattleBoosters.tracked(self.battle) or UltraBurst.tracked(self.battle):
+                if (getattr(self.state, 'multi', None) or BattleBoosters.tracked(self.battle)
+                        or UltraBurst.tracked(self.battle) or NPCPrizeItems.tracked(self.battle)):
                     saved = BattleRewards.stored_attribute(self.room, self.storage._key('state')) or {}
                     if (saved.get('reward_id') != self.state.reward_id or saved.get('ending')
                             or saved.get('mechanic_turn', 0) != self.battle.mechanic_turn
                             or dict(saved.get('declare', {})) != dict(self.state.declare)
                             or saved.get('booster_effects', {}) != self.state.booster_effects
                             or saved.get('ultra_pending', {}) != self.state.ultra_pending
-                            or saved.get('ultra_used', []) != self.state.ultra_used):
+                            or saved.get('ultra_used', []) != self.state.ultra_used
+                            or saved.get('npc_prize_qualifications', {}) != self.state.npc_prize_qualifications):
                         raise ValueError('This battle turn changed; refresh and choose again.')
                 from .mega_evolution import MegaEvolution
 

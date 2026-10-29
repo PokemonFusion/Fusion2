@@ -52,9 +52,10 @@ automatic evolution. Unlisted pairs, including CAP/fan species, remain closed.
 
 The item has complete normalized name lookup, an Evolution Items category and
 a reference price of 10000, matching PF2's other supplemental single-use
-evolution items. This metadata does not install stock or grant items. A finite
-source remains a separate decision; no shared-world shop, reward or encounter
-table is changed here. The supported bag action is `+evolve`; `+use` and merely
+evolution items. The optional `world/link_cord_counter.json` authors a finite
+buy-only counter: 10,000 each, 20 initial cords, `linkcord` entrance and `back`
+return. Explicit installation requires a selected hub; retry never refills sold
+stock. No shared-world shop, reward or encounter table is changed here. The supported bag action is `+evolve`; `+use` and merely
 holding the cord do not activate it. If a held cord and a bag cord both exist,
 only the bag copy is consumed and the held copy remains.
 
@@ -88,3 +89,7 @@ logged-in live walkthrough, hosted CI, merge and deployment.
 Local results and the Emergency Exit fixture repair are recorded in the
 [October 29 commit verification](testing/link-cord-2026-10-29.md), with the
 original PostgreSQL evidence retained in the linked October 28 report.
+The later [remaining-item receipt](testing/remaining-item-delivery-2026-10-29.md)
+records finite-source purchase, all 14 exact evolutions and reconnect through
+actual ordinary sockets in a task-owned private game. It does not establish
+existing-world installation or deployment.

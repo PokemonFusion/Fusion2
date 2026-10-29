@@ -65,11 +65,13 @@ class BattlePlayerFixture(unittest.TestCase):
         room = ObjectDB.objects.create(db_key="battle-repair-room-" + uuid4().hex)
         self.room = SimpleNamespace(
             id=room.pk, pk=room.pk, key=room.key, db=room.db, ndb=room.ndb,
-            attributes=room.attributes, contents=[], msg_contents=lambda message: None,
+            attributes=room.attributes, db_attributes=room.db_attributes,
+            contents=[], msg_contents=lambda message: None,
         )
         self.players, self.session = [], None
         for side in ("Host", "Guest"):
-            character = ObjectDB.objects.create(db_key=side + uuid4().hex)
+            character = ObjectDB.objects.create(db_key=side + uuid4().hex,
+                                                db_typeclass_path="typeclasses.characters.Character")
             character.permissions.add("Player")
             trainer = Trainer.objects.create(user=character, trainer_number=Trainer.objects.count() + 1)
             player = BattlePlayerView(character, trainer, UserStorage.objects.create(user=character))

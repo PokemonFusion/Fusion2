@@ -55,8 +55,8 @@ class ItemActivityRoute:
                                                              ("return_exit", room, hub, "back")):
                         exit_row = ObjectDB.objects.filter(pk=prior.get(key), db_location=location,
                                                           db_destination=destination, db_key=name).first()
-                        if (exit_row is None or set(str(exit_row.db_lock_storage).split(";"))
-                                != {"view:all()", "traverse:all()"}):
+                        if (exit_row is None or not {"call:all()", "view:all()", "traverse:all()"}
+                                <= set(str(exit_row.db_lock_storage).split(";"))):
                             raise ValueError("Activity exits or public access need review.")
                     return room
                 if existing or ObjectDB.objects.filter(db_location=hub, db_key__iexact=self.entrance).exists():
@@ -71,8 +71,10 @@ class ItemActivityRoute:
                 returning = create_object("typeclasses.exits.Exit", key="back",
                                           location=room, destination=hub, nohome=True)
                 for exit_row in (entrance, returning):
-                    exit_row.locks.clear()
-                    exit_row.locks.add("view:all();traverse:all()")
+                    # Evennia gathers object commands only after the call lock.
+                    # Preserve the base exit's call/security locks as well as
+                    # making this authored route visible and traversable.
+                    exit_row.locks.add("call:all();view:all();traverse:all()")
                 hub.attributes.add(marker, {"version": 1, "recipe_sha256": fingerprint,
                                            "room": room.pk, "entrance": entrance.pk,
                                            "return_exit": returning.pk})
