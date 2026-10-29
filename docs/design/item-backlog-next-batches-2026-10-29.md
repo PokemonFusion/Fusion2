@@ -26,6 +26,78 @@ and #935's four recovery equivalents have separate implementation receipts.
 
 ## Training access and existing stock (#930 / #952)
 
+### Initial implementation contract selected during plan execution
+
+The user authorized executing the complete resolution plan and pushing tested
+batches on October 29. The following values now define the first Training
+Grounds delivery; existing-world operations remain separately authorized.
+
+- One ordinary Training Grounds activity, available solo and free, gives up to
+  **64 EVs in one chosen stat**, clipped to 252/stat and 510 total. It awards no
+  EXP, level, healing, move PP or genetic change. Only a useful committed gain
+  counts toward training milestones.
+- A session has **three active exercise steps**, at least **30 real seconds
+  apart**; the first step opens 30 seconds after confirmation. Minimum elapsed
+  time is 90 seconds. Each step requires a deliberate command; elapsed time
+  alone grants nothing. Technique/pace/recovery choices supply roleplay flavour
+  with the same numerical effect. Chat and coaching can accompany the activity;
+  another player or staff member is never required.
+- `+train <party slot/UUID/current Fusion>=<stat>` previews a session, then
+  `+train confirm` starts it. `+train continue <technique|pace|recovery>` advances
+  one currently expected step. `+train`, `+train status` and `+train cancel`
+  inspect/resume/cancel. Keep one active session per character, persisted across
+  reconnect. Cancellation/interruption has no cost or partial numeric award.
+- Use a living, non-egg, owned party member or current Fusion at the configured
+  Training Grounds, outside battle and conflicting reservations. Revalidate
+  current owner, exact target/placement, room, EVs and level at each action.
+  Training that becomes stale refuses without undoing intervening gameplay.
+- `+train reset <target>=<stat>[/<amount>]` previews partial/stat retraining;
+  `+train reset <target>=all` previews a full reset. `+train confirm` revalidates
+  the exact preview before committing. Resets are **free**, give no items or
+  milestone progress, and require cancelling an active session first. Preview
+  the EV and HP consequences. Preserve absolute HP deficit, keep fainted HP zero,
+  and never refresh unrelated HP/PP, Nature or genetic IVs.
+- Ordinary battle EV/EXP awards remain unchanged. Focused training is additive;
+  an explicit confirmed reset is the only removal in this route. No trainer
+  credits, new currency, automatic refill or three training shops are introduced.
+- Every **six useful completed sessions** awards one Rare Candy; every **12**
+  awards one Bottle Cap. The **60th** awards a one-time Gold Bottle Cap. These
+  rewards share the committed session receipt and character identity, never
+  timer callbacks or replayed commands. Minimum active elapsed times are nine,
+  18 and 90 minutes respectively. Existing item use/Hyper Training eligibility
+  still applies; merely owning a Cap bypasses no level or target guard.
+- The separate opt-in `training-v1` Item Finder profile has a **5% success
+  chance**, using the existing three-second character cooldown. Conditional
+  weights total100: each of the six feathers8 (48 total), each of the six
+  EV-reducing berries6 (36), Rare Candy12, Bottle Cap3, Gold Bottle Cap1. Every
+  successful search credits exactly one selected item. The named existing
+  Potion profile retains its current rules; conflicting/unknown configurations
+  fail closed. No room receives this profile merely from a catalog entry.
+- All 15 names have an explicit role: feathers and EV berries are optional
+  Finder supplements to reliable direct training/free retraining; Candy and
+  Caps also have dependable earned milestones. Gold is optional. No random
+  drop is required to produce or change a viable build.
+
+Measured example from `get_stats`: native Hardy Mew at level50, zero IVs/EVs,
+has Attack105/Speed105. Four sessions in each stat yield252 Attack/252 Speed
+EVs and Attack136/Speed136 in **12 minimum active minutes**. A ninth session in
+HP clips to the remaining6 EVs, for510 total, in13.5 minimum active minutes.
+An intentionally chosen252/252/4 spread takes a partial confirmed two-EV reset
+afterward; spare EVs that do not change a displayed stat are not invented power.
+These are calculated-stat and configured-activity measurements, not a logged-in
+player timing or claim that the activity is already implemented.
+
+Implementation batches: (1) session command/persistent EV delivery and status,
+(2) stale-safe free partial/full retraining, (3) the15-name Finder profile and
+atomic training milestones. Each batch needs useful ordinary command/SQL proof,
+no-effect/eligibility/refusal controls, duplicate/concurrent completion, post-write
+rollback and reconnect. Compare actual attacks and action order of trained versus
+untrained native models in NPC and disposable player battle fixtures. Qualify
+socket timing and acquisition separately; author a discoverable Training Grounds
+and Training Trail without installing them in an existing world.
+
+### Agreed direction and earlier source boundary
+
 The fresh read-only inspection report is retained outside the repository for
 user review. Publishing its operational details requires explicit approval.
 The selected direction is now **Training Grounds, affordable EV retraining and
