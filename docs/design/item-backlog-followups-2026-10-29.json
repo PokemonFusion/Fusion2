@@ -1,5 +1,8 @@
 {
-  "pending_source_followup": {
+  "published_source_followup": {
+    "parent": 930,
+    "number": 952,
+    "url": "https://github.com/PokemonFusion/Fusion2/issues/952",
     "title": "[Items][P2][Source] Author and qualify the next 15 finite training-item sources",
     "body": "Follow-up to #930, tracked by #919. Depends on repair gate #929. This is a proposed source-authoring and acceptance batch; it does not authorize live installation or restocking.\n\nChoose three **new, separately versioned finite recipes** for the exact 15 names:\n\n| Proposed counter / entrance | Offers: reference PF2 price × initial units |\n| --- | --- |\n| Advanced Capacity / `advancedcapacity` | Rare Candy 10,000×5; Bottle Cap 20,000×2; Gold Bottle Cap 60,000×1 |\n| Training Berries / `trainingberries` | Pomeg, Kelpsy, Qualot, Hondew, Grepa, Tamato: each 2,000×5 |\n| Training Feathers / `feathers` | Health, Muscle, Resist, Genius, Clever, Swift Feather: each 500×10 |\n\nExact recipe identities are `advanced-capacity-v1` / marker\n`advanced_capacity_supply_v1`, `training-berries-v1` / marker\n`training_berries_supply_v1`, and `training-feathers-v1` / marker\n`training_feathers_supply_v1`, each version1. Reject any existing conflicting\nidentity/vector rather than adopting it.\n\nThese are deliberate finite PF2 source values, independent of generic catalog\nprices. Reuse `FiniteItemSupplyRoute` and the shared purchase transaction.\nProposed hub is #31 with public entrance/return locks and a discoverable sign;\nthe installer must validate its exact source marker and vector, refuse conflicts,\nand preserve sold quantities on retries. No source or companion is inferred from\nan item definition. Each authored source must be qualified separately from metadata and any earlier availability report.\n\nFollow-up: **Author and qualify the 15-name finite training source batch**.\nAcceptance must cover travel/discovery, insufficient funds/empty stock, exact\nwallet and bag deltas, useful Candy/Hyper Training/EV/feather effects, no-effect\npreservation, reconnect, failed-write rollback and idempotent source retries.\nUse tagged disposable source/owner fixtures first; existing-world installation\nrequires a separately reviewed operation with exact targets.\n\nUse only tagged disposable fixtures for implementation checks. Keep publication, socket acceptance and any existing-world operation separately authorized."
   },
@@ -30,5 +33,5 @@
       "url": "https://github.com/PokemonFusion/Fusion2/issues/951"
     }
   ],
-  "status": "Remaining GitHub publication requires user approval after automatic review rejection. No source/stock operational data is included in this proposed public body."
+  "status": "Redacted source follow-up published as #952 after explicit user approval. Sixteen approved append-only original-issue updates were published and read back; issues remain open. No operational inspection details were published."
 }

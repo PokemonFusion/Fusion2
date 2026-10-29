@@ -5,9 +5,12 @@ Follow-ups [#947](https://github.com/PokemonFusion/Fusion2/issues/947),
 [#949](https://github.com/PokemonFusion/Fusion2/issues/949),
 [#950](https://github.com/PokemonFusion/Fusion2/issues/950) and
 [#951](https://github.com/PokemonFusion/Fusion2/issues/951) were created for
-#931/#933/#934/#936/#937. The #930 source follow-up remains a redacted local
-[draft](item-backlog-followups-2026-10-29.json), awaiting publication approval.
-Original scope issues remain open until their updates are approved.
+#931/#933/#934/#936/#937. After explicit user approval, the redacted #930 source
+follow-up was published as [#952](https://github.com/PokemonFusion/Fusion2/issues/952).
+The 16 approved original-issue updates were appended and read back, preserving
+their existing bodies and metadata. All issues remain open. The
+[publication receipt](../testing/item-issue-publication-2026-10-29.json) records
+the exact scope; implementation commits remain local.
 
 These bounded decisions address #930, #931, #933, #934 and #936–#938 after
 the existing-item repair gate. They define follow-up implementation and player
