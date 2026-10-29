@@ -12,18 +12,27 @@ their existing bodies and metadata. All issues remain open. The
 [publication receipt](../testing/item-issue-publication-2026-10-29.json) records
 the exact scope; implementation commits remain local.
 
+Later on October 29, the user selected deliberate training and affordable
+retraining, with Item Finder rewards as a supplement. #952 was rewritten around
+that design and #930 links the revised direction. The original publication
+receipt remains historical; the current issue snapshot is in
+[the follow-up record](item-backlog-followups-2026-10-29.json).
+
 These bounded decisions address #930, #931, #933, #934 and #936–#938 after
 the existing-item repair gate. They define follow-up implementation and player
 acceptance work. They do not install content, change live stock, alter rewards,
 or claim that the missing runtime features already work. #932's six Z sources
 and #935's four recovery equivalents have separate implementation receipts.
 
-## Public stock and the next 15 sources (#930)
+## Training access and existing stock (#930 / #952)
 
 The fresh read-only inspection report is retained outside the repository for
 user review. Publishing its operational details requires explicit approval.
-The following source plan authors new finite recipes without changing the
-existing offers or claiming a new player walkthrough.
+The selected direction is now **Training Grounds, affordable EV retraining and
+supplementary Item Finder/training rewards**. The previous three-counter plan,
+including its prices, quantities, entrance names and recipe identities, is
+superseded. This is a design task; no training activity or new drop is implemented
+or installed by the decision.
 
 For the 29 previously depleted offers, retain finite supply: the 21 mints, PP Up,
 PP Max, Ability Capsule,
@@ -33,34 +42,46 @@ them into an operator policy as part of this backlog. Any later replenishment
 request must name the source/version, existing sales, cap, window and rollback
 as a separate approved operation. Existing opt-in protections remain in force.
 
-Choose three **new, separately versioned finite recipes** for the exact 15 names:
+Proposed player flow: choose a Pokémon → choose a stat → complete a short
+training session or NPC sparring challenge → inspect the exact saved EV gain
+and remaining capacity. Progress should be predictable, repeatable and available
+solo, with room for roleplay or coaching. Avoid hundreds of repetitive fights,
+single-point command spam or training access dependent on arranged PvP wins.
+Preserve the existing 252-per-stat / 510-total EV limits and genetic data.
 
-| Proposed counter / entrance | Offers: reference PF2 price × initial units |
+Affordable retraining must let players change a spread without rare loot, scarce
+shared stock or a staff reset. Specify a service, reliably available EV-reducing
+berries, or both. Preview and confirm destructive changes, costs and affected
+stats. Define how training interacts with ordinary battle EV/EXP rewards without
+silent erasure or duplicate credit.
+
+Keep the original 15-name access inventory explicit:
+
+| Family | Intended role |
 | --- | --- |
-| Advanced Capacity / `advancedcapacity` | Rare Candy 10,000×5; Bottle Cap 20,000×2; Gold Bottle Cap 60,000×1 |
-| Training Berries / `trainingberries` | Pomeg, Kelpsy, Qualot, Hondew, Grepa, Tamato: each 2,000×5 |
-| Training Feathers / `feathers` | Health, Muscle, Resist, Genius, Clever, Swift Feather: each 500×10 |
+| Health, Muscle, Resist, Genius, Clever and Swift Feather | Small boosts/shortcuts; suitable ordinary Finder rewards alongside reliable focused training |
+| Pomeg, Kelpsy, Qualot, Hondew, Grepa and Tamato Berry | Accessible retraining aids; reliable access supplemented by gathering/growing |
+| Rare Candy | Occasional exploration/challenge reward that speeds up leveling |
+| Bottle Cap | Advanced training reward with a reliable progression route alongside rare finds |
+| Gold Bottle Cap | Major milestone reward and optional shortcut |
 
-Exact recipe identities are `advanced-capacity-v1` / marker
-`advanced_capacity_supply_v1`, `training-berries-v1` / marker
-`training_berries_supply_v1`, and `training-feathers-v1` / marker
-`training_feathers_supply_v1`, each version1. Reject any existing conflicting
-identity/vector rather than adopting it.
+Existing vitamins can remain training shortcuts; this decision selects no new
+vitamin source batch. Preserve existing Hyper Training eligibility and its
+stat-only overlay. Choose named Finder rules and eligible locations; the guarded
+Potion source does not establish arbitrary training-item support. Preserve its
+behavior when extending it. No blanket catalog drops, new currency or automatic
+refill is selected.
 
-These are deliberate finite PF2 source values, independent of generic catalog
-prices. Reuse `FiniteItemSupplyRoute` and the shared purchase transaction.
-Proposed hub is #31 with public entrance/return locks and a discoverable sign;
-the installer must validate its exact source marker and vector, refuse conflicts,
-and preserve sold quantities on retries. No source or companion is inferred from
-an item definition. The source-only repair index and dated world observations have different
-evidence scopes; neither fills every acquisition gap.
-
-Follow-up: **Author and qualify the 15-name finite training source batch**.
-Acceptance must cover travel/discovery, insufficient funds/empty stock, exact
-wallet and bag deltas, useful Candy/Hyper Training/EV/feather effects, no-effect
-preservation, reconnect, failed-write rollback and idempotent source retries.
-Use tagged disposable source/owner fixtures first; existing-world installation
-requires a separately reviewed operation with exact targets.
+Follow-up [#952](https://github.com/PokemonFusion/Fusion2/issues/952) must select
+the first ordinary location/command/activity, useful EV gain, expected sessions
+for a representative build, any fee, affordable reset policy, Finder weights
+and advanced milestones. Values remain to be designed and measured against
+actual PF2 stats and text-battle duration. Then create bounded implementation
+and normal-player acceptance follow-ups, covering train/retrain/find/earn →
+inspect/use → reconnect; fresh eligibility, caps, interruption, stale selection,
+duplicate completion, concurrency and rollback. Distinguish deterministic Finder
+tests from actual player acquisition. Existing-world installation requires its
+own reviewed operation with exact targets.
 
 ## Three contextual held evolutions (#931)
 
