@@ -77,3 +77,8 @@ For source authoring only, `BerryNursery.install(reviewed_hub)` in
 It validates the existing item names and links, serializes competing installers,
 and rejects drift/conflicts. Reinstalling preserves sold stock. It leaves the
 six-item Supply Corner and Adventure content independent.
+
+
+## Chesto, Sitrus and Lum actual elapsed acceptance — October 29
+
+All three added seeds passed a separate real four-hour private run: four stage waterings, reconnects, five harvested berries, useful normal +use effects leaving four, and replay conservation. [Elapsed evidence](testing/nursery-next-three-real-elapsed-2026-10-29.md) records exact times and complete private fixture cleanup. Its captured production-command/SQL transport is separate from socket acceptance and existing-world deployment. No source or stock was installed/refilled in a shared world.
