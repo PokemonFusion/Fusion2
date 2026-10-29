@@ -2280,10 +2280,20 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         elif eventid == "TryAddVolatile":
             relay_kw_name = "status"
             relay_positional = False
-        for holder, state, owner in self._event_scoped_holders(
+        holders = self._event_scoped_holders(
             target=target, source=source, effect=effect,
             include_suppressed_items=eventid == "TakeItem",
-        ):
+        )
+        if eventid == "Residual":
+            def residual_order(entry):
+                """Honor residual order so healing precedes Heal Block expiry."""
+                holder = entry[0][1] if isinstance(entry[0], tuple) else entry[0]
+                raw = getattr(holder, "raw", {}) or {}
+                return tuple(raw.get(key, getattr(holder, key, 0)) for key in
+                             ("onResidualOrder", "onResidualSubOrder"))
+
+            holders.sort(key=residual_order)
+        for holder, state, owner in holders:
             relation = None
             actual_holder = holder
             if isinstance(holder, tuple):

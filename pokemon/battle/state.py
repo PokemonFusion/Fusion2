@@ -23,6 +23,7 @@ class BattleState:
 	declare: Dict[str, Dict[str, str]] = field(default_factory=dict)
 	recycle: Dict[str, str] = field(default_factory=dict)
 	used_item_history: Dict[str, List[str]] = field(default_factory=dict)
+	item_rng_state: Optional[List] = None
 	expshare: Dict[str, str] = field(default_factory=dict)
 	roomweather: str = "clear"
 	watchers: Set[int] = field(default_factory=set)

@@ -90,6 +90,9 @@ class BattleLogic:
 		self.battle = battle
 		self.data = data
 		self.state = state
+		from .item_boosts import ItemRandomState
+
+		ItemRandomState.restore(battle, getattr(state, "item_rng_state", None))
 		# One live field must also be the checkpoint's field. Otherwise an
 		# executed Trick Room disappears during a save/rebuild.
 		data.field = battle.field
@@ -207,6 +210,9 @@ class BattleLogic:
 		from .item_consumption import ItemUseHistory
 
 		self.state.used_item_history = ItemUseHistory.freeze_sides(self.battle)
+		from .item_boosts import ItemRandomState
+
+		self.state.item_rng_state = ItemRandomState.freeze(self.battle)
 		teams = [
 			(getattr(part, "team", None) or ("A" if index == 0 else "B"), part)
 			for index, part in enumerate(self.battle.participants)

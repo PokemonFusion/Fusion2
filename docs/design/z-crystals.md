@@ -1,9 +1,12 @@
 # Existing Z-Crystal implementation plan (#775)
 
-Status: **62 explicit mappings on 34 crystals accepted locally**: 32 generic
-damage sources, 14 status sources and 16 signatures. [Foundation evidence](../testing/z-core-2026-10-23.md),
+Status: **63 explicit mappings on 35 crystals accepted locally**: 32 generic
+damage sources, 14 status sources, 16 signatures and one guarded Ultra profile. [Foundation evidence](../testing/z-core-2026-10-23.md),
 [status/signature evidence](../testing/z-special-2026-10-23.md) and [player guide](../z-moves.md).
-Other ordinary/status sources and Ultra remain deferred. The two
+Other unreviewed ordinary/status sources remain deferred. The separate
+[Ultra route](../ultra-burst.md) uses its reviewed native-pair and held-crystal
+guards; [its dated evidence](../testing/ultra-burst-2026-10-25.md) does not certify
+a newer checkout or public stock. The two
 [live-pair-proved Necrozma lifecycles](necrozma-combination.md) now pass
 [local acceptance](../testing/necrozma-items-2026-10-24.md) for #825–#830.
 They extend holder eligibility for the same two signatures; that earlier

@@ -76,10 +76,10 @@ class Absolite:
 
 class Absorbbulb:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if move and move.type == "Water" and target:
-			if hasattr(target, "boosts"):
-				target.boosts["spa"] = target.boosts.get("spa", 0) + 1
-			_remove_battle_item(target, source=source, effect=move, used=True)
+		"""Use a surviving holder's matching actual hit, once."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		if move and move.type == "Water" and target and damage > 0:
+			HeldItemBoosts.use(target, {"spa": 1}, source=source, effect=move)
 
 
 class Adamantcrystal:
@@ -187,13 +187,12 @@ class Ampharosite:
 
 class Apicotberry:
 	def onEat(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spd"] = pokemon.boosts.get("spd", 0) + 1
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"spd": 1})
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Aspearberry:
@@ -282,13 +281,12 @@ class Berryjuice:
 
 class Berserkgene:
 	def onUpdate(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["atk"] = pokemon.boosts.get("atk", 0) + 2
-			pokemon.boosts["spe"] = pokemon.boosts.get("spe", 0) + 2
-			if hasattr(pokemon, "volatiles"):
-				pokemon.volatiles["confusion"] = True
-			if hasattr(pokemon, "item"):
-				pokemon.item = None
+		"""Apply the legacy Attack-only item with current PF2 ability guards."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		from pokemon.battle.effect_context import EffectContext
+		item = EffectContext.item(pokemon)
+		if HeldItemBoosts.use(pokemon, {"atk": 2}, source=pokemon):
+			pokemon.addVolatile("confusion", source=pokemon, effect=item)
 
 
 class Bigroot:
@@ -323,12 +321,14 @@ class Blackglasses:
 
 class Blacksludge:
 	def onResidual(self, pokemon=None):
-		if not pokemon:
+		"""Apply the residual through current HP eligibility and battle events."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		if not pokemon or pokemon.hp <= 0:
 			return
 		if "Poison" in set(getattr(pokemon, "types", []) or []):
-			pokemon.hp = min(pokemon.hp + pokemon.max_hp // 16, pokemon.max_hp)
+			HeldItemEffects.heal(pokemon, 16)
 		else:
-			pokemon.hp = max(pokemon.hp - pokemon.max_hp // 8, 0)
+			HeldItemEffects.damage(pokemon, pokemon, 8)
 
 
 class Blastoisinite:
@@ -435,10 +435,10 @@ class Cameruptite:
 
 class Cellbattery:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if move and move.type == "Electric" and target:
-			if hasattr(target, "boosts"):
-				target.boosts["atk"] = target.boosts.get("atk", 0) + 1
-			_remove_battle_item(target, source=source, effect=move, used=True)
+		"""Use a surviving holder's matching actual hit, once."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		if move and move.type == "Electric" and target and damage > 0:
+			HeldItemBoosts.use(target, {"atk": 1}, source=source, effect=move)
 
 
 class Charcoal:
@@ -815,10 +815,9 @@ class Electricmemory:
 
 
 class Electricseed:
-	def _activate(self, pokemon):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["def"] = pokemon.boosts.get("def", 0) + 1
-		_remove_battle_item(pokemon, used=True)
+	def _activate(self, pokemon=None):
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.use(pokemon, {"def": 1}, source=pokemon)
 
 	def onStart(self, pokemon=None):
 		terrain = _current_field_terrain(pokemon)
@@ -1026,13 +1025,12 @@ class Galladite:
 
 class Ganlonberry:
 	def onEat(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["def"] = pokemon.boosts.get("def", 0) + 1
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"def": 1})
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Garchompite:
@@ -1114,9 +1112,8 @@ class Grassmemory:
 
 class Grassyseed:
 	def _activate(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["def"] = pokemon.boosts.get("def", 0) + 1
-		_remove_battle_item(pokemon, used=True)
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.use(pokemon, {"def": 1}, source=pokemon)
 
 	def onStart(self, pokemon=None):
 		terrain = _current_field_terrain(pokemon)
@@ -1318,17 +1315,9 @@ class Ironplate:
 
 class Jabocaberry:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		"""Retaliate only after a real physical hit and permitted berry use."""
-		from pokemon.battle.item_consumption import ReactiveItemConsumption
-		if source and move and move.category == "Physical" and damage > 0 and source.hp > 0:
-			battle = getattr(target, "battle", None)
-			participant = battle.participant_for(source) if battle else None
-			if not participant or source not in participant.active:
-				return
-			if not ReactiveItemConsumption.eat(target, source=source, effect=move, allow_fainted=True):
-				return
-			if hasattr(source, "hp") and hasattr(source, "max_hp"):
-				source.hp = max(source.hp - source.max_hp // 8, 0)
+		"""Retain the berry if Magic Guard prevents its retaliation."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		HeldItemEffects.retaliate(damage, target, source, move, "Physical")
 
 	def onEat(self, pokemon=None):
 		return
@@ -1370,9 +1359,9 @@ class Keeberry:
 			ReactiveItemConsumption.eat(target, source=source, effect=move)
 
 	def onEat(self, pokemon=None):
-		"""Keep the existing stage effect pending the separate boost repair."""
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["def"] = pokemon.boosts.get("def", 0) + 1
+		"""Apply the eaten berry through normal stage and ability events."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"def": 1})
 
 
 class Kingsrock:
@@ -1424,9 +1413,9 @@ class Leek:
 
 class Leftovers:
 	def onResidual(self, pokemon=None):
-		if pokemon:
-			heal = pokemon.max_hp // 16
-			pokemon.hp = min(pokemon.hp + heal, pokemon.max_hp)
+		"""Apply the residual through current HP eligibility and battle events."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		HeldItemEffects.heal(pokemon, 16)
 
 
 class Leppaberry:
@@ -1444,13 +1433,12 @@ class Leppaberry:
 
 class Liechiberry:
 	def onEat(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["atk"] = pokemon.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"atk": 1})
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Lifeorb:
@@ -1535,10 +1523,10 @@ class Lumberry:
 
 class Luminousmoss:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if move and move.type == "Water" and target:
-			if hasattr(target, "boosts"):
-				target.boosts["spd"] = target.boosts.get("spd", 0) + 1
-			_remove_battle_item(target, source=source, effect=move, used=True)
+		"""Use a surviving holder's matching actual hit, once."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		if move and move.type == "Water" and target and damage > 0:
+			HeldItemBoosts.use(target, {"spd": 1}, source=source, effect=move)
 
 
 class Lustrousglobe:
@@ -1622,9 +1610,9 @@ class Marangaberry:
 			ReactiveItemConsumption.eat(target, source=source, effect=move)
 
 	def onEat(self, pokemon=None):
-		"""Keep the existing stage effect pending the separate boost repair."""
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spd"] = pokemon.boosts.get("spd", 0) + 1
+		"""Apply the eaten berry through normal stage and ability events."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"spd": 1})
 
 
 class Mawilite:
@@ -1813,9 +1801,8 @@ class Mirrorherb:
 
 class Mistyseed:
 	def _activate(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spd"] = pokemon.boosts.get("spd", 0) + 1
-		_remove_battle_item(pokemon, used=True)
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.use(pokemon, {"spd": 1}, source=pokemon)
 
 	def onStart(self, pokemon=None):
 		terrain = _current_field_terrain(pokemon)
@@ -1944,13 +1931,12 @@ class Persimberry:
 
 class Petayaberry:
 	def onEat(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spa"] = pokemon.boosts.get("spa", 0) + 1
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"spa": 1})
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Pidgeotite:
@@ -2760,9 +2746,8 @@ class Psychicmemory:
 
 class Psychicseed:
 	def _activate(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spd"] = pokemon.boosts.get("spd", 0) + 1
-		_remove_battle_item(pokemon, used=True)
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.use(pokemon, {"spd": 1}, source=pokemon)
 
 	def onStart(self, pokemon=None):
 		terrain = _current_field_terrain(pokemon)
@@ -2884,12 +2869,10 @@ class Rockmemory:
 
 class Rockyhelmet:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if source and move and move.flags.get("contact"):
-			from pokemon.battle.effect_context import EffectContext
-			if EffectContext.key(EffectContext.item(source)) == "protectivepads":
-				return
-			if hasattr(source, "hp") and hasattr(source, "max_hp"):
-				source.hp = max(source.hp - source.max_hp // 6, 0)
+		"""Contact retaliation remains indirect item damage, including a KO hit."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		if damage > 0 and HeldItemEffects.contact(source, target, move):
+			HeldItemEffects.damage(source, target, 6)
 
 
 class Roomservice:
@@ -2928,17 +2911,9 @@ class Roseliberry:
 
 class Rowapberry:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		"""Retaliate only after a real special hit and permitted berry use."""
-		from pokemon.battle.item_consumption import ReactiveItemConsumption
-		if source and move and move.category == "Special" and damage > 0 and source.hp > 0:
-			battle = getattr(target, "battle", None)
-			participant = battle.participant_for(source) if battle else None
-			if not participant or source not in participant.active:
-				return
-			if not ReactiveItemConsumption.eat(target, source=source, effect=move, allow_fainted=True):
-				return
-			if hasattr(source, "hp") and hasattr(source, "max_hp"):
-				source.hp = max(source.hp - source.max_hp // 8, 0)
+		"""Retain the berry if Magic Guard prevents its retaliation."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		HeldItemEffects.retaliate(damage, target, source, move, "Special")
 
 	def onEat(self, pokemon=None):
 		return
@@ -2987,13 +2962,12 @@ class Safetygoggles:
 
 class Salacberry:
 	def onEat(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spe"] = pokemon.boosts.get("spe", 0) + 1
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"spe": 1})
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Salamencite:
@@ -3137,10 +3111,10 @@ class Slowbronite:
 
 class Snowball:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if move and move.type == "Ice" and target:
-			if hasattr(target, "boosts"):
-				target.boosts["atk"] = target.boosts.get("atk", 0) + 1
-			_remove_battle_item(target, source=source, effect=move, used=True)
+		"""Use a surviving holder's matching actual hit, once."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		if move and move.type == "Ice" and target and damage > 0:
+			HeldItemBoosts.use(target, {"atk": 1}, source=source, effect=move)
 
 
 class Softsand:
@@ -3198,16 +3172,12 @@ class Spookyplate:
 
 class Starfberry:
 	def onEat(self, pokemon=None):
-		if not pokemon or not hasattr(pokemon, "boosts"):
-			return
-		stats = ["atk", "def", "spa", "spd", "spe"]
-		stat = stats[int(random() * len(stats))]
-		pokemon.boosts[stat] = min(pokemon.boosts.get(stat, 0) + 2, 6)
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.starf(pokemon)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Steelgem:
@@ -3243,13 +3213,19 @@ class Stick:
 
 class Stickybarb:
 	def onHit(self, target=None, source=None, move=None):
-		if move and move.flags.get("contact") and target and source and not getattr(source, "item", None):
-			source.item = target.item
-			target.item = None
+		"""Transfer the physical copy through the ordinary TakeItem boundary."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		if (HeldItemEffects.contact(source, target, move) and source.hp > 0
+				and not (getattr(source, "item", None) or getattr(source, "held_item", None))):
+			battle = getattr(target, "battle", None)
+			if battle:
+				battle.move_item(target, source, effect=move, source=target)
 
 	def onResidual(self, pokemon=None):
-		if pokemon:
-			pokemon.hp = max(pokemon.hp - pokemon.max_hp // 8, 0)
+		"""Magic Guard can prevent HP loss while the barb stays physically held."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		if pokemon and pokemon.hp > 0:
+			HeldItemEffects.damage(pokemon, pokemon, 8)
 
 
 class Stoneplate:
@@ -3295,12 +3271,10 @@ class Thickclub:
 class Throatspray:
 	def onAfterMoveSecondarySelf(self, source=None, target=None, move=None):
 		"""A permitted sound use consumes through UseItem/removal bookkeeping."""
-		from pokemon.battle.item_consumption import ReactiveItemConsumption
+		from pokemon.battle.item_boosts import HeldItemBoosts
 		if (move and move.flags.get("sound") and source
-				and (move.category == "Status" or getattr(move, "total_damage", 0) > 0)
-				and ReactiveItemConsumption.use(source, source=source, effect=move)):
-			if hasattr(source, "boosts"):
-				source.boosts["spa"] = source.boosts.get("spa", 0) + 1
+				and (move.category == "Status" or getattr(move, "total_damage", 0) > 0)):
+			HeldItemBoosts.use(source, {"spa": 1}, source=source, effect=move)
 
 
 class Toxicorb:
@@ -3409,14 +3383,11 @@ class Waveincense:
 class Weaknesspolicy:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
 		"""Consume only after a surviving, ordinary super-effective damaging hit."""
-		from pokemon.battle.item_consumption import ReactiveItemConsumption
+		from pokemon.battle.item_boosts import HeldItemBoosts
 		if (target and move and damage > 0 and getattr(target, "hp", 0) > 0
 				and not (move.raw.get("damage") or move.raw.get("damageCallback"))
-				and type_effectiveness(target, move) > 1
-				and ReactiveItemConsumption.use(target, source=source, effect=move)):
-			if hasattr(target, "boosts"):
-				target.boosts["atk"] = min(target.boosts.get("atk", 0) + 2, 6)
-				target.boosts["spa"] = min(target.boosts.get("spa", 0) + 2, 6)
+				and type_effectiveness(target, move) > 1):
+			HeldItemBoosts.use(target, {"atk": 2, "spa": 2}, source=source, effect=move)
 
 
 class Wellspringmask:

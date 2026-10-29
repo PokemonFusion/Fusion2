@@ -1,5 +1,22 @@
 # Finding and using items
 
+## October 29 repair candidate
+
+The [held-item guide](held-item-repairs.md) describes the repaired stat,
+indirect-damage, residual-healing and Berserk Gene behavior. The
+[manual medicine policy](battle-recovery-items.md) includes target-specific
+Embargo checks. Their [dated evidence](testing/item-repairs-2026-10-29.md) keeps
+offline tests, captured command/SQL observations, publication and deployment
+separate. The [new source-only index](testing/item-availability-repairs-index-2026-10-29.json)
+contains 642 definitions and 494 scoped items, including Link Cord. Its coarse
+capability labels are not complete facet acceptance; no fresh world snapshot was
+supplied, so all 494 current-world availability entries remain unverified.
+
+Ordinary [consent trades](operations/consent-trading.md) use `+trade` without
+automatic evolution. [Link Cord](link-cord-evolution.md) is consumed from the bag
+by `+evolve <id> Link Cord` for its 14 exact mappings. Existing trade-held item
+evolutions keep their held-item route. Public acquisition remains a separate check.
+
 ## Current public counters (October26 release)
 
 At Alpha Test Hub31 these ordinary exits reach finite buy-only counters. Use

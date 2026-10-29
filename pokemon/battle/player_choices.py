@@ -226,6 +226,11 @@ class PlayerChoices:
             except (ValueError, TypeError, KeyError):
                 raise ValueError("Choose an owned party slot, including a fainted reserve.") from None
             item_move = item_move.strip() or None
+        if not is_ball:
+            from pokemon.services.battle_items import BattleMedicineUse
+
+            if BattleMedicineUse.target_blocked(target_pokemon, self.battle):
+                raise ValueError("Embargo prevents using battle medicine on that Pokemon.")
         action = Action(self.participant, ActionType.ITEM, owner, item=item_name, priority=6,
                         pokemon=pokemon, target_pokemon=target_pokemon, target_slot=slot_for(owner, target_pokemon), item_move=item_move)
         target = next((name for name, mon in self.target_labels([target_pokemon]).items()), target_pokemon.name)
