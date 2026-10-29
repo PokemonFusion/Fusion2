@@ -291,6 +291,13 @@ GAMEPLAY_ITEMS = {
         "Consumes one bag copy; held-only copies do not activate it. No Bloodmoon form.",
         price=10000,
     ),
+    "linkcord": EvolutionItem(
+        "Link Cord", "Use +evolve <id> Link Cord for a supported trade-only evolution. "
+        "Consumes one bag copy; preserves Alolan form and Pumpkaboo size. "
+        "Karrablast and Shelmet evolve independently without the other species. "
+        "Held-only copies do not activate it; existing trade-held items keep their own rules.",
+        price=10000,
+    ),
     "smokeball": HeldEscapeItem(
         "Smoke Ball", "Held: guarantees the acting holder's escape from eligible wild battles with +flee. "
         "Reusable; item suppression and trainer/scripted no-flee restrictions still apply. Not a capture ball."

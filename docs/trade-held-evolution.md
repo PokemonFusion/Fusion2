@@ -73,8 +73,11 @@ After evolving Porygon with Up-Grade, equip Dubious Disc and explicitly request
 `+evolve <id>=Porygon-Z` for the next stage. A new target expresses a new request.
 Replacing/removing a held item retains the existing inventory return behavior.
 
-Non-item trades (including partner-species trades) remain unsupported. No Linking
-Cord, plot-only item, new item definition or battle held-item effect is added.
+This held-item route adds no automatic trade evolution or battle held-item
+effect. The separate [Link Cord equivalent](link-cord-evolution.md) supports
+14 exact trade-only mappings, including independent Karrablast and Shelmet
+evolutions. Existing trade-held mappings still consume their own held item
+and require no cord.
 
 ## Validation boundary
 

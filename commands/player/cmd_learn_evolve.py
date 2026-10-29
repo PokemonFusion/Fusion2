@@ -229,6 +229,7 @@ class CmdEvolvePokemon(Command):
       +evolve abc123
       +evolve abc123 Fire Stone
       +evolve abc123 Peat Block
+      +evolve abc123 Link Cord
       +evolve abc123 Scroll of Darkness
       +evolve abc123 Scroll of Waters=Urshifu-Rapid-Strike
       +evolve abc123=Alcremie-Ruby-Cream
@@ -241,8 +242,13 @@ class CmdEvolvePokemon(Command):
       by +evolve and the saved decoration afterward.
       Existing trade-held items use +hold then +evolve without a bag item.
       For example, Scyther holding Metal Coat evolves into Scizor. Ownership
-      and placement stay the same; the held copy is consumed once. +trade
-      remains unavailable. Non-item trade evolutions remain unsupported.
+      and placement stay the same; the held copy is consumed once.
+      Trade-only evolutions use +evolve <id> Link Cord, consuming one bag copy.
+      Supported: Kadabra, Machoke, Graveler (including Alolan), Haunter,
+      Boldore, Gurdurr, Phantump, all four Pumpkaboo sizes, Karrablast and
+      Shelmet. Alolan form and Pumpkaboo size stay the same. Karrablast and
+      Shelmet do not require the other species. Held-only cords do not work.
+      Ordinary trades do not trigger automatic evolution.
       Ursaring uses a Peat Block from your bag for ordinary Ursaluna. PF2's
       explicit item action replaces the full-moon condition; no moon flag,
       time or region is needed. Held-only copies and Bloodmoon are excluded.

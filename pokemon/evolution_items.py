@@ -103,6 +103,70 @@ class PeatBlockEvolution:
         )
 
 
+class LinkCordEvolution:
+    """Replace only the 14 reviewed trade-only transitions with one bag cord."""
+
+    item = "Link Cord"
+    transitions = (
+        ("Kadabra", "Alakazam"),
+        ("Machoke", "Machamp"),
+        ("Graveler", "Golem"),
+        ("Graveler-Alola", "Golem-Alola"),
+        ("Haunter", "Gengar"),
+        ("Boldore", "Gigalith"),
+        ("Gurdurr", "Conkeldurr"),
+        ("Phantump", "Trevenant"),
+        ("Pumpkaboo", "Gourgeist"),
+        ("Pumpkaboo-Small", "Gourgeist-Small"),
+        ("Pumpkaboo-Large", "Gourgeist-Large"),
+        ("Pumpkaboo-Super", "Gourgeist-Super"),
+        ("Karrablast", "Escavalier"),
+        ("Shelmet", "Accelgor"),
+    )
+    forms = {
+        "graveleralola": ("Graveler", "Alola", None),
+        "golemalola": ("Golem", "Alola", None),
+        "pumpkaboo": (None, None, "Average"),
+        "gourgeist": (None, None, "Average"),
+        "pumpkaboosmall": ("Pumpkaboo", "Small", None),
+        "gourgeistsmall": ("Gourgeist", "Small", None),
+        "pumpkaboolarge": ("Pumpkaboo", "Large", None),
+        "gourgeistlarge": ("Gourgeist", "Large", None),
+        "pumpkaboosuper": ("Pumpkaboo", "Super", None),
+        "gourgeistsuper": ("Gourgeist", "Super", None),
+    }
+    conditions = {"escavalier": "with a Shelmet", "accelgor": "with a Karrablast"}
+
+    @classmethod
+    def required_item(cls, target):
+        """Expose the bag requirement only for exact reviewed target identities."""
+        if normalize_name(target.name) in {normalize_name(name) for _, name in cls.transitions}:
+            return cls.item
+        return None
+
+    @classmethod
+    def eligible(cls, source, target, item, level):
+        """Preserve native forms and reject changed metadata or held-only input."""
+        identity = (normalize_name(source.name), normalize_name(target.name))
+        if (
+            identity not in {tuple(normalize_name(name) for name in row) for row in cls.transitions}
+            or normalize_name(item) != normalize_name(cls.item)
+            or type(level) is not int or not 1 <= level <= 100
+            or target.raw.get("evoType") != "trade"
+            or target.raw.get("evoItem") is not None
+            or target.raw.get("evoCondition", "") != cls.conditions.get(identity[1], "")
+        ):
+            return False
+        for species in (source, target):
+            form = tuple(species.raw.get(field) for field in ("baseSpecies", "forme", "baseForme"))
+            if (
+                form != cls.forms.get(normalize_name(species.name), (None, None, None))
+                or species.raw.get("battleOnly") or species.raw.get("changesFrom")
+            ):
+                return False
+        return True
+
+
 class TradeHeldEvolution:
     """Allow only reviewed source/target/item triples, never general trading."""
 
