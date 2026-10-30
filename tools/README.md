@@ -1,6 +1,25 @@
 # Tools
 
-Utilities and data-generation scripts used to build game data.
+Utilities, data-generation scripts, test runners, and QA tooling.
+
+[Documentation home](../docs/index.md) | [Code map](../docs/code-map.md) |
+[Testing and evidence index](../docs/testing/README.md)
+
+## Find a tool
+
+| Task | Entry point |
+| --- | --- |
+| Run the canonical mandatory fresh-process gate | [run_mandatory_tests.py](run_mandatory_tests.py); see [offline testing](../docs/offline-battle-testing.md) |
+| Audit item availability or reconcile support | [audit_item_availability.py](audit_item_availability.py), [reconcile_item_support.py](reconcile_item_support.py) |
+| Find battle QA runner documentation | [Battle pilot guide](../docs/testing/live-battle-pilot.md), [live_battle_pilot.py](live_battle_pilot.py) |
+| Find dex QA runner documentation | [Dex sweep guide](../docs/testing/live-dex-sweep.md), [live_dex_runner.py](live_dex_runner.py) |
+| Find effect-probe tooling | [live_smoke_effects.py](live_smoke_effects.py) and its case/server modules |
+| Inspect organization and CI assessment tooling | [org_score.py](org_score.py), [ci_assessor.py](ci_assessor.py) |
+| Generate upstream data or scrape item information | The data-generation and item-scraper sections below |
+
+Live QA tools can create fixtures or change game state. Read their documented
+scope and prerequisites before running them. Keep scratch output and retained
+observations in the locations described by [workspace hygiene](../docs/workspace-hygiene.md).
 
 ## data_generation
 
