@@ -196,7 +196,7 @@ def test_player_commands_keep_battle_movement_and_session_intact(adventure_world
         getattr(command, "_" + action)()
 
     assert messages
-    assert not player.cmdset.added
+    assert bool(player.cmdset.added) == (action == "look")
     assert not player.cmdset.deleted
     assert session.current_node == "entrance"
     assert player.db.adventure_session_id == room.db.adventure_session_id == session.pk

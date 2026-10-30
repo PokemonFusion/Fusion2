@@ -224,8 +224,8 @@ def test_post_puppet_skips_notification_for_nonparticipants():
                 restore_evennia(orig)
 
 
-def test_post_puppet_defers_adventure_movement_until_battle_cleanup(monkeypatch):
-        """The real reconnect hook attaches movement only after its gate opens."""
+def test_post_puppet_keeps_adventure_commands_available_through_combat(monkeypatch):
+        """Reconnect installs cardinal commands while the service gate blocks them."""
         from pokemon.adventures import cmdsets, sessions
         from pokemon.adventures.constants import STATE_ACTIVE
 
@@ -245,10 +245,10 @@ def test_post_puppet_defers_adventure_movement_until_battle_cleanup(monkeypatch)
                 monkeypatch.setattr(cmdsets, "attach_movement_cmdset", attached.append)
 
                 char.at_post_puppet()
-                assert not attached
+                assert attached == [char]
                 char.db.battle_id = None
                 char.at_post_puppet()
-                assert attached == [char]
+                assert attached == [char, char]
         finally:
                 restore_evennia(orig)
 

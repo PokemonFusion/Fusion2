@@ -183,6 +183,20 @@ class AdventurePlayerCases(unittest.TestCase):
         self.command('+adventure/claim')
         self.assertEqual(self.trainer.get_item_quantity('Potion'), 0)
 
+    def test_leave_after_expiry_removes_stale_cardinal_commands(self):
+        """An ended run does not retain cardinal overrides over normal room exits."""
+        session = self.start()
+        AdventureSession.objects.filter(pk=session.pk).update(
+            expires_at=timezone.now() - timedelta(seconds=1))
+
+        self.command('+adventure/leave')
+
+        session.refresh_from_db()
+        self.assertEqual(session.state, 'expired')
+        self.assertFalse(self.player.db.adventure_session_id)
+        self.assertFalse(self.room.db.adventure_session_id)
+        self.assertFalse(self.player.cmdset.has_cmdset(AdventureMovementCmdSet, must_be_default=False))
+
     def test_reward_write_failure_recovers_after_leave_without_duplication(self):
         """An actual inventory write rolls back and ordinary claims recover once."""
         session = self.start()
@@ -265,7 +279,7 @@ class AdventurePlayerCases(unittest.TestCase):
         detach_movement_cmdset(self.player)
         self.command('+adventure/look')
         self.command('+adventure/objectives')
-        self.assertFalse(self.player.cmdset.has_cmdset(AdventureMovementCmdSet, must_be_default=False))
+        self.assertTrue(self.player.cmdset.has_cmdset(AdventureMovementCmdSet, must_be_default=False))
         self.assertEqual(self.player.location.pk, self.room.pk)
         self.assertEqual(AdventureSession.objects.filter(leader=self.player).count(), 1)
 
@@ -372,6 +386,58 @@ class AdventurePlayerCases(unittest.TestCase):
         once = self.snapshot()
         self.command('+adventure/retry')
         self.assertEqual(self.snapshot(), once)
+
+    def assert_reconnected_movement_resumes(self, pending_result):
+        """Reconnect during combat, then resume cardinal input without another look."""
+        from evennia.objects.objects import DefaultCharacter
+        from pokemon.adventures.sessions import AdventureActionResult
+        from pokemon.battle.handler import battle_handler
+
+        session = self.start()
+        self.command('north')
+        self.command('+adventure/choose wild')
+        battle = self.player.ndb.battle_instance
+        battle_handler.unregister(battle)
+        self.player.ndb.battle_instance = None
+        self.room.ndb.battle_instances = {}
+        detach_movement_cmdset(self.player)
+        # Only the framework socket/puppet setup is omitted. Run the real PF2
+        # reconnect hook, battle rehydration, cmdsets and production commands.
+        with patch.object(DefaultCharacter, 'at_post_puppet', return_value=None):
+            self.player.at_post_puppet()
+        resumed = self.player.ndb.battle_instance
+        self.assertIsNotNone(resumed)
+        self.assertTrue(self.player.cmdset.has_cmdset(AdventureMovementCmdSet, must_be_default=False))
+        self.command('north')
+        session.refresh_from_db()
+        self.assertEqual(session.current_node, 'tall_grass')
+        concede = CmdBattleConcede()
+        concede.caller = self.player
+        if pending_result:
+            with patch('pokemon.adventures.sessions.resolve_encounter_result',
+                       return_value=AdventureActionResult(False, 'controlled result outage')):
+                concede._finalize_concession(resumed, battle_handler)
+            self.command('north')
+            session.refresh_from_db()
+            self.assertEqual(session.current_node, 'tall_grass')
+            self.command('+adventure/retry')
+        else:
+            concede._finalize_concession(resumed, battle_handler)
+        self.assertFalse(self.player.db.battle_lock)
+        self.survey(from_fork=True)
+        session.refresh_from_db()
+        self.assertEqual(session.state, 'completed')
+        self.command('+adventure/leave')
+        self.assertEqual(self.player.location.pk, self.hall.pk)
+        self.assertEqual(self.trainer.get_item_quantity('Potion'), 1)
+
+    def test_reconnected_battle_resumes_cardinals_after_cleanup(self):
+        """A reconnecting player continues the survey as soon as combat ends."""
+        self.assert_reconnected_movement_resumes(False)
+
+    def test_reconnected_pending_result_resumes_cardinals_after_retry(self):
+        """Pending receipt recovery unlocks the already installed cardinal commands."""
+        self.assert_reconnected_movement_resumes(True)
 
     def test_expired_pending_outcome_retries_once_without_replacement(self):
         """Terminal cleanup preserves an expired run's original outcome receipt."""
