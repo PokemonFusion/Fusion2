@@ -99,6 +99,10 @@ class ItemNextActionCases(ItemRepairCases):
             EVIDENCE.append({"case": self.id(), "label": "separate-legal-stage-prerequisite",
                              "stages": dict(holder.boosts), "limit": "Prepared stages, not earned-move evidence"})
         bags = self.snapshot()["bags"]
+        # Suppression setup rebuilds the engine and replaces its RNG. Give both
+        # sides of this positive comparison the same legal trigger rolls; an
+        # incidental Ice Beam freeze would correctly block the later PP probe.
+        self.session.battle.rng = random.Random(0)
         self.stat_trigger()
         self.rebuild()
         self.assertEqual(self.items(), [item if mode == "suppressed" else "", ""])
