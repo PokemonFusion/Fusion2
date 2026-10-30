@@ -288,34 +288,90 @@ class AdventurePlayerCases(unittest.TestCase):
         battle = self.player.ndb.battle_instance
         self.assertIsNotNone(battle)
         original_data = battle.storage.get('data')
+        original_hp = self.owned.current_hp
+        original_pp = list(self.owned.activemoveslot_set.order_by('slot').values_list('current_pp', flat=True))
+        original_encounters = list(EncounterPokemon.objects.order_by('pk').values_list('pk', flat=True))
         AdventureSession.objects.filter(pk=session.pk).update(
             expires_at=timezone.now() - timedelta(seconds=1))
         self.player.ndb.battle_instance = None
         self.player.db.adventure_session_id = None
         self.room.db.adventure_session_id = None
         self.room.db.battles = []
+        self.room.ndb.battle_instances = {}
+        battle_handler.unregister(battle)
         outside = ObjectDB.objects.create(db_key='Reconnect ' + uuid4().hex[:8])
         # Simulate a persisted reconnect location without invoking movement.
         self.player.db_location = outside
-        try:
-            with patch.dict(battle_handler.instances, {}, clear=True):
-                counts = cleanup_stale_state(objects=[self.player, self.room], active_battle_ids=set())
-                self.assertFalse(any(counts.values()), counts)
-                self.assertEqual(battle.storage.get('data'), original_data)
-                self.assertEqual(self.player.db.battle_lock, battle.battle_id)
-                restored = sync_player_to_active_session(ObjectDB.objects.get(pk=self.player.pk))
-                self.assertEqual(restored.pk, session.pk)
-                self.assertEqual(self.player.location.pk, outside.pk)
-                self.command('north')
-                self.command('+adventure/leave')
-                session.refresh_from_db()
-                self.assertEqual(session.state, 'active')
-                self.assertEqual(self.player.db.adventure_session_id, session.pk)
-                self.assertEqual(self.room.db.adventure_session_id, session.pk)
-        finally:
-            self.player.ndb.battle_instance = battle
-            self.player.db_location = self.room
-            self.room.db.battles = [battle.battle_id]
+        self.player.save(update_fields=['db_location'])
+        counts = cleanup_stale_state(objects=[self.player, self.room], active_battle_ids=set())
+        self.assertFalse(any(counts.values()), counts)
+        self.assertEqual(battle.storage.get('data'), original_data)
+        restored = sync_player_to_active_session(ObjectDB.objects.get(pk=self.player.pk))
+        self.assertEqual(restored.pk, session.pk)
+        resumed = BattleSession.ensure_for_player(self.player)
+        self.assertIsNotNone(resumed)
+        self.assertEqual(resumed.battle_id, battle.battle_id)
+        self.assertEqual(resumed.room.pk, self.room.pk)
+        self.assertEqual(resumed.captainA.pk, self.player.pk)
+        self.assertIs(battle_handler.get(battle.battle_id), resumed)
+        self.assertEqual(list(EncounterPokemon.objects.order_by('pk').values_list('pk', flat=True)), original_encounters)
+        self.assertEqual(self.player.location.pk, outside.pk)
+        self.owned.refresh_from_db()
+        self.assertEqual(self.owned.current_hp, original_hp)
+        self.assertEqual(list(self.owned.activemoveslot_set.order_by('slot').values_list('current_pp', flat=True)), original_pp)
+        self.command('north')
+        self.command('+adventure/leave')
+        session.refresh_from_db()
+        self.assertEqual(session.state, 'active')
+        resumed.battle.rng = random.Random(2)
+        for _ in range(20):
+            if getattr(resumed, '_ended', False):
+                break
+            self.command('+attack Water Gun')
+        self.assertTrue(getattr(resumed, '_ended', False), self.messages[-10:])
+        session.refresh_from_db()
+        self.assertEqual(session.metadata['encounter_result'], 'win')
+        self.assertEqual(AdventureParticipation.objects.get(session=session).encounter_result, 'win')
+        self.assertFalse(self.player.db.battle_lock)
+        self.assertEqual(self.player.location.pk, outside.pk)
+        self.assertIsNone(sync_player_to_active_session(self.player))
+        self.assertEqual(AdventureSession.objects.filter(leader=self.player).count(), 1)
+
+    def test_retry_restores_original_terminal_battle_from_outside(self):
+        """A retained result remains player-recoverable with no runtime or battle ID."""
+        from pokemon.battle.handler import battle_handler
+
+        session = self.start()
+        self.command('north')
+        self.command('+adventure/choose wild')
+        battle = self.player.ndb.battle_instance
+        concede = CmdBattleConcede()
+        concede.caller = self.player
+        with patch('pokemon.adventures.sessions.queue_encounter_result', side_effect=RuntimeError('receipt outage')):
+            concede._finalize_concession(battle, battle_handler)
+        self.assertEqual(battle._adventure_result, 'loss')
+        battle_handler.unregister(battle)
+        self.room.ndb.battle_instances = {}
+        self.player.ndb.battle_instance = None
+        self.player.db.battle_id = None
+        outside = ObjectDB.objects.create(db_key='Terminal reconnect ' + uuid4().hex[:8])
+        self.player.db_location = outside
+        self.player.save(update_fields=['db_location'])
+
+        self.command('+adventure/retry')
+
+        session.refresh_from_db()
+        self.assertEqual(session.metadata['encounter_result'], 'loss')
+        self.assertEqual(AdventureParticipation.objects.get(session=session).encounter_result, 'loss')
+        self.assertFalse(self.player.db.battle_lock)
+        self.assertFalse(self.player.db.pending_adventure_results)
+        self.assertIsNone(getattr(self.room.db, f'battle_{battle.battle_id}_data'))
+        self.assertFalse(self.room.db.battles)
+        self.assertIsNone(battle_handler.get(battle.battle_id))
+        self.assertEqual(self.player.location.pk, outside.pk)
+        once = self.snapshot()
+        self.command('+adventure/retry')
+        self.assertEqual(self.snapshot(), once)
 
     def test_expired_pending_outcome_retries_once_without_replacement(self):
         """Terminal cleanup preserves an expired run's original outcome receipt."""
@@ -448,6 +504,11 @@ if __name__ == '__main__':
         from pokemon.models.core import EncounterPokemon
         from pokemon.models.storage import UserStorage
         from pokemon.models.trainer import Trainer
+        from pokemon.battle.battleinstance import BattleSession
+        from pokemon.battle import battleinstance
+        # Bind the actual standalone search API used to rehydrate controllers.
+        # The optional-runtime compatibility module can have imported earlier.
+        battleinstance.search_object = search_object
 
         result = unittest.TextTestRunner(verbosity=2).run(
             unittest.defaultTestLoader.loadTestsFromTestCase(AdventurePlayerCases))

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from datetime import timezone as dt_timezone
@@ -778,6 +779,82 @@ def expire_session(session: Any) -> bool:
     return True
 
 
+def restore_session_battle(player: Any) -> Any | None:
+    """Rebind the original owned Adventure battle without moving its controller.
+
+    Recovery must use the session's reserved room, which may differ from the
+    character's reconnect location. Ambiguous or foreign storage stays locked
+    for recovery rather than being attached to another controller.
+    """
+    try:
+        session = get_session_by_id(_db_attr(player, ADVENTURE_SESSION_ATTR))
+        if (session is None or not _session_belongs_to_player(session, player)
+                or getattr(session, "state", None) not in {STATE_ACTIVE, STATE_COMPLETED}):
+            session = _query_first(_session_model().objects.filter(
+                leader_id=_object_id(player), state=STATE_ACTIVE,
+            ))
+    except Exception:
+        # Battle commands also call this optional fallback outside Adventures.
+        return None
+    if session is None or not _session_belongs_to_player(session, player):
+        return None
+    room = getattr(session, "instance_room", None)
+    if room is None:
+        return None
+    room_sid = _db_attr(room, ADVENTURE_SESSION_ATTR)
+    if not _ids_match(room_sid, _session_id(session)):
+        other = get_session_by_id(room_sid)
+        if _is_current_session(other, allow_completed=True):
+            return None
+
+    identities = {
+        str(value) for name in ("battle_id", "battle_lock")
+        if (value := _db_attr(player, name)) not in (None, "", False)
+    }
+    candidates = []
+    for battle_id in room_battle_ids(room):
+        if identities and identities != {str(battle_id)}:
+            continue
+        encounter = _db_attr(room, f"battle_{battle_id}_encounter", {})
+        if not isinstance(encounter, Mapping):
+            continue
+        if (encounter.get("source_type") != "adventure"
+                or not _ids_match(encounter.get("adventure_session_id"), _session_id(session))):
+            continue
+        trainers = _db_attr(room, f"battle_{battle_id}_trainers", {})
+        controllers = trainers.get("teamA", []) if isinstance(trainers, Mapping) else []
+        if isinstance(controllers, (str, bytes, Mapping)) or not isinstance(controllers, Iterable):
+            continue
+        controllers = list(controllers)
+        if len(controllers) == 1 and _ids_match(controllers[0], _object_id(player)):
+            candidates.append(battle_id)
+    if len(candidates) != 1:
+        return None
+
+    from pokemon.battle.battleinstance import BattleSession
+    from pokemon.battle.handler import battle_handler
+
+    battle_id = candidates[0]
+    battle = battle_handler.get(battle_id)
+    if battle is not None:
+        metadata = getattr(battle, "encounter_metadata", {}) or {}
+        if (getattr(battle, "_ended", False)
+                or not _ids_match(_object_id(getattr(battle, "room", None)), _object_id(room))
+                or not _ids_match(_object_id(getattr(battle, "captainA", None)), _object_id(player))
+                or not isinstance(metadata, Mapping)
+                or metadata.get("source_type") != "adventure"
+                or not _ids_match(metadata.get("adventure_session_id"), _session_id(session))):
+            return None
+    else:
+        battle = BattleSession.restore(room, battle_id)
+    if battle is not None:
+        register = getattr(battle, "_register_trainer", None)
+        if callable(register):
+            register(player)
+        player.ndb.battle_instance = battle
+    return battle
+
+
 def sync_player_to_active_session(player: Any) -> Any | None:
     """Return a valid current session for reconnect/reload recovery."""
 
@@ -795,6 +872,7 @@ def sync_player_to_active_session(player: Any) -> Any | None:
             _set_db_attr(instance_room, ADVENTURE_SESSION_ATTR, session_id)
 
         if inspect_adventure_battle(player, session).blocked:
+            restore_session_battle(player)
             return session
         move_to = getattr(player, "move_to", None)
         player_location = getattr(player, "location", None)

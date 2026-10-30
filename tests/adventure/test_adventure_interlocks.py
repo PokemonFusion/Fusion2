@@ -303,3 +303,76 @@ def test_persisted_mapping_receipts_are_scoped_to_original_session(adventure_wor
     })
     room.db.battle_81_battle_result = UserDict({"handled": False, "result": "capture"})
     assert sessions.inspect_adventure_battle(player, session).pending_result
+
+
+def _retained_battle(adventure_world, monkeypatch):
+    """Prepare owned canonical battle storage with an outside reconnect location."""
+    from pokemon.battle.battleinstance import BattleSession
+    from pokemon.battle.handler import battle_handler
+
+    _hall, room, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    encounter = {"source_type": "adventure", "adventure_session_id": session.pk}
+    room.db.battle_81_data = {"original": True}
+    room.db.battle_81_encounter = UserDict(encounter)
+    room.db.battle_81_trainers = UserDict({"teamA": [player.id]})
+    player.db.battle_id = player.db.battle_lock = 81
+    player.location = DummyRoom("Outside reconnect")
+    battle = SimpleNamespace(battle_id=81, room=room, captainA=player, encounter_metadata=encounter)
+    calls = []
+
+    def restore(source, battle_id):
+        """Record recovery identity without creating a replacement encounter."""
+        calls.append((source, battle_id))
+        return battle if source is room else None
+
+    monkeypatch.setattr(battle_handler, "get", lambda _bid: None)
+    monkeypatch.setattr(BattleSession, "restore", restore)
+    return session, room, player, battle, calls
+
+
+@pytest.mark.parametrize("entrypoint", ["reconnect", "battle-command", "missing-location"])
+def test_reconnect_rebinds_original_battle_without_physical_movement(adventure_world, monkeypatch, entrypoint):
+    """A preserved lock has a usable battle after reconnecting outside its room."""
+    from pokemon.battle.battleinstance import BattleSession
+
+    session, room, player, battle, calls = _retained_battle(adventure_world, monkeypatch)
+    if entrypoint == "missing-location":
+        player.location = None
+    outside = player.location
+    if entrypoint == "reconnect":
+        assert sessions.sync_player_to_active_session(player) is session
+    else:
+        assert BattleSession.ensure_for_player(player) is battle
+    assert player.ndb.battle_instance is battle
+    assert BattleSession.ensure_for_player(player) is battle
+    expected = [(outside, 81), (room, 81)] if entrypoint == "battle-command" else [(room, 81)]
+    assert calls == expected
+    assert player.location is outside
+    assert player.db.battle_lock == 81
+
+
+@pytest.mark.parametrize("problem", ["foreign-session", "foreign-controller", "room-owner", "ambiguous", "conflicting-locks"])
+def test_reconnect_refuses_foreign_or_ambiguous_storage(adventure_world, monkeypatch, problem):
+    """Fallback recovery never guesses an encounter or transfers a controller."""
+    session, room, player, _battle, calls = _retained_battle(adventure_world, monkeypatch)
+    if problem == "foreign-session":
+        room.db.battle_81_encounter["adventure_session_id"] = session.pk + 1
+    elif problem == "foreign-controller":
+        room.db.battle_81_trainers["teamA"] = [player.id + 1]
+    elif problem == "room-owner":
+        other = sessions._session_model().objects.create(
+            leader=player, instance_room=room, state=STATE_ACTIVE, completed_at=None,
+            expires_at=None,
+        )
+        room.db.adventure_session_id = other.pk
+    elif problem == "conflicting-locks":
+        player.db.battle_lock = 82
+    else:
+        player.db.battle_id = player.db.battle_lock = None
+        room.db.battle_82_data = {"another": True}
+        room.db.battle_82_encounter = dict(room.db.battle_81_encounter)
+        room.db.battle_82_trainers = dict(room.db.battle_81_trainers)
+    assert sessions.restore_session_battle(player) is None
+    assert not calls
+    assert player.ndb.__dict__.get("battle_instance") is None
