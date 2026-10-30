@@ -22,6 +22,9 @@ class BattleState:
 	positions: Dict[str, int] = field(default_factory=dict)
 	declare: Dict[str, Dict[str, str]] = field(default_factory=dict)
 	recycle: Dict[str, str] = field(default_factory=dict)
+	used_item_history: Dict[str, List[str]] = field(default_factory=dict)
+	item_rng_state: Optional[List] = None
+	npc_prize_qualifications: Dict[str, Dict] = field(default_factory=dict)
 	expshare: Dict[str, str] = field(default_factory=dict)
 	roomweather: str = "clear"
 	watchers: Set[int] = field(default_factory=set)
@@ -51,7 +54,10 @@ class BattleState:
 	mega_pending: Dict[str, Dict] = field(default_factory=dict)
 	z_used: List[str] = field(default_factory=list)
 	z_pending: Dict[str, Dict] = field(default_factory=dict)
+	ultra_used: List[str] = field(default_factory=list)
+	ultra_pending: Dict[str, Dict] = field(default_factory=dict)
 	z_effects: Dict = field(default_factory=dict)
+	booster_effects: Dict = field(default_factory=dict)
 	multi: Dict = field(default_factory=dict)
 
 	def to_dict(self) -> Dict:

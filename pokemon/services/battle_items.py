@@ -23,8 +23,14 @@ class BattleItemCapability:
     @staticmethod
     def validate(item, *, battle=None):
         """Reject unsupported uses without inspecting target effect or spending."""
-        from pokemon.items import is_capture_ball
+        from pokemon.items import BATTLE_BOOSTER_ITEMS, is_capture_ball
 
+        if normalize_name(item) in BATTLE_BOOSTER_ITEMS:
+            if battle is not None:
+                from pokemon.battle.battle_boosters import BattleBoosters
+
+                BattleBoosters.format(battle)
+            return
         if normalize_name(item) == "smokeball":
             raise ValueError("Smoke Ball is a held item. Equip it with +hold before battle and use +flee.")
         if BattleMedicineUse.supports(item):
@@ -240,6 +246,16 @@ class BattleMedicineUse:
             or key in cls.revivals or key in cls.pp_items
         )
 
+    @staticmethod
+    def target_blocked(pokemon, battle):
+        """Manual battle medicine cannot target an active Embargo recipient.
+
+        Held-item suppression does not restrict bag use. Field medicine and
+        unaffected reserves keep their existing policy.
+        """
+        return bool(battle and (getattr(pokemon, "volatiles", {}) or {}).get("embargo")
+                    and any(pokemon in part.active for part in battle.participants))
+
     def _owned(self, identifier):
         """Lock storage before fresh owner, placement and egg validation."""
         from pokemon.models.core import OwnedPokemon
@@ -276,6 +292,8 @@ class BattleMedicineUse:
     def use(self, item, consume_item):
         """Keep inventory, durable effects and the battle snapshot consistent."""
         self._snapshot_update = None
+        if self.target_blocked(self.pokemon, self.battle):
+            return False
         kind, identifier = parse_pokemon_ref(getattr(self.pokemon, "model_id", None))
         if kind == "owned" and identifier:
             try:

@@ -13,7 +13,7 @@ class CmdBattleUiStyle(Command):
     """Change your battle interface renderer.
 
     Usage:
-      +battleui/style [legacy||classic_modern||pf1]
+      +battleui/style [compact||legacy||classic_modern||pf1]
 
     Examples:
       +battleui/style

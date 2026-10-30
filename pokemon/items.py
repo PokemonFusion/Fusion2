@@ -33,15 +33,19 @@ class FieldRecoveryItem(GameplayItem):
     effect: str
     amount: int | None = None
     target_scope: str = "single"
+    friendship_cost: tuple[int, int] | None = None
     category: str = "Medicine"
 
     @property
     def raw(self) -> dict[str, object]:
         """Expose the same metadata interface used by itemdex and inventory."""
-        return {**super().raw, "price": self.price, "category": self.category,
+        data = {**super().raw, "price": self.price, "category": self.category,
                 "effect": self.effect, "amount": self.amount,
                 "targetScope": self.target_scope,
                 "fieldOnly": normalize_name(self.name) not in BATTLE_RECOVERY_FOODS}
+        if self.friendship_cost is not None:
+            data["friendshipCost"] = list(self.friendship_cost)
+        return data
 
 
 @dataclass(frozen=True)
@@ -83,6 +87,142 @@ class HeldEscapeItem(GameplayItem):
         """Expose ordinary item interfaces and an explicit non-capture flag."""
         return {**super().raw, "price": self.price, "category": self.category,
                 "isPokeball": False, "heldEffect": "escape", "consumed": False}
+
+
+@dataclass(frozen=True)
+class HeldFieldFriendshipItem(GameplayItem):
+    """Describe the exact reusable field-feeding role without battle callbacks."""
+
+    price: int = 4000
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Keep inventory/equip metadata truthful about this bounded first effect."""
+        return {**super().raw, "price": self.price, "category": "Held Items",
+                "isPokeball": False, "heldEffect": "ev-berry-friendship", "consumed": False}
+
+
+@dataclass(frozen=True)
+class HeldNPCPrizeItem(GameplayItem):
+    """Describe one reusable, nonstacking participation-based NPC prize effect."""
+
+    price: int = 10000
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Keep the bounded prize condition distinct from competitive battle suppression."""
+        return {**super().raw, "price": self.price, "category": "Held Items",
+                "isPokeball": False, "heldEffect": "standard-npc-prize", "consumed": False}
+
+
+@dataclass(frozen=True)
+class EVTrainingItem(GameplayItem):
+    """Describe a field-only EV supplement or one atomic all-stat reset."""
+
+    price: int
+    stat: str | None
+    amount: int | None = 10
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Expose truthful itemdex/inventory metadata without a battle activation."""
+        return {**super().raw, "price": self.price, "category": "Training Items",
+                "effect": "ev" if self.stat else "ev-reset", "stat": self.stat,
+                "amount": self.amount, "fieldOnly": True}
+
+
+@dataclass(frozen=True)
+class ExpCandyItem(GameplayItem):
+    """Describe one bounded field EXP gain; activation uses the atomic service."""
+
+    amount: int
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Share the authored amount/price without inventing a held/battle effect."""
+        return {**super().raw, "price": self.amount, "category": "Training Items",
+                "effect": "exp", "amount": self.amount, "fieldOnly": True}
+
+
+@dataclass(frozen=True)
+class BattleBoosterItem(GameplayItem):
+    """Publish exact manual bag effects without adding field or held callbacks."""
+
+    effect: str
+    price: int = 1000
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Keep named battle-only policy separate from arbitrary dex callbacks."""
+        return {**super().raw, "price": self.price, "category": "Battle Items",
+                "effect": self.effect, "battleOnly": True, "isPokeball": False}
+
+
+@dataclass(frozen=True)
+class NatureMintItem(GameplayItem):
+    """Publish one reviewed stat Nature preference, never genetic replacement."""
+
+    trained_nature: str
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Share exact field metadata while leaving enforcement to the fresh owned service."""
+        return {**super().raw, "price": 20000, "category": "Training Items", "fieldOnly": True,
+                "effect": "trained_stat_nature", "trainedNature": self.trained_nature}
+
+
+from pokemon.nature_training import NatureTraining
+
+NATURE_MINT_ITEMS = {
+    normalize_name(nature + " Mint"): NatureMintItem(nature + " Mint",
+        f"Field use: uses {nature} stat modifiers while preserving genetic Nature, breeding, "
+        "nature evolution and berry preferences. Use +use " + nature + " Mint=<current target>. "
+        "Equivalent modifiers have no effect; no held or battle use.", nature)
+    for nature in NatureTraining.mint_names
+}
+
+
+BATTLE_BOOSTER_ITEMS = {
+    normalize_name(name): BattleBoosterItem(name,
+        f"Manual battle use: {description} Use +item [acting slot] {name}=<actor's party slot>. "
+        "Current conscious owned actor only; two-participant singles/doubles. "
+        "Embargo prevents use. No field or held effect.", effect, price)
+    for name, description, effect, price in (
+        ("X Attack", "Attack +2 stages through normal ability rules.", "boost:atk:2", 1000),
+        ("X Defense", "Defense +2 stages through normal ability rules.", "boost:def:2", 1000),
+        ("X Sp. Atk", "Special Attack +2 stages through normal ability rules.", "boost:spa:2", 1000),
+        ("X Sp. Def", "Special Defense +2 stages through normal ability rules.", "boost:spd:2", 1000),
+        ("X Speed", "Speed +2 stages through normal ability rules.", "boost:spe:2", 1000),
+        ("X Accuracy", "Accuracy +2 stages through normal ability rules.", "boost:accuracy:2", 1000),
+        ("Dire Hit", "Focus Energy (+2 critical stages); repeat active use has no effect.", "focusenergy", 1000),
+        ("Guard Spec.", "Side Mist for five turns including activation; active use cannot refresh it.", "mist:5", 1500))
+}
+
+
+EXP_CANDY_ITEMS = {
+    normalize_name("Exp. Candy " + size): ExpCandyItem(
+        "Exp. Candy " + size,
+        f"Field use: grants up to {amount} EXP within the species' level100 threshold. "
+        "Use +use Exp. Candy " + size + "=<current target>. Earned moves stay stored; "
+        "use +learn pending for active choices. No evolution, revival, held or manual battle effect.",
+        amount)
+    for size, amount in (("XS", 100), ("S", 800), ("M", 3000), ("L", 10000), ("XL", 30000))
+}
+
+
+FIELD_TRAINING_ITEMS = {
+    normalize_name(name): EVTrainingItem(
+        name, f"Field use: adds up to 10 {stat} EVs within stat/total caps. "
+        f"Use +use {name}=<current target>. No held or manual battle effect.", 10000, stat)
+    for name, stat in (("Health Mochi", "HP"), ("Muscle Mochi", "Attack"),
+                       ("Resist Mochi", "Defense"), ("Genius Mochi", "Special Attack"),
+                       ("Clever Mochi", "Special Defense"), ("Swift Mochi", "Speed"))
+}
+FIELD_TRAINING_ITEMS["freshstartmochi"] = EVTrainingItem(
+    "Fresh-Start Mochi", "Field use: resets all six valid EVs to zero together. "
+    "An all-zero target has no effect and consumes nothing. Use +use Fresh-Start Mochi=<current target>. "
+    "Preserves genetic Nature, IVs, Hyper Training and progression; no held or manual battle effect.",
+    20000, None, None)
 
 
 FIELD_RECOVERY_ITEMS = {
@@ -141,10 +281,38 @@ FIELD_RECOVERY_EQUIVALENTS = {
         "Use +use Hopo Berry=<target>/<move name or actual slot>. No held or lure effect.",
         price=300, effect="pp", amount=10, category="Berries",
     ),
+    "remedy": FieldRecoveryItem(
+        "Remedy", "Field use: restores up to 20 HP to one living owned Pokemon. "
+        "Bitter medicine reduces friendship by 5 below 200 or 10 at 200+. "
+        "Use +use Remedy=<target>. No held or manual battle effect.",
+        price=150, effect="heal", amount=20, friendship_cost=(5, 10),
+    ),
+    "fineremedy": FieldRecoveryItem(
+        "Fine Remedy", "Field use: restores up to 60 HP to one living owned Pokemon. "
+        "Bitter medicine reduces friendship by 10 below 200 or 15 at 200+. "
+        "Use +use Fine Remedy=<target>. No held or manual battle effect.",
+        price=150, effect="heal", amount=60, friendship_cost=(10, 15),
+    ),
+    "superbremedy": FieldRecoveryItem(
+        "Superb Remedy", "Field use: restores up to 120 HP to one living owned Pokemon. "
+        "Bitter medicine reduces friendship by 15 below 200 or 20 at 200+. "
+        "Use +use Superb Remedy=<target>. No held or manual battle effect.",
+        price=750, effect="heal", amount=120, friendship_cost=(15, 20),
+    ),
+    "jubilifemuffin": FieldRecoveryItem(
+        "Jubilife Muffin", "Field use: cures one living owned Pokemon's major status. "
+        "Preserves HP and friendship. Use +use Jubilife Muffin=<target>. "
+        "No held or manual battle effect.",
+        price=250, effect="status",
+    ),
 }
 
 
 GAMEPLAY_ITEMS = {
+    **NATURE_MINT_ITEMS,
+    **BATTLE_BOOSTER_ITEMS,
+    **EXP_CANDY_ITEMS,
+    **FIELD_TRAINING_ITEMS,
     **FIELD_RECOVERY_EQUIVALENTS,
     "gimmighoulcoin": EvolutionItem(
         "Gimmighoul Coin",
@@ -177,6 +345,28 @@ GAMEPLAY_ITEMS = {
         "Consumes one bag copy; held-only copies do not activate it. No Bloodmoon form.",
         price=10000,
     ),
+    "linkcord": EvolutionItem(
+        "Link Cord", "Use +evolve <id> Link Cord for a supported trade-only evolution. "
+        "Consumes one bag copy; preserves Alolan form and Pumpkaboo size. "
+        "Karrablast and Shelmet evolve independently without the other species. "
+        "Held-only copies do not activate it; existing trade-held items keep their own rules.",
+        price=10000,
+    ),
+    "amuletcoin": HeldNPCPrizeItem(
+        "Amulet Coin", "Held and reusable: eligible active entry or a completed ordinary move "
+        "qualifies for double standard NPC trainer prize money once. Does not stack with Luck Incense "
+        "or other holders. No bonus to wild, PvP, Multi, gym, Adventure, scripted prizes or Pay Day."
+    ),
+    "luckincense": HeldNPCPrizeItem(
+        "Luck Incense", "Held and reusable: the same nonstacking double standard NPC trainer "
+        "prize condition as Amulet Coin. Requires eligible participation while held; no bonus to "
+        "wild, PvP, Multi, gym, Adventure, scripted prizes or Pay Day."
+    ),
+    "soothebell": HeldFieldFriendshipItem(
+        "Soothe Bell", "Held and reusable: multiplies positive friendship from the six EV-reducing "
+        "berries by 1.5, rounded down before the 255 cap. Field feeding only; no walking, level-up "
+        "or battle friendship effect is implemented. Does not multiply herbal friendship losses."
+    ),
     "smokeball": HeldEscapeItem(
         "Smoke Ball", "Held: guarantees the acting holder's escape from eligible wild battles with +flee. "
         "Reusable; item suppression and trainer/scripted no-flee restrictions still apply. Not a capture ball."
@@ -188,6 +378,20 @@ GAMEPLAY_ITEMS = {
 def get_gameplay_item(name: object) -> GameplayItem | None:
     """Resolve complete normalized names; prefixes remain invalid."""
     return GAMEPLAY_ITEMS.get(normalize_name(name))
+
+
+def runtime_field_held_item(name: object):
+    """Represent only the three reviewed field/prize holders as inert battle items.
+
+    They retain physical ownership and ordinary transfer semantics. Their field
+    or prize services own the effects; no competitive callback is invented.
+    """
+    metadata = get_gameplay_item(name)
+    if isinstance(metadata, (HeldFieldFriendshipItem, HeldNPCPrizeItem)):
+        from pokemon.dex.entities import Item
+
+        return Item.from_dict(metadata.name, metadata.raw)
+    return None
 
 
 def is_capture_ball(name: object) -> bool:

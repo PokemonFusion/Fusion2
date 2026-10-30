@@ -286,12 +286,18 @@ class TradeHeldCases(unittest.TestCase):
         self.assertEqual(self.row(), before)
         self.assertEqual(self.row()["held_item"], "Metal Coat")
 
-    def test_legacy_trade_and_non_item_trades_remain_blocked(self):
-        """The equivalent must not reopen #722/#725 or partner-species trades."""
+    def test_legacy_trade_syntax_and_non_item_field_evolutions_are_rejected(self):
+        """Direct-transfer syntax is inert; consent trades use their own route."""
         self.equip()
         before = self.row()
-        self.assertIn("temporarily unavailable", self.command("trade", f"{self.mon.pk}=another-player"))
+        mirrors = self.preserved()
+        stock = self.trainer.get_item_quantity("Metal Coat")
+        output = self.command("trade", f"{self.mon.pk}=another-player")
+        self.assertIn("Use +trade offer", output)
+        self.assertIn("require recipient acceptance", output)
         self.assertEqual(self.row(), before)
+        self.assertEqual(self.preserved(), mirrors)
+        self.assertEqual(self.trainer.get_item_quantity("Metal Coat"), stock)
         for species in ("Kadabra", "Karrablast", "Shelmet"):
             OwnedPokemon.objects.filter(pk=self.mon.pk).update(species=species)
             before = self.row()

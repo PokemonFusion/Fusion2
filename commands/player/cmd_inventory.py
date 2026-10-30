@@ -329,6 +329,10 @@ class CmdUseItem(Command):
       +use Fresh Water=3
       +use Max Honey=6
       +use Sacred Ash=party
+      +use Remedy=3
+      +use Fine Remedy=3
+      +use Superb Remedy=fusion
+      +use Jubilife Muffin=3
 
     Notes:
       Field medicine heals HP, cures status, revives fainted Pokemon and
@@ -360,6 +364,13 @@ class CmdUseItem(Command):
       add 1 EV to those same stats. Caps are 252 per stat and 510 total;
       partial increases use one item, capped or invalid EVs use none.
       Training preserves HP deficit and fainting; it accepts no move selector.
+      Health/Muscle/Resist/Genius/Clever/Swift Mochi share those +10 EV rules.
+      Fresh-Start Mochi resets all six valid EVs together; all-zero has no effect.
+      Exp. Candy XS/S/M/L/XL grant bounded EXP. Use +learn pending afterward
+      for stored crossed-level moves; no automatic evolution or revival occurs.
+      Nature Mints set a stat preference; genetic Nature, breeding, nature
+      evolution and berry preferences stay unchanged. Use a full name such
+      as +use Adamant Mint=3. Equivalent modifiers consume nothing.
       Ability Capsule switches ordinary ability slots 0/1. Ability Patch
       switches an ordinary slot to hidden H, or hidden H back to ordinary 0.
       Both use the saved native species/form slots; special abilities, absent
@@ -448,13 +459,15 @@ class CmdUseItem(Command):
         from pokemon.services.field_food import FieldFoodUse
         from pokemon.services.field_items import FieldMedicineUse
         from pokemon.services.field_progression import FieldRareCandyUse
+        from pokemon.services.exp_candy import FieldExpCandyUse
+        from pokemon.services.field_mints import FieldMintUse
         from pokemon.services.field_training import FieldTrainingUse
         from pokemon.services.field_abilities import FieldAbilityUse
         from pokemon.services.field_hyper_training import FieldHyperTrainingUse
         from pokemon.services.field_recovery_equivalents import FieldRecoveryEquivalentUse
 
         field_service = next((service for service in (FieldMedicineUse, FieldBerryUse, FieldFoodUse,
-                                                     FieldRareCandyUse, FieldTrainingUse, FieldAbilityUse,
+                                                     FieldRareCandyUse, FieldExpCandyUse, FieldMintUse, FieldTrainingUse, FieldAbilityUse,
                                                      FieldHyperTrainingUse, FieldRecoveryEquivalentUse)
                               if service.supports(item_name)), None)
         if field_service is not None:
@@ -508,7 +521,7 @@ class CmdUseItem(Command):
 
         self.caller.msg(
             f"{_display_item_name(item_data, canonical)} is not usable outside battle yet. "
-            "Supported field items include medicine, recovery/EV berries, Berry Juice, vitamins/feathers, Ability Capsule/Patch, Bottle Caps, Rare Candy, PP Up and PP Max. "
+            "Supported field items include medicine, recovery/EV berries, Berry Juice, vitamins/feathers/mochi, Ability Capsule/Patch, Bottle Caps, Rare Candy, PP Up and PP Max. "
             "Use +heal at a Pokemon Center to restore your party; "
             "battle items use +item <item> during battle."
         )

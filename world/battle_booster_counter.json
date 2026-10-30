@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "key": "battle-booster-counter-v1",
+  "room": "Battle Booster Counter",
+  "entrance": "boosters",
+  "return_exit": "back",
+  "description": "Finite battle boosters. Use +store to buy. Six X items give +2 matching stages through ability rules; Dire Hit gives Focus Energy and Guard Spec. gives five-turn side Mist. Use +item [acting slot] <full name>=<actor's party slot> in a supported two-participant battle. No field or held effect, refill or resale. The back exit returns to the hub.",
+  "buy_only": true,
+  "refill": "none",
+  "offers": [
+    {"item": "X Attack", "price": 1000, "quantity": 5},
+    {"item": "X Defense", "price": 1000, "quantity": 5},
+    {"item": "X Sp. Atk", "price": 1000, "quantity": 5},
+    {"item": "X Sp. Def", "price": 1000, "quantity": 5},
+    {"item": "X Speed", "price": 1000, "quantity": 5},
+    {"item": "X Accuracy", "price": 1000, "quantity": 5},
+    {"item": "Dire Hit", "price": 1000, "quantity": 5},
+    {"item": "Guard Spec.", "price": 1500, "quantity": 5}
+  ]
+}

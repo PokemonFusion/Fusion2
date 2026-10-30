@@ -18,6 +18,7 @@ class CloudGameplayCases(unittest.TestCase):
         self.storage = UserStorage.objects.create(user=character)
         self.messages = []
         self.player = SimpleNamespace(
+            character=character,
             id=character.pk, pk=character.pk, key=character.key, db=character.db, ndb=character.ndb,
             storage=self.storage, trainer=trainer, msg=self.messages.append,
             location=SimpleNamespace(db=SimpleNamespace(is_pokemon_center=True)),
@@ -216,11 +217,12 @@ class CloudGameplayCases(unittest.TestCase):
         self.assertIn("Choose a move", self.command(CmdUseItem, "PP Up=1"))
         self.assertIn("PP was increased", self.command(CmdUseItem, "1"))
         self.assertEqual(self.player.trainer.get_item_quantity("PP Up"), 0)
-        self.assertGreater(self.owned.get_max_pp("Water Gun"), 25)
+        self.assertEqual(self.owned.get_max_pp("Water Gun"), 30)
         self.player.trainer.add_item("PP Max", 1)
         self.assertIn("Choose a move", self.command(CmdUseItem, "PP Max=1"))
         self.assertIn("PP was increased", self.command(CmdUseItem, "Water Gun"))
         self.assertEqual(self.player.trainer.get_item_quantity("PP Max"), 0)
+        self.assertEqual(self.owned.get_max_pp("Water Gun"), 40)
         self.player.trainer.add_item("Rare Candy", 1)
         self.assertIn("grew to level", self.command(CmdUseItem, "Rare Candy=1"))
         self.assertEqual(self.player.trainer.get_item_quantity("Rare Candy"), 0)

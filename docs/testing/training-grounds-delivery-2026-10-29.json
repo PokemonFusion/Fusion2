@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "source_base": "5927ea530b2292159901805d9d4ea4c7b128d182",
+  "issues": [
+    952,
+    953,
+    954,
+    955
+  ],
+  "additional_runtime_delivery_pending_acceptance": [
+    948
+  ],
+  "additional_source_plan": [
+    939
+  ],
+  "scope_sha256": {
+    ".github/workflows/lifecycle-integrity.yml": "ca3feb8c446cc173aff9124ac70e2928eb91f69ea3030a42f511fdc7bd8318dc",
+    "commands/cmdsets/pokemon_core.py": "97cbd2c5e7aebc798093ce48a67499e80e365b119e9621c25de9c5a0155da51d",
+    "commands/player/cmd_berry.py": "2dc5738afd2ed96ce4f4c9d82396ca2098aa20a8c48d71b11dccfede30250b47",
+    "commands/player/cmd_train.py": "eb454cc9d55c695d649fcbfb5bf94b12361e79116d5d3d723730e2fc4cdab50c",
+    "docs/berry-nursery.md": "97b826f0cab7c2ba1624954eaa1aa9050153dda3ff984efa40e5083634c9604a",
+    "docs/training-grounds.md": "609a4b07db4ccafe4f98b594c3125f5b190946986822c4075e122322c830794f",
+    "pokemon/services/berry_growing.py": "5ec03f1a384a9dc52bcd846125db372fef4aa3c800882710210379e8200654c5",
+    "pokemon/services/itemfinder.py": "d4b992969ed9550573cd6306a45bd1e33db36898ff684aad1d7c10e8bc498175",
+    "pokemon/services/item_activity_routes.py": "5c1c299465ee75f75a32e1d98b78aae9d3b32c2565e8babf864239ad2f302ddd",
+    "pokemon/services/training_grounds.py": "556a6e9c0a1e2d62054a07e16ae79ccd96f36971b82af6849040beb07398dcff",
+    "tests/integration/nursery_next_three_cases.py": "6d73524977e62902c61cdb21bfe3734bb741f05b7dc902c011b0aa8de50f486f",
+    "tests/integration/training_finder_cases.py": "963d7161f47d766ee80e2edd6bc98af5010b85f4c94d4ff675573ebae59de2ae",
+    "tests/integration/training_grounds_cases.py": "02b2b1b8477e6db108b760e9144bd85c94c1012bc214556dbe610f6b6d7bed9b",
+    "tests/test_alpha_command_gating.py": "abcb4f177b21d12226ee7cec982fd3004f87f27024ae2208e0d2bd94a5c50d8e",
+    "tests/test_nursery_seed_batch.py": "ecddcb6c4a3a940e04e04eb89e647fbcf7e6c0578a8ee9304b873cdc89cf53ca",
+    "tests/test_training_finder_profile.py": "079b2b28f318c4b322cb57a88dec1fdf003c80d49fd5d1293ea7ed335a1687f1",
+    "world/hunt_system.py": "160dca792f7a4e3dde55697e9e325f9553c565f2328950a08119e72698cc91af",
+    "world/chesto_seed_counter.json": "3f6d91cce92ab414bde39cf04179a33577e398b758ced2f3a93ca8d9d5cc633c",
+    "world/link_cord_counter.json": "f174146b99c85dbc2ba9714e73fdf5e05e6556ea309e50770187b98f54e7c545"
+  },
+  "repository_normalized_sha256": {
+    ".github/workflows/lifecycle-integrity.yml": "de6804fa7f18bf244c2ca39711706afaf36defb8fa8066183a9770521816e63c",
+    "commands/cmdsets/pokemon_core.py": "3b313fd7cf14b03e926b4680f1b5016b5ede1732eba2bfac6fa8d9c38d7b9aa7",
+    "commands/player/cmd_berry.py": "85a99cb9ba8dada7c716ebcbb4c70093d645aacb50269b828251649e0457f824",
+    "commands/player/cmd_train.py": "eb454cc9d55c695d649fcbfb5bf94b12361e79116d5d3d723730e2fc4cdab50c",
+    "docs/berry-nursery.md": "8f4aa4c505c6db91c9a3c8b6023ec19274cac8fe497a7741417f4ec630d6d567",
+    "docs/training-grounds.md": "609a4b07db4ccafe4f98b594c3125f5b190946986822c4075e122322c830794f",
+    "pokemon/services/berry_growing.py": "62e66bb7cd12aedf624bf06cd9c38c185c1141ed8e117409a7933ed90855123b",
+    "pokemon/services/itemfinder.py": "d2419ab801656dd7bb31861dbe2a43a36aac727b4066e5eaab82333e138bffea",
+    "pokemon/services/item_activity_routes.py": "5c1c299465ee75f75a32e1d98b78aae9d3b32c2565e8babf864239ad2f302ddd",
+    "pokemon/services/training_grounds.py": "556a6e9c0a1e2d62054a07e16ae79ccd96f36971b82af6849040beb07398dcff",
+    "tests/integration/nursery_next_three_cases.py": "6d73524977e62902c61cdb21bfe3734bb741f05b7dc902c011b0aa8de50f486f",
+    "tests/integration/training_finder_cases.py": "963d7161f47d766ee80e2edd6bc98af5010b85f4c94d4ff675573ebae59de2ae",
+    "tests/integration/training_grounds_cases.py": "02b2b1b8477e6db108b760e9144bd85c94c1012bc214556dbe610f6b6d7bed9b",
+    "tests/test_alpha_command_gating.py": "03bacd996ee4e34343e5a6abf1001914c3c86b55789c6f38c3f5395302c1dfdc",
+    "tests/test_nursery_seed_batch.py": "73635451f6391a3c8b22cd844d01d0e7819c4865c61735a4889765b5ff39e777",
+    "tests/test_training_finder_profile.py": "079b2b28f318c4b322cb57a88dec1fdf003c80d49fd5d1293ea7ed335a1687f1",
+    "world/hunt_system.py": "6eda25415bb89d4d57e6b6e25d0f659927cbcea4346929d978c904bd775a4206",
+    "world/chesto_seed_counter.json": "3f6d91cce92ab414bde39cf04179a33577e398b758ced2f3a93ca8d9d5cc633c",
+    "world/link_cord_counter.json": "f174146b99c85dbc2ba9714e73fdf5e05e6556ea309e50770187b98f54e7c545"
+  },
+  "mandatory_gate": [
+    {
+      "order": "combined",
+      "passed": 8164,
+      "skipped": 4032,
+      "warnings": 2142,
+      "seconds": 712.99
+    },
+    {
+      "order": "repeat",
+      "passed": 8164,
+      "skipped": 4032,
+      "warnings": 2142,
+      "seconds": 666.93
+    },
+    {
+      "order": "battle-first",
+      "passed": 8164,
+      "skipped": 4032,
+      "warnings": 2162,
+      "seconds": 678.67
+    }
+  ],
+  "source_isolation": "Canonical mandatory runner executed against a frozen copy; every committed runtime/test file matches its frozen SHA256. Later item work was excluded.",
+  "focused": {
+    "passed": 103,
+    "warning": "Local original-worktree pytest cache is unwritable."
+  },
+  "disposable_postgres": {
+    "training_cases": 16,
+    "training_finder_cases": 8,
+    "nursery_cases": 63,
+    "legacy_potion_finder_cases": 7,
+    "total_distinct_cases": 94
+  },
+  "real_elapsed_training_seconds": 90.38999999989755,
+  "battle_comparisons": [
+    {
+      "mode": "npc",
+      "damage": 16,
+      "our_speed": 105,
+      "our_attack": 105,
+      "first_is_ours": false,
+      "evs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mode": "pvp",
+      "damage": 16,
+      "our_speed": 105,
+      "our_attack": 105,
+      "first_is_ours": false,
+      "evs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mode": "npc",
+      "damage": 21,
+      "our_speed": 136,
+      "our_attack": 136,
+      "first_is_ours": true,
+      "evs": [
+        0,
+        252,
+        0,
+        0,
+        0,
+        252
+      ]
+    },
+    {
+      "mode": "pvp",
+      "damage": 21,
+      "our_speed": 136,
+      "our_attack": 136,
+      "first_is_ours": true,
+      "evs": [
+        0,
+        252,
+        0,
+        0,
+        0,
+        252
+      ]
+    },
+    {
+      "mode": "npc",
+      "damage": 16,
+      "our_speed": 105,
+      "our_attack": 105,
+      "first_is_ours": false,
+      "evs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mode": "pvp",
+      "damage": 16,
+      "our_speed": 105,
+      "our_attack": 105,
+      "first_is_ours": false,
+      "evs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "initial_gate_repair": "First current run found a missing new-command stub in two registry tests and two unescaped help groups (three failing tests). The registry fixture now checks ordinary CmdTrain registration with alpha enabled/disabled; help pipes are escaped. Production battle mechanics were not changed by that repair.",
+  "nursery_real_elapsed": "Still running separately at publication; first hourly checkpoint completed. Keep #948 open until actual four-hour harvest/use and cleanup pass.",
+  "limits": [
+    "SQL command transport is captured, including the actual 90-second clock check; it is not a socket login.",
+    "Named sources are explicit idempotent authoring only, not existing-world installation or stock refill.",
+    "No migration, shared service restart or deployment was performed.",
+    "Hosted CI for earlier source is additional evidence and is not claimed green here.",
+    "Soothe Bell, contextual guard changes, Mirror Herb and NPC prize code remain separate uncommitted work."
+  ]
+}

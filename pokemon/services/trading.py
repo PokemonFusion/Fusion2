@@ -205,6 +205,7 @@ class TradeOffers:
                              f"status {summary.get('status') or 'healthy'}; friendship {summary.get('friendship')}.")
                 lines.append(f"  HP/Atk/Def/SpA/SpD/Spe genetic IVs: {summary.get('ivs')}; EVs: {summary.get('evs')}; "
                              f"Hyper Training: {', '.join(summary.get('hyper_training', [])) or 'none'}.")
+                lines.append(f"  Mint stats: {summary.get('trained_stat_nature', 'unrecorded')} (genetic Nature {summary.get('nature')} unchanged).")
                 lines.append("  Active moves: " + (", ".join(
                     f"{value['slot']}: {value['name']} (PP {value['pp'] if value['pp'] is not None else 'full'})"
                     for value in summary.get("moves", [])) or "none") + ".")

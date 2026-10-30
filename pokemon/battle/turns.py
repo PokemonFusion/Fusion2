@@ -12,6 +12,7 @@ from .actions import Action, ActionType
 from .contracts import BattleContextProtocol, CombatPokemonProtocol, ParticipantAdapter, ParticipantProtocol
 from .error_handling import handle_battle_exception
 from .random_source import resolve_rng
+from .labels import BattlerLabels
 
 logger = logging.getLogger("battle")
 
@@ -229,7 +230,7 @@ class TurnProcessor:
 				self.dispatcher.dispatch("update", pokemon=poke, battle=self)
 
 	def before_turn(self) -> None:
-		"""Run simple BeforeTurn events for all active Pokémon."""
+		"""Run simple BeforeTurn events for all active PokÃ©mon."""
 		try:
 			from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 		except Exception:
@@ -282,6 +283,10 @@ class TurnProcessor:
 		from .terastallization import Terastallization
 		from .z_moves import ZMoves
 
+		if getattr(self, "ultra_pending", {}):
+			from .ultra_burst import UltraBurst
+
+			UltraBurst.lock(self)
 		ZMoves.lock(self)
 		Terastallization.lock(self)
 		from .mega_evolution import MegaEvolution
@@ -1016,9 +1021,16 @@ class TurnProcessor:
 					continue
 				if action_type is ActionType.MOVE and action.move:
 					actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
+					from .npc_prize_items import NPCPrizeItems
+
+					previous_prize_action = getattr(self, "_npc_prize_action", None)
+					self._npc_prize_action = NPCPrizeItems.action(self, action)
 					# use_move owns prevention checks, including direct move execution.
 					# Checking here too advances sleep/confusion and rolls paralysis twice.
-					self.use_move(action)
+					try:
+						self.use_move(action)
+					finally:
+						self._npc_prize_action = previous_prize_action
 					if actor_poke is not None:
 						try:
 							actor_poke.tempvals["moved"] = True
@@ -1079,6 +1091,15 @@ class TurnProcessor:
 			self.log_action(str(error))
 			return
 		item_key = normalize_name(action.item)
+		from .battle_boosters import BattleBoosters
+
+		if BattleBoosters.supports(action.item):
+			# New bag boosts propagate faults to complete-turn SQL/runtime rollback.
+			used = BattleBoosters.execute(self, action)
+			action.item_executed = True
+			self.log_action(BattleBoosters.notice(action.item, action.pokemon) if used
+				else f"But {action.item} had no effect; no copy was consumed.")
+			return
 		target = action.target
 		if is_capture_ball(action.item):
 			if target not in self.participants or target.has_lost or not target.active:
@@ -1280,7 +1301,7 @@ class TurnProcessor:
 
 		if hasattr(self, "log_action"):
 			self.log_action(
-				f"{getattr(action.actor, 'name', 'Trainer')} used {action.item} on {getattr(target_poke, 'name', 'Pokemon')}!"
+				f"{getattr(action.actor, 'name', 'Trainer')} used {action.item} on {BattlerLabels(self).name(target_poke)}!"
 			)
 
 	def perform_move_action(self, action: Action) -> None:

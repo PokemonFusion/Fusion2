@@ -155,7 +155,7 @@ def reset_tempvals(pokemon: Any) -> None:
     if hasattr(pokemon, "tempvals"):
         previous = getattr(pokemon, "tempvals", {}) or {}
         retained = {key: value for key, value in previous.items()
-                    if key in {"moves_used_since_entry", "stat_overrides", "entry_action_turn", "copy_state", "native_form", "sleep_turns", "slp_turns"}}
+                    if key in {"moves_used_since_entry", "stat_overrides", "entry_action_turn", "copy_state", "native_form", "sleep_turns", "slp_turns", "bag_boosters"}}
         setattr(pokemon, "tempvals", retained)
 
 

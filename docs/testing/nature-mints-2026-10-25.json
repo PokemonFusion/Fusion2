@@ -1,0 +1,6168 @@
+{
+  "issues": [
+    897,
+    898,
+    899,
+    900,
+    901,
+    902,
+    903,
+    904
+  ],
+  "date": "2026-10-25",
+  "status": "local_command_sql_and_consumer_qualified_migration_and_release_gates_separate",
+  "evidence_kind": "ordinary production commands/menu, fresh SQL connections, actual later turns; captured transport, not sockets",
+  "sql_cases": 191,
+  "sql": [
+    {
+      "suite": "nature_mint",
+      "exit": 0,
+      "seconds": 53.3,
+      "cases": [
+        "59"
+      ],
+      "sha256": "d433f1384420105073c13a03a68241697e82b602c707ff5704b4a12bb3c4672b"
+    },
+    {
+      "suite": "mint_necrozma",
+      "exit": 0,
+      "seconds": 115.07,
+      "cases": [
+        "17"
+      ],
+      "sha256": "f7d180d9c738515508072bf9d5ee02a39c1fd25d3519294583bb23afe134f3d9"
+    },
+    {
+      "suite": "trade",
+      "exit": 0,
+      "seconds": 25.73,
+      "cases": [
+        "21"
+      ],
+      "sha256": "80350fd7f698363d3a3c725bd2362f790cc7ed14a38fef286ed1d2978ea3ee63"
+    },
+    {
+      "suite": "market",
+      "exit": 0,
+      "seconds": 22.97,
+      "cases": [
+        "20"
+      ],
+      "sha256": "717a66f6dd30b0284a723e8c831365f1e288398d52972d72b85ded8a4b4c00e7"
+    },
+    {
+      "suite": "field_training",
+      "exit": 0,
+      "seconds": 40.28,
+      "cases": [
+        "30"
+      ],
+      "sha256": "485096a989e4e2fc900329cb6a623ca321559e06e0eb64dff307b57fe2bd261a"
+    },
+    {
+      "suite": "hyper_training",
+      "exit": 0,
+      "seconds": 28.46,
+      "cases": [
+        "31"
+      ],
+      "sha256": "d5a274bfd3658f2c2d7de2133202ea80c36d8799e4888722b2b08ab3f58d083b"
+    },
+    {
+      "suite": "breeding",
+      "exit": 0,
+      "seconds": 22.28,
+      "cases": [
+        "13"
+      ],
+      "sha256": "2be56ab8542605ca3e08f79bb0a28782266d6d993e3ccb7f2191d36fcc644bfb"
+    }
+  ],
+  "focused": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "addopts=",
+      "tests/test_nature_training.py",
+      "tests/test_mint_consumers.py",
+      "tests/test_item_availability.py",
+      "pokemon/battle/tests/test_diagnosed_item_effects.py"
+    ],
+    "exit": 0,
+    "seconds": 14.96,
+    "passed": [
+      "159"
+    ],
+    "failed": [],
+    "skipped": [],
+    "sha256": "f36eb6bc78d4591586398af1a9eed1852b0a9b7b1190baaf170f92fe98cedea4"
+  },
+  "mandatory": {
+    "exit_code": 0,
+    "seconds": 2616.09,
+    "passed": [
+      "6592",
+      "6592",
+      "6592"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "7761a6afeba351e733f4f70ed35e0819cb04701e5a3ab2654943c3adcbfd8d74"
+  },
+  "migration_rehearsal": {
+    "status": "passed",
+    "receipt": {
+      "exit": 0,
+      "seconds": 178.7,
+      "sha256": "bdf300f7e738d1b1ddafd68e78adeac0582b19071570183aaadef3674c36d4bd"
+    },
+    "plan": "nature-mint-migration-plan-2026-10-25.md",
+    "game_database_migrated": false
+  },
+  "qualification": {
+    "python_sources": 1179,
+    "manifest_sha256": "e9ac73b2fde058dc7008445b8466c2a7b22ecf9ce7a89a074f10750f07cb824f",
+    "shared_unrelated_dirty_paths_preserved": 25,
+    "final_cohort_includes_separate_renewable_guard": true,
+    "later_ultra_work_excluded": true
+  },
+  "controls": [
+    "all21 real paid acquire/use/invalid target/partial debit/outer abort/no-effect/reconnect/later-battle flows",
+    "all21 separate-connection final-copy races; current party/name/ID/Fusion/owner/egg/box/battle/selectors and neutral equivalence",
+    "project helper exact +/-10% non-HP stats, HP deficit/fainted0/living minimum, stale cache and independent Hyper Training",
+    "actual constructor/raw builder/checkpoint/native/Mega/Fusion stat consumers; legacy owned checkpoint recovers training, conflicting saved overlay refuses",
+    "genetic Everstone breeding plan, actual genetic Toxel evolution, allfive flavor callbacks with opposite minted preferences",
+    "both genuinely captured/combined native hosts, frozen trained companions, source/displaced PP, reconstruction/separation",
+    "actual trade/market inspect/accept/purchase preserve labels and stats; changed overlay invalidates exact consent",
+    "optional finite counter travel/store/inventory/use/back and idempotent install without refill"
+  ],
+  "index": {
+    "definitions": 641,
+    "scoped": 493,
+    "prior_definitions_preserved": 472,
+    "all_world_availability": "unverified"
+  },
+  "limits": [
+    "No genetic rewrite or inferred legacy training; old blank genetics retain untrained neutral stat-read compatibility only, paid use refuses",
+    "0059 is additive nullable storage/constraint with paid reverse-refusal, but actual migration rehearsal evidence is reported separately above",
+    "No existing game schema, PF2-Dev, service, public source, shared stock, hosted CI or deliberately released sockets changed or certified",
+    "#904 owns separately approved deliberately released qualification; local schema/runtime deliveries do not establish sockets",
+    "later Ultra work and unrelated WIP are excluded from this candidate"
+  ],
+  "retained_diagnostics": [
+    "CheckConstraint declaration corrected for installed Django before SQL qualification",
+    "source transport/cleanup fixtures and negative-HP DB refusal corrected without weakening guards",
+    "Fusion display expectation corrected to retain existing10% active-form bonus; no game change needed",
+    "migration fixture corrected to explicit fresh-only genetics, complete historical source receipt/current audit, and refreshed injected-failure loader; migration remained byte-identical"
+  ],
+  "observations": [
+    {
+      "case": "__main__.NatureMintCases.test_actual_evolution_keeps_genetic_toxtricity_branch",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Timid",
+        "trained_stat_nature": null,
+        "current_hp": 100,
+        "status": "",
+        "level": 50
+      },
+      "after": {
+        "nature": "Timid",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 100,
+        "status": "",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Toxel's mint stat preference is Adamant; genetic Nature remains Timid."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_actual_fusion_display_uses_trained_stats_and_separate_labels",
+      "command": "+use Modest Mint=fusion",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Modest; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_battle_rejection_and_stale_saved_owner",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "You cannot do that during battle."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_battle_rejection_and_stale_saved_owner",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "That Pokemon is no longer an eligible owned party member."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_current_fusion_and_stale_fusion_handler",
+      "command": "+use Modest Mint=fusion",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_current_fusion_and_stale_fusion_handler",
+      "command": "+use Modest Mint=fusion",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Modest; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_current_fusion_and_stale_fusion_handler",
+      "command": "+use Adamant Mint=fusion",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_equivalent_genetics_and_repeated_training_do_not_spend",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Hardy",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Hardy",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Serious Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_equivalent_genetics_and_repeated_training_do_not_spend",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Docile",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Docile",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Serious Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_equivalent_genetics_and_repeated_training_do_not_spend",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Serious",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Serious",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Serious Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_equivalent_genetics_and_repeated_training_do_not_spend",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Bashful",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Bashful",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Serious Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_equivalent_genetics_and_repeated_training_do_not_spend",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Quirky",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Quirky",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Serious Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_equivalent_genetics_and_repeated_training_do_not_spend",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Adamant",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Adamant",
+        "trained_stat_nature": "Serious",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Serious; genetic Nature remains Adamant."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_equivalent_genetics_and_repeated_training_do_not_spend",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Adamant",
+        "trained_stat_nature": "Serious",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Adamant",
+        "trained_stat_nature": "Serious",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Serious Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_everstone_plan_keeps_genetic_nature",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 115,
+        "status": "",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 115,
+        "status": "",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Eevee's mint stat preference is Adamant; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_fainted_and_low_hp_hyper_training_remain_independent",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 0,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 0,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Adamant; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_fainted_and_low_hp_hyper_training_remain_independent",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 1,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 1,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Modest; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Adamant",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Adamant; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Adamant",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Adamant; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Bold",
+      "command": "+use Bold Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Bold",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Bold; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Bold",
+      "command": "+use Bold Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Bold",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Bold; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Brave",
+      "command": "+use Brave Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Brave",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "bravemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Brave; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Brave",
+      "command": "+use Brave Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Brave",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "bravemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Brave; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Calm",
+      "command": "+use Calm Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Calm",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Calm; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Calm",
+      "command": "+use Calm Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Calm",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Calm; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Careful",
+      "command": "+use Careful Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Careful",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "carefulmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Careful; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Careful",
+      "command": "+use Careful Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Careful",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "carefulmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Careful; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Gentle",
+      "command": "+use Gentle Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Gentle",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "gentlemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Gentle; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Gentle",
+      "command": "+use Gentle Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Gentle",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "gentlemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Gentle; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Hasty",
+      "command": "+use Hasty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Hasty",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "hastymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Hasty; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Hasty",
+      "command": "+use Hasty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Hasty",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "hastymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Hasty; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Impish",
+      "command": "+use Impish Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Impish",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "impishmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Impish; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Impish",
+      "command": "+use Impish Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Impish",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "impishmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Impish; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Jolly",
+      "command": "+use Jolly Mint=3",
+      "before": {
+        "nature": "Adamant",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Adamant",
+        "trained_stat_nature": "Jolly",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "jollymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Jolly; genetic Nature remains Adamant."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Jolly",
+      "command": "+use Jolly Mint=3",
+      "before": {
+        "nature": "Adamant",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Adamant",
+        "trained_stat_nature": "Jolly",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "jollymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Jolly; genetic Nature remains Adamant.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Lax",
+      "command": "+use Lax Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lax",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "laxmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Lax; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Lax",
+      "command": "+use Lax Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lax",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lax",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [],
+      "bag_after": [],
+      "messages": [
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Lonely",
+      "command": "+use Lonely Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lonely",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "lonelymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Lonely; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Lonely",
+      "command": "+use Lonely Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lonely",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "lonelymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Lonely; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Mild",
+      "command": "+use Mild Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Mild",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "mildmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Mild; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Mild",
+      "command": "+use Mild Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Mild",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Mild",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [],
+      "bag_after": [],
+      "messages": [
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Modest",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Modest; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Modest",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Modest; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Naive",
+      "command": "+use Naive Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naive",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naivemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Naive; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Naive",
+      "command": "+use Naive Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naive",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naivemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Naive; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Naughty",
+      "command": "+use Naughty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naughty",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naughtymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Naughty; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Naughty",
+      "command": "+use Naughty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naughty",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naughtymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Naughty; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Quiet",
+      "command": "+use Quiet Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Quiet",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "quietmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Quiet; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Quiet",
+      "command": "+use Quiet Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Quiet",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "quietmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Quiet; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Rash",
+      "command": "+use Rash Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Rash",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "rashmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Rash; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Rash",
+      "command": "+use Rash Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Rash",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "rashmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Rash; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Relaxed",
+      "command": "+use Relaxed Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Relaxed",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "relaxedmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Relaxed; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Relaxed",
+      "command": "+use Relaxed Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Relaxed",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "relaxedmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Relaxed; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Sassy",
+      "command": "+use Sassy Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Sassy",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "sassymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Sassy; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Sassy",
+      "command": "+use Sassy Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Sassy",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "sassymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Sassy; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Serious",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Serious",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Serious; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Serious",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Serious",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Serious",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [],
+      "bag_after": [],
+      "messages": [
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Timid",
+      "command": "+use Timid Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Timid",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Timid; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_final_copy_Timid",
+      "command": "+use Timid Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Timid",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Timid; genetic Nature remains Jolly.",
+        "You don't have any of that item to use."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_invalid_saved_genetics_hp_and_training_refuse",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "",
+        "trained_stat_nature": null,
+        "current_hp": 1,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "",
+        "trained_stat_nature": null,
+        "current_hp": 1,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Invalid saved genetic Nature; ask staff to review it."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_invalid_saved_genetics_hp_and_training_refuse",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "invented",
+        "trained_stat_nature": null,
+        "current_hp": 1,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "invented",
+        "trained_stat_nature": null,
+        "current_hp": 1,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Invalid saved genetic Nature; ask staff to review it."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_invalid_saved_genetics_hp_and_training_refuse",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 999999,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 999999,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Invalid saved HP; no mint was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_outer_rollback_does_not_publish_success_or_cached_training",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_owned_legacy_checkpoint_recovers_current_training_and_refuses_mismatch",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Modest; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Adamant",
+      "command": "+use Adamant Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Adamant",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Adamant",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Adamant",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Adamant; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Adamant",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Adamant Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Bold",
+      "command": "+use Bold Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Bold",
+      "command": "+use Bold Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Bold",
+      "command": "+use Bold Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Bold",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Bold",
+      "command": "+use Bold Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Bold",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Bold; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Bold",
+      "command": "+use Bold Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Bold",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Bold",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Bold Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Brave",
+      "command": "+use Brave Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "bravemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "bravemint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Brave",
+      "command": "+use Brave Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "bravemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "bravemint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Brave",
+      "command": "+use Brave Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Brave",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "bravemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Brave",
+      "command": "+use Brave Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Brave",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "bravemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Brave; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Brave",
+      "command": "+use Brave Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Brave",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Brave",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "bravemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "bravemint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Brave Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Calm",
+      "command": "+use Calm Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Calm",
+      "command": "+use Calm Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Calm",
+      "command": "+use Calm Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Calm",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Calm",
+      "command": "+use Calm Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Calm",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Calm; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Calm",
+      "command": "+use Calm Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Calm",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Calm",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Calm Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Careful",
+      "command": "+use Careful Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "carefulmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "carefulmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Careful",
+      "command": "+use Careful Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "carefulmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "carefulmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Careful",
+      "command": "+use Careful Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Careful",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "carefulmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Careful",
+      "command": "+use Careful Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Careful",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "carefulmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Careful; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Careful",
+      "command": "+use Careful Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Careful",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Careful",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "carefulmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "carefulmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Careful Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Gentle",
+      "command": "+use Gentle Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "gentlemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "gentlemint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Gentle",
+      "command": "+use Gentle Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "gentlemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "gentlemint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Gentle",
+      "command": "+use Gentle Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Gentle",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "gentlemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Gentle",
+      "command": "+use Gentle Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Gentle",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "gentlemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Gentle; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Gentle",
+      "command": "+use Gentle Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Gentle",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Gentle",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "gentlemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "gentlemint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Gentle Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Hasty",
+      "command": "+use Hasty Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "hastymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "hastymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Hasty",
+      "command": "+use Hasty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "hastymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "hastymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Hasty",
+      "command": "+use Hasty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Hasty",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "hastymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Hasty",
+      "command": "+use Hasty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Hasty",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "hastymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Hasty; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Hasty",
+      "command": "+use Hasty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Hasty",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Hasty",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "hastymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "hastymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Hasty Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Impish",
+      "command": "+use Impish Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "impishmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "impishmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Impish",
+      "command": "+use Impish Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "impishmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "impishmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Impish",
+      "command": "+use Impish Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Impish",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "impishmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Impish",
+      "command": "+use Impish Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Impish",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "impishmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Impish; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Impish",
+      "command": "+use Impish Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Impish",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Impish",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "impishmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "impishmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Impish Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Jolly",
+      "command": "+use Jolly Mint=99",
+      "before": {
+        "nature": "Adamant",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Adamant",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "jollymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "jollymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Jolly",
+      "command": "+use Jolly Mint=3",
+      "before": {
+        "nature": "Adamant",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Adamant",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "jollymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "jollymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Jolly",
+      "command": "+use Jolly Mint=3",
+      "before": {
+        "nature": "Adamant",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Adamant",
+        "trained_stat_nature": "Jolly",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "jollymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Jolly",
+      "command": "+use Jolly Mint=3",
+      "before": {
+        "nature": "Adamant",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Adamant",
+        "trained_stat_nature": "Jolly",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "jollymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Jolly; genetic Nature remains Adamant."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Jolly",
+      "command": "+use Jolly Mint=3",
+      "before": {
+        "nature": "Adamant",
+        "trained_stat_nature": "Jolly",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Adamant",
+        "trained_stat_nature": "Jolly",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "jollymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "jollymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Jolly Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Lax",
+      "command": "+use Lax Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "laxmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "laxmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Lax",
+      "command": "+use Lax Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "laxmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "laxmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Lax",
+      "command": "+use Lax Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lax",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "laxmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Lax",
+      "command": "+use Lax Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lax",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "laxmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Lax; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Lax",
+      "command": "+use Lax Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lax",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lax",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "laxmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "laxmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Lax Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Lonely",
+      "command": "+use Lonely Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "lonelymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "lonelymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Lonely",
+      "command": "+use Lonely Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "lonelymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "lonelymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Lonely",
+      "command": "+use Lonely Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lonely",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "lonelymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Lonely",
+      "command": "+use Lonely Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lonely",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "lonelymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Lonely; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Lonely",
+      "command": "+use Lonely Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lonely",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Lonely",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "lonelymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "lonelymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Lonely Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Mild",
+      "command": "+use Mild Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "mildmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "mildmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Mild",
+      "command": "+use Mild Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "mildmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "mildmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Mild",
+      "command": "+use Mild Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Mild",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "mildmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Mild",
+      "command": "+use Mild Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Mild",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "mildmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Mild; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Mild",
+      "command": "+use Mild Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Mild",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Mild",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "mildmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "mildmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Mild Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Modest",
+      "command": "+use Modest Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Modest",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Modest",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Modest",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Modest; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Modest",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Modest Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Naive",
+      "command": "+use Naive Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naivemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "naivemint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Naive",
+      "command": "+use Naive Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naivemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "naivemint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Naive",
+      "command": "+use Naive Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naive",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naivemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Naive",
+      "command": "+use Naive Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naive",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naivemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Naive; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Naive",
+      "command": "+use Naive Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naive",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naive",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naivemint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "naivemint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Naive Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Naughty",
+      "command": "+use Naughty Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naughtymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "naughtymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Naughty",
+      "command": "+use Naughty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naughtymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "naughtymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Naughty",
+      "command": "+use Naughty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naughty",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naughtymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Naughty",
+      "command": "+use Naughty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naughty",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naughtymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Naughty; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Naughty",
+      "command": "+use Naughty Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naughty",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Naughty",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "naughtymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "naughtymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Naughty Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Quiet",
+      "command": "+use Quiet Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "quietmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "quietmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Quiet",
+      "command": "+use Quiet Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "quietmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "quietmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Quiet",
+      "command": "+use Quiet Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Quiet",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "quietmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Quiet",
+      "command": "+use Quiet Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Quiet",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "quietmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Quiet; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Quiet",
+      "command": "+use Quiet Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Quiet",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Quiet",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "quietmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "quietmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Quiet Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Rash",
+      "command": "+use Rash Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "rashmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "rashmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Rash",
+      "command": "+use Rash Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "rashmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "rashmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Rash",
+      "command": "+use Rash Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Rash",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "rashmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Rash",
+      "command": "+use Rash Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Rash",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "rashmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Rash; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Rash",
+      "command": "+use Rash Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Rash",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Rash",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "rashmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "rashmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Rash Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Relaxed",
+      "command": "+use Relaxed Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "relaxedmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "relaxedmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Relaxed",
+      "command": "+use Relaxed Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "relaxedmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "relaxedmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Relaxed",
+      "command": "+use Relaxed Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Relaxed",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "relaxedmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Relaxed",
+      "command": "+use Relaxed Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Relaxed",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "relaxedmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Relaxed; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Relaxed",
+      "command": "+use Relaxed Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Relaxed",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Relaxed",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "relaxedmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "relaxedmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Relaxed Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Sassy",
+      "command": "+use Sassy Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "sassymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "sassymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Sassy",
+      "command": "+use Sassy Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "sassymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "sassymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Sassy",
+      "command": "+use Sassy Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Sassy",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "sassymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Sassy",
+      "command": "+use Sassy Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Sassy",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "sassymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Sassy; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Sassy",
+      "command": "+use Sassy Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Sassy",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Sassy",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "sassymint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "sassymint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Sassy Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Serious",
+      "command": "+use Serious Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Serious",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Serious",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Serious",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Serious",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Serious",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Serious; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Serious",
+      "command": "+use Serious Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Serious",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Serious",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "seriousmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Serious Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Timid",
+      "command": "+use Timid Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Timid",
+      "command": "+use Timid Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Timid",
+      "command": "+use Timid Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Timid",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Timid",
+      "command": "+use Timid Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Timid",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Timid; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_paid_Timid",
+      "command": "+use Timid Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Timid",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Timid",
+        "current_hp": 143,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Timid Mint had no effect. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_partial_debit_and_post_save_failure_roll_back",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_targets_selectors_eggs_boxes_and_ambiguous_names",
+      "command": "+use Adamant Mint=",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Usage: +use Adamant Mint=<party slot, Pokemon name or fusion>[/<move>]"
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_targets_selectors_eggs_boxes_and_ambiguous_names",
+      "command": "+use Adamant Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_targets_selectors_eggs_boxes_and_ambiguous_names",
+      "command": "+use Adamant Mint=party",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_targets_selectors_eggs_boxes_and_ambiguous_names",
+      "command": "+use Adamant Mint=Missing",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_targets_selectors_eggs_boxes_and_ambiguous_names",
+      "command": "+use Adamant Mint=3/Atk",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "That item does not accept a move selector."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_targets_selectors_eggs_boxes_and_ambiguous_names",
+      "command": "+use Adamant Mint=162",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_targets_selectors_eggs_boxes_and_ambiguous_names",
+      "command": "+use Adamant Mint=Mew",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "That Pokemon name is ambiguous; use its party slot or full ID."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_targets_selectors_eggs_boxes_and_ambiguous_names",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Field items require an eligible owned party Pokemon; eggs cannot use them."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintCases.test_targets_selectors_eggs_boxes_and_ambiguous_names",
+      "command": "+use Adamant Mint=116f7082-da15-4bab-91e6-fa10d8c440e7",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Adamant",
+      "command": "+use Adamant Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Adamant",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Adamant",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Adamant",
+      "command": "+use Adamant Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Adamant",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "adamantmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Adamant; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Bold",
+      "command": "+use Bold Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Bold",
+      "command": "+use Bold Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Bold",
+      "command": "+use Bold Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Bold",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Bold",
+      "command": "+use Bold Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Bold",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "boldmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Bold; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Calm",
+      "command": "+use Calm Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Calm",
+      "command": "+use Calm Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Calm",
+      "command": "+use Calm Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Calm",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Calm",
+      "command": "+use Calm Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Calm",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "calmmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Calm; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Modest",
+      "command": "+use Modest Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Modest",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Modest",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Modest",
+      "command": "+use Modest Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Modest",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "modestmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Modest; genetic Nature remains Jolly."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Timid",
+      "command": "+use Timid Mint=99",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Timid",
+      "command": "+use Timid Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "messages": [
+        "The mint could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Timid",
+      "command": "+use Timid Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Timid",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": []
+    },
+    {
+      "case": "__main__.NatureMintSourceCases.test_source_Timid",
+      "command": "+use Timid Mint=3",
+      "before": {
+        "nature": "Jolly",
+        "trained_stat_nature": null,
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "after": {
+        "nature": "Jolly",
+        "trained_stat_nature": "Timid",
+        "current_hp": 153,
+        "status": "psn",
+        "level": 50
+      },
+      "bag_before": [
+        {
+          "item_name": "timidmint",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "messages": [
+        "Mew's mint stat preference is Timid; genetic Nature remains Jolly."
+      ]
+    }
+  ]
+}

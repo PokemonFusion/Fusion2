@@ -1,0 +1,217 @@
+{
+  "scope": "Restore and finish the approved compact-default battle UI; preserve classic styles",
+  "base": "7f57b0aab21f1a89a6e5f8aa8bef5bc26d0a1a50",
+  "original_staging": "f6826a9a1cf61be9899936232e57240ff8a7e0a7",
+  "original_main": "b7637cb8d810c5d1706b4ebade8ec4099c553c08",
+  "first_main_promotion": {
+    "pr": 940,
+    "original_main": "b7637cb8d810c5d1706b4ebade8ec4099c553c08",
+    "tested_candidate": "7f57b0aab21f1a89a6e5f8aa8bef5bc26d0a1a50",
+    "merge": "b931ecf6be3ef074c80757e26b4244416f1e2536",
+    "identical_tested_tree": true,
+    "remote_staging_auto_deleted_and_restored": true
+  },
+  "preservation": {
+    "original_paths": 25,
+    "stash": {
+      "sha": "7a0b013ae0c2ba875dc107f4b251e9dac179ac13",
+      "message": "On staging: codex-safety-battle-ui-before-staging-20261027"
+    },
+    "restored": [
+      "commands/player/cmd_battleuistyle.py",
+      "docs/battle-interface.md",
+      "pokemon/ui/compact_battle.py",
+      "tests/helpers/compact_battle_render.py",
+      "tests/test_compact_battle_render.py",
+      "tests/test_compact_battle_ui.py"
+    ],
+    "incoming_merge": "pokemon/battle/battleinstance.py",
+    "all_backup_hashes_verified": true
+  },
+  "staging_gate": {
+    "receipt": {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tools/run_mandatory_tests.py"
+      ],
+      "cwd": "H:\\PokemonFusionProject\\fusion2-necrozma-items",
+      "head": "7f57b0aab21f1a89a6e5f8aa8bef5bc26d0a1a50",
+      "started_utc": "2026-10-27T13:26:45.518560+00:00",
+      "seconds": 2473.88,
+      "returncode": 0,
+      "log": "H:\\PokemonFusionProject\\.codex-artifacts\\staging-main-ui-20261027\\staging-mandatory.log"
+    },
+    "log_sha256": "35e582a3712652721e5a5fbafa60fa4fcc2b73b9d7ad425a2e700553809de70e",
+    "orders": [
+      {
+        "order": "combined",
+        "passed": 7350,
+        "skipped": 4032,
+        "warnings": 2142,
+        "seconds": 666.36
+      },
+      {
+        "order": "repeat",
+        "passed": 7350,
+        "skipped": 4032,
+        "warnings": 2142,
+        "seconds": 810.72
+      },
+      {
+        "order": "battle-first",
+        "passed": 7350,
+        "skipped": 4032,
+        "warnings": 2162,
+        "seconds": 737.95
+      }
+    ]
+  },
+  "ui_gate": {
+    "receipt": {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tools/run_mandatory_tests.py"
+      ],
+      "cwd": "H:\\PokemonFusionProject\\fusion2",
+      "head": "7f57b0aab21f1a89a6e5f8aa8bef5bc26d0a1a50",
+      "started_utc": "2026-10-27T13:43:17.043553+00:00",
+      "seconds": 1431.88,
+      "returncode": 0,
+      "log": "H:\\PokemonFusionProject\\.codex-artifacts\\staging-main-ui-20261027\\ui-mandatory.log"
+    },
+    "log_sha256": "dfba0e6ab397fbbe807a85584da6f4b98231611770445740ae9c0f682bed138c",
+    "orders": [
+      {
+        "order": "combined",
+        "passed": 7383,
+        "skipped": 4032,
+        "warnings": 2143,
+        "seconds": 449.4
+      },
+      {
+        "order": "repeat",
+        "passed": 7383,
+        "skipped": 4032,
+        "warnings": 2143,
+        "seconds": 373.31
+      },
+      {
+        "order": "battle-first",
+        "passed": 7383,
+        "skipped": 4032,
+        "warnings": 2163,
+        "seconds": 406.33
+      }
+    ]
+  },
+  "focused": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/test_compact_battle_ui.py",
+      "tests/test_compact_battle_render.py",
+      "tests/test_battle_ui.py",
+      "tests/test_battleuistyle_command.py",
+      "tests/test_move_gui.py",
+      "tests/test_render_interfaces_display.py",
+      "tests/test_turn_manager.py",
+      "tests/test_battle_attack_command.py",
+      "tests/test_battle_interface_perspective.py",
+      "tests/test_interface_display.py",
+      "tests/test_battle_watchers.py",
+      "-o",
+      "addopts=",
+      "-p",
+      "no:cacheprovider"
+    ],
+    "cwd": "H:\\PokemonFusionProject\\fusion2",
+    "head": "7f57b0aab21f1a89a6e5f8aa8bef5bc26d0a1a50",
+    "started_utc": "2026-10-27T13:42:36.702864+00:00",
+    "seconds": 14.39,
+    "returncode": 0,
+    "log": "H:\\PokemonFusionProject\\.codex-artifacts\\staging-main-ui-20261027\\ui-final-focused-v2.log"
+  },
+  "player_commands": 30,
+  "selector_inputs": 7,
+  "player_transcript_sha256": "140db275504bc5d2f0ecfcb7ec57a1221c0c4b52f64c1e8c055861a1d0aab851",
+  "supplemental_native_turn": {
+    "receipt": {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "H:\\PokemonFusionProject\\.codex-artifacts\\staging-main-ui-20261027\\engine_turn_check.py"
+      ],
+      "cwd": "H:\\PokemonFusionProject\\fusion2",
+      "head": "7f57b0aab21f1a89a6e5f8aa8bef5bc26d0a1a50",
+      "started_utc": "2026-10-27T14:04:38.227828+00:00",
+      "seconds": 2.4,
+      "returncode": 0,
+      "log": "H:\\PokemonFusionProject\\.codex-artifacts\\staging-main-ui-20261027\\ui-engine-turn.log"
+    },
+    "source": "\"\"\"Supplement UI proof with a real two-controller turn, refusing every DB.\"\"\"\n\nimport os\nfrom pathlib import Path\nimport sys\nfrom types import SimpleNamespace as NS\nfrom unittest.mock import patch\n\nROOT = Path(r\"H:\\PokemonFusionProject\\fusion2\")\nsys.path[:0] = [str(ROOT), str(ROOT / \"tests/helpers\")]\nos.environ.setdefault(\"DJANGO_SETTINGS_MODULE\", \"server.conf.settings\")\n\nimport compact_battle_player_flow as ui\nfrom django.db.backends.base.base import BaseDatabaseWrapper\n\nwith patch.object(BaseDatabaseWrapper, \"ensure_connection\", ui.refuse_database):\n    import django\n\n    django.setup()\n    import evennia\n    from evennia.commands.command import Command\n    from evennia.commands.cmdset import CmdSet\n\n    evennia.Command, evennia.CmdSet = Command, CmdSet\n    from commands.player.cmd_battle_attack import CmdBattleAttack\n    from commands.player.cmd_showbattle import CmdShowBattle\n    from utils.battle_display import strip_ansi\n\n    session, players = ui.fixture()\n    session.room = NS(ndb=NS(), db=NS())\n    session.notify = session.msg\n    session.battle.log_action = session.msg\n    own, foe = session.battle.participants[0].active[0], session.battle.participants[1].active[0]\n    players[2].db.battle_ui_style = \"pf1\"\n    with patch(\"commands.player.cmd_battle_attack.get_system\", return_value=NS(battle_manager=None)):\n        for player in [players[0], players[2]]:\n            command = CmdBattleAttack()\n            command.caller, command.args, command.switches = player, \"Double Team\", []\n            command.parse()\n            command.func()\n        assert set(session.state.declare) == {\"A1\", \"B1\"}, session.state.declare\n        session.run_turn()\n        assert not session.turn_state.get(\"error\"), session.turn_state\n        assert own.boosts.get(\"evasion\") == 1 and foe.boosts.get(\"evasion\") == 1\n        assert own.moves[3].pp == foe.moves[3].pp == 6\n        compact = strip_ansi(\"\\n\".join(players[0].messages))\n        classic = strip_ansi(\"\\n\".join(players[2].messages))\n        assert \"LAST TURN\" in compact and \"Double Team\" in compact\n        assert \"LAST TURN\" not in classic and \"Double Team\" in classic\n        assert \"Evasion +1\" in compact\n        assert not session.state.declare\n    print(\"Real native Double Team turn passed through +attack, engine and BattleSession.run_turn; PP 7->6 and Evasion +1 for both; grouped compact and preserved PF1 stream; no database/socket.\")\n",
+    "log": "Real native Double Team turn passed through +attack, engine and BattleSession.run_turn; PP 7->6 and Evasion +1 for both; grouped compact and preserved PF1 stream; no database/socket.\n",
+    "limit": "Synthetic captured messaging; real +attack, engine resolution and BattleSession.run_turn; no SQL/socket"
+  },
+  "source_map": {
+    "python_files": 1207,
+    "sha256": "a34edcc20286ebd11a42227387cfebfdb48754dfd54ac12d24ebe0447d2b83ce",
+    "unchanged_through_gate": true
+  },
+  "changed_sources": {
+    "commands/player/battle_choice_prompts.py": "e68e74e1f0695db24714af0636bc07af187c3862506e08cd69a95169f8a17eda",
+    "commands/player/cmd_battle_attack.py": "036fb46aaf8cda66e66f494e17bfdbf6a7e376fefdc6b53adec3dd5efafa0049",
+    "commands/player/cmd_battleuistyle.py": "29467cb64edd0162335616773cf5abbb7bac792a5e068721038556daff46979e",
+    "commands/player/cmd_showbattle.py": "fa6a2bdc318ca5956838eb81c8c4eb7dd26531e960e35bf6f460b74d2a496cc4",
+    "commands/player/cmd_uimode.py": "d903602bce640eac163f255a77550dad9706970657f6c9b589e9a9f41b30044f",
+    "docs/battle-interface.md": "b3c6aa64fef5ef6fd1255e3f465778173204bdd0a7f6b223a2ae208f91c40e95",
+    "menus/battle_move.py": "8425bed4bcb6ecc92c9ebea893b6b092193a9f800259d57382956722a5c1635f",
+    "pokemon/battle/battleinstance.py": "7636ec51bd855f0e7072103aec7f21b17e44bcfb561413341f07738043af2f72",
+    "pokemon/battle/interface.py": "5d7c83127249b5ac433145c9c5e293f3478acd92ba9096de4f29bd3336fd6382",
+    "pokemon/battle/messaging.py": "a61d105148e14575b74f85dda294a1836f1de26953423291624102cae91657a4",
+    "pokemon/battle/turn.py": "f500267e8223ddbef7e2048c65b8f6cd0cab3fb3832c8be0cd9bc553a4254e0e",
+    "pokemon/battle/watchers.py": "d720e00eacc22a6ca74454b0b8ed8e09674661fdd2ad006e078e468d08955e05",
+    "pokemon/ui/battle_render.py": "542329eef4937b8c67d899d70067962db765e9ad05814a310c6ec9ad86d4deae",
+    "pokemon/ui/compact_battle.py": "56b6cee5b70f579c1f7b409037767303a65a7485c357c26a4dc0fcebafe0101a",
+    "pokemon/ui/move_gui.py": "6f00ffccd16511403e49c38d1e1ca6b99f258da916f57594072af40f2c84cff0",
+    "tests/helpers/compact_battle_player_flow.py": "2495dcebdb630597f07c63dd85f9a8e0f6186e4f06f82e1c39d285e6e8518cd9",
+    "tests/helpers/compact_battle_render.py": "c3e7c2e03d0ec51a2b34ecdbc537e0edd180e0ba6a46fc4e11637dabda0c16c1",
+    "tests/test_battle_attack_command.py": "424dfd739333209736042c905894e94051eded065e45e87fc1b4f5bae814006c",
+    "tests/test_battle_ui.py": "dad2b0b962e8d23ea0671f8fe64f2e54153f56c67f5fe094aedcaaf3e6deb3ec",
+    "tests/test_battleuistyle_command.py": "16bb09ff7b99c085854884b68577b9861a45895814557ee15c2e3824e95f2710",
+    "tests/test_compact_battle_render.py": "89605c9ba1607c9dc2f2d367624bc7a6887d2fe49f18bbbde8701d7941495a33",
+    "tests/test_compact_battle_ui.py": "0f6898ff13db1db200dd8dc377b2817119647029339a799c8f8e61e07b2e8132",
+    "tests/test_move_gui.py": "98590da565f86315be479d00bb17dfe19c2261151fade590a2445ea4116a4d7b",
+    "tests/test_render_interfaces_display.py": "949fab60a4a3f74cebe41922aa0a61dc1ffdd1cdf8ba2327303535e61c83b4b8",
+    "tests/test_turn_manager.py": "f1323500d83dd68329d5a687772538f691dfae5b1596580b4bca5a3ccefa3c86",
+    "utils/battle_display.py": "c8af6b0bb115d9464fc771c5a62f0bd0eaeb802faa71aedaffa7b77834c7293f"
+  },
+  "rendering": {
+    "cases": 15,
+    "widths": [
+      24,
+      40,
+      60,
+      78,
+      100
+    ],
+    "modes": [
+      "unicode",
+      "ascii",
+      "screenreader"
+    ],
+    "ansi_html_equal": true,
+    "preview_visually_inspected": true
+  },
+  "limits": [
+    "Synthetic controllers and runtime battlers; real commands, choice validation and engine objects",
+    "Captured interactive transport and a supplied session registry; database connections refused",
+    "No socket login, owned SQL persistence, public acquisition, concurrency, migration or deployment claim",
+    "Existing optional dex, differential and explicitly configured SQL suites remain skipped",
+    "No game service, human account or Pokemon was changed"
+  ]
+}

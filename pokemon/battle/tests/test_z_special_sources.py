@@ -32,7 +32,7 @@ def test_exact_special_normal_profiles(crystal, source, result, kind, native, le
     assert (profile.name, profile.power, profile.move_type, profile.category,
             profile.target, profile.kind, profile.native) == (
                 result, power, kind, "Special", "normal", "generic", ())
-    assert ZProfiles.get("Firium Z", "Fire Blast") is None
+    assert ZProfiles.get("Firium Z", "Fire Punch") is None
 
 
 @pytest.mark.parametrize("crystal,source,result,kind,native,level,power", PAIRS)

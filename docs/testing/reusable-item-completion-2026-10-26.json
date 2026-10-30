@@ -1,0 +1,61 @@
+{
+  "scope": "Existing reusable Mega/Z items after an actual final KO; cleanup validation only",
+  "repair": "Permit active=False custody validation on a completed battle; active=True declarations still refuse",
+  "initial_failure": {
+    "suite": "battle_mechanic_completion",
+    "exit": 1,
+    "seconds": 12.66,
+    "cases": [
+      "2"
+    ],
+    "sha256": "e370a766ce85724c58262f5718009931b31f6ce54d72b403eaa539f8df302797"
+  },
+  "final_sql": {
+    "suite": "battle_mechanic_completion",
+    "exit": 0,
+    "seconds": 13.53,
+    "cases": [
+      "2"
+    ],
+    "sha256": "abd6c5b420a3c3afc5216a7a0c4e0d5c94df1467a78af37834f3f056224e3c8d"
+  },
+  "mandatory": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\ultra-885-888-20261025\\qualified-final-tree\\tools\\run_mandatory_tests.py"
+    ],
+    "exit_code": 0,
+    "seconds": 2012.78,
+    "passed": [
+      "6613",
+      "6613",
+      "6613"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "d794341e7a683ee1d3eecd335bd26735e2e67c1692b45e7aa359529e048498e9",
+    "source_count": 1648
+  },
+  "prerequisite_helper_sha256": "72cb4f90e19a09d43d2b05c5b57021dc0dfcae52cab6c4e0eac4f532edae0053",
+  "qualified_cohort_python_files": 1187,
+  "standalone_staged_python_files": 1180,
+  "limits": [
+    "Captured ordinary command transport/private PostgreSQL; no released socket or shared deployment claim",
+    "Full gate ran on the documented Ultra cohort; independent staged-only existing routes are separately rerun before commit"
+  ],
+  "standalone_staged_sql": {
+    "suite": "battle_mechanic_completion",
+    "exit": 0,
+    "seconds": 15.08,
+    "cases": [
+      "2"
+    ],
+    "sha256": "74eb7f1950093f3adf860d8ceecceee126c221f016cbde17f24886154bbbc7bb"
+  },
+  "unrelated_shared_dirty_paths_preserved": 25,
+  "later_ultra_work_excluded": true
+}

@@ -75,4 +75,9 @@ migration/release operations and ordinary acceptance remain with these open issu
 | [#895](https://github.com/PokemonFusion/Fusion2/issues/895) | Preserve crossed-level EXP Candy learning and reconnect choices | #868, #894 |
 | [#896](https://github.com/PokemonFusion/Fusion2/issues/896) | Qualify EXP Candy acquisition, multi-level use and later gameplay | #868, #895 |
 
+Runtime/learning implementation and local qualification for #894/#895:
+[player guide](../exp-candy.md), [dated evidence](../testing/exp-candy-2026-10-25.md).
+The optional finite counter and captured-command flows are qualified locally;
+#896 retains the installation/released acceptance boundary.
+
 Scope/source checks: [2026-10-25 decision receipt](../testing/item-scope-decisions-2026-10-25.md).

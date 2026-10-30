@@ -44,6 +44,21 @@ class MoveAccuracy:
             apply(EffectContext.ability(owner), "onAnyModifyAccuracy", owner, "ability_state")
         apply(EffectContext.item(user), "onSourceModifyAccuracy", user, "item_state")
         apply(EffectContext.item(target), "onModifyAccuracy", target, "item_state")
+        if accuracy is not True and isinstance(accuracy, (int, float)):
+            raw = getattr(move, "raw", {}) or {}
+            own = (getattr(user, "boosts", {}) or {}).get("accuracy", 0)
+            evasion = (getattr(target, "boosts", {}) or {}).get("evasion", 0)
+            # Read only the participating owners. An uninvolved Unaware ally
+            # cannot erase a stage, and an ignored target ability cannot act.
+            if (raw.get("ignoreAccuracy") or getattr(move, "ignoreAccuracy", False)
+                    or not target_ignored and EffectContext.key(EffectContext.ability(target)) == "unaware"):
+                own = 0
+            if (raw.get("ignoreEvasion") or getattr(move, "ignoreEvasion", False)
+                    or EffectContext.key(EffectContext.ability(user)) == "unaware"):
+                evasion = 0
+            own, evasion = max(-6, min(6, own)), max(-6, min(6, evasion))
+            stage = max(-6, min(6, own - evasion))
+            accuracy = int(accuracy * (3 + stage) / 3 if stage >= 0 else accuracy * 3 / (3 - stage))
         if battle is not None and hasattr(battle, "runEvent"):
             result = battle.runEvent("Accuracy", target, user, move, accuracy)
             if result is not None:

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "key": "status-berry-seed-counter-v1",
+  "room": "Status Berry Seed Counter",
+  "entrance": "seeds",
+  "return_exit": "back",
+  "description": "A sign lists finite Cheri, Pecha, Rawst and Aspear Berry seeds. Use +store to buy, then +berry plant <name> for one private four-hour crop. Use +berry water once per stage, +berry status and +berry harvest. The back exit returns to the hub. No refill or resale.",
+  "buy_only": true,
+  "refill": "none",
+  "room_attributes": {"berry_nursery": true},
+  "offers": [
+    {"item": "Cheri Berry", "price": 100, "quantity": 5},
+    {"item": "Pecha Berry", "price": 100, "quantity": 5},
+    {"item": "Rawst Berry", "price": 100, "quantity": 5},
+    {"item": "Aspear Berry", "price": 100, "quantity": 5}
+  ]
+}

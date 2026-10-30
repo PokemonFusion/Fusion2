@@ -1,6 +1,7 @@
 # EV mochi contract (#870)
 
-Accepted design scope after the repair/report gates; none of these new definitions is enabled.
+Accepted design scope after the repair/report gates. The later implementation
+and qualification are linked below; optional source installation remains separate.
 The pinned RHH [item/effect tables](https://github.com/rh-hideout/pokeemerald-expansion/blob/44bc3e0473b85d8e254c8dbc9004ac2d7b0a5fb3/src/data/pokemon/item_effects.h)
 and [effect constants](https://github.com/rh-hideout/pokeemerald-expansion/blob/44bc3e0473b85d8e254c8dbc9004ac2d7b0a5fb3/include/constants/item_effects.h)
 bind the stat supplements to ten EVs and the reset to all six. They are a
@@ -47,7 +48,11 @@ feather, EV-berry and Hyper Training suites. Optional source prices are10000
 per supplement/stock2, Fresh-Start20000/stock1, finite buy-only/no refill; they
 are selected PF2 offers awaiting source/release work. No broad world grant.
 
-Implementation follows the linked batches below; runtime qualification remains future work.
+The linked batches implement this contract with local command/SQL qualification.
+The later [implemented route](../ev-mochi.md) and
+[dated checks](../testing/ev-mochi-2026-10-25.md) record the six supplements and
+whole-vector reset. This does not install their optional source or change
+genetic Nature, IVs or Hyper Training.
 
 
 ## Implementation follow-ups

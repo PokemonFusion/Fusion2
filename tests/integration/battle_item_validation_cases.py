@@ -57,9 +57,21 @@ class ItemSessionFixture(unittest.TestCase):
 
     def tearDown(self):
         """Release only this test's local session and transport adapter."""
-        if self.session and self.session.battle_id in (self.room.db.battles or []):
-            self.session.end()
-        self.search.stop()
+        try:
+            if self.session and self.session.battle_id in (self.room.db.battles or []):
+                if self.session.storage.get("roster_recovery"):
+                    from pokemon.battle.roster_eligibility import BattleRosterRecoveryRequired
+
+                    # Stale-egg fault fixtures must respect production quarantine.
+                    # The enclosing disposable schema owns their final teardown;
+                    # do not clear the marker or bypass protected end writes.
+                    with self.assertRaises(BattleRosterRecoveryRequired):
+                        self.session.end()
+                    battle_handler.unregister(self.session)
+                else:
+                    self.session.end()
+        finally:
+            self.search.stop()
 
     def find(self, query):
         """Resolve model-backed transports in place of a live Evennia session."""

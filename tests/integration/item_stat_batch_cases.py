@@ -26,7 +26,7 @@ class ChanceUnobserved(Exception):
 
 def snapshot(fixture):
     """Read runtime and SQL values, including actual executed moves and PP."""
-    from live_battle_pilot_server import mon_snapshot
+    from tools.qa.live_battle_pilot_server import mon_snapshot
     from pokemon.helpers.pokemon_helpers import get_stats
 
     session, players = fixture.session, fixture.players
@@ -116,8 +116,8 @@ def assess(probe, records):
 
 def run_case(case, offset):
     """Run an unchanged fixture/seed through production command and SQL paths."""
-    from live_dex_cases import from_dict
-    from live_dex_runner import evaluate
+    from tools.qa.live_dex_cases import from_dict
+    from tools.qa.live_dex_runner import evaluate
     from pokemon.helpers.pokemon_helpers import get_max_hp
 
     fixture = routes.AcquisitionCases()
@@ -193,7 +193,7 @@ class StatTypeBatchCases(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    sys.path.insert(0, str(ROOT / "tools"))
+    sys.path.insert(0, str(ROOT / "tools" / "audits"))
     with IsolatedPostgres() as database:
         database.create_model_tables()
         routes.load_runtime()

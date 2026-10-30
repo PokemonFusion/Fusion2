@@ -68,7 +68,7 @@ def get_battle_switch_choices(character, roster) -> dict:
         party = get_party_slots(character)
         choices = {}
         for slot, model in enumerate(party, 1):
-                if model is None:
+                if not pokemon_is_battle_member(model):
                         continue
                 identifier = str(getattr(model, "unique_id", "") or "")
                 for index, mon in enumerate(roster, 1):
@@ -100,10 +100,15 @@ def resolve_battle_switch_choice(character, choices, selection):
         return choices[key]
 
 
+def pokemon_is_battle_member(pokemon) -> bool:
+        """Allow non-egg roster members, including unconscious Revive targets."""
+        return pokemon is not None and not getattr(pokemon, "is_egg", False)
+
+
 def pokemon_is_usable(pokemon) -> bool:
         """Return ``True`` if ``pokemon`` is conscious and able to battle."""
 
-        if not pokemon or getattr(pokemon, "is_egg", False):
+        if not pokemon_is_battle_member(pokemon):
                 return False
         if getattr(pokemon, "fainted", False) or getattr(pokemon, "is_fainted", False):
                 return False

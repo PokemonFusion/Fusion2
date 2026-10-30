@@ -6,7 +6,7 @@ turn ordering and state tracking rather than full battle logic.
 
 Notes
 -----
-The file :mod:`simulator-doc.txt` from Pokémon Showdown describes the
+The file :mod:`simulator-doc.txt` from PokÃƒÆ’Ã‚Â©mon Showdown describes the
 expected control flow of that engine.  The important parts are included
 here as a reference for future work.  Individual functions below map to
 sections of that pseudocode and currently act as placeholders.
@@ -136,6 +136,7 @@ from .battledata import (
     _pokemon_reveal_key,
 )
 from .registry import CALLBACK_REGISTRY
+from .labels import BattlerLabels
 
 ensure_movedex_aliases(MOVEDEX)
 
@@ -266,7 +267,7 @@ def is_self_target(target: str | None) -> bool:
 def _resolve_ability(ability):
     """Return an :class:`~pokemon.dex.entities.Ability` for ``ability``.
 
-    Pokémon instances within tests sometimes store their ability as a simple
+    PokÃƒÆ’Ã‚Â©mon instances within tests sometimes store their ability as a simple
     string identifier rather than an :class:`Ability` object.  This helper
     looks up such strings in :data:`pokemon.dex.ABILITYDEX` and returns the
     corresponding instance so callers can safely invoke callbacks.  If the
@@ -895,6 +896,7 @@ class BattleMove:
         logic can still be exercised without the full data package.
         """
 
+        labels = BattlerLabels(battle)
         DEFAULT_TEXT = _get_default_text()
         raw_flags = self.raw.get("flags", {}) if self.raw else {}
         bypasses_substitute = bool(
@@ -908,7 +910,7 @@ class BattleMove:
 
         if battle and hasattr(battle, "log_action"):
             default_messages = DEFAULT_TEXT.get("default", {})
-            actor_name = getattr(user, "name", None) or getattr(user, "species", "Pokemon")
+            actor_name = labels.name(user)
 
             item_template = default_messages.get("activateItem")
             if item_template:
@@ -929,7 +931,7 @@ class BattleMove:
         if (getattr(self, "pranksterBoosted", False)
                 and str(self.category).lower() == "status" and target is not user
                 and not user.is_ally(target) and "Dark" in getattr(target, "types", [])):
-            battle.log_action(f"{target.name} is immune to the Prankster-boosted {self.name}!")
+            battle.log_action(f"{labels.name(target)} is immune to the Prankster-boosted {self.name}!")
             return
         from .called_moves import CalledMoveExecutor
 
@@ -945,14 +947,14 @@ class BattleMove:
 
         if target is not user and StatusTypeImmunity.blocks(target, self):
             if battle and hasattr(battle, "log_action"):
-                battle.log_action(f"{target.name} is immune to {self.name}!")
+                battle.log_action(f"{labels.name(target)} is immune to {self.name}!")
             return
         if (str(self.category).lower() == "status" or self.raw.get("heal")) and target is not user:
             from .accuracy import MoveAccuracy
 
             if not MoveAccuracy.check_status(user, target, self, battle):
                 if battle and hasattr(battle, "log_action"):
-                    battle.log_action(f"{user.name} uses {self.name} but it missed!")
+                    battle.log_action(f"{labels.name(user)} uses {self.name} but it missed!")
                 return
         if self.onHit:
             handled = invoke_callback(self.onHit, user, target, battle=battle)
@@ -1013,12 +1015,12 @@ class BattleMove:
                     if target:
                         battle.log_action(
                             DEFAULT_TEXT["drain"]["heal"].replace(
-                                "[SOURCE]", getattr(target, "name", "Pokemon")
+                                "[SOURCE]", labels.name(target)
                             )
                         )
                     battle.log_action(
                         DEFAULT_TEXT["default"]["heal"].replace(
-                            "[POKEMON]", getattr(user, "name", "Pokemon")
+                            "[POKEMON]", labels.name(user)
                         )
                     )
 
@@ -1038,7 +1040,7 @@ class BattleMove:
                 if battle and recoil_loss:
                     battle.log_action(
                         DEFAULT_TEXT["recoil"]["damage"].replace(
-                            "[POKEMON]", getattr(user, "name", "Pokemon")
+                            "[POKEMON]", labels.name(user)
                         )
                     )
 
@@ -1065,7 +1067,7 @@ class BattleMove:
                 if battle and applied > 0:
                     battle.log_action(
                         DEFAULT_TEXT["default"]["heal"].replace(
-                            "[POKEMON]", getattr(heal_target, "name", "Pokemon")
+                            "[POKEMON]", labels.name(heal_target)
                         )
                     )
 
@@ -1241,12 +1243,12 @@ class BattleMove:
                             if target:
                                 battle.log_action(
                                     DEFAULT_TEXT["drain"]["heal"].replace(
-                                        "[SOURCE]", getattr(target, "name", "Pokemon")
+                                        "[SOURCE]", labels.name(target)
                                     )
                                 )
                             battle.log_action(
                                 DEFAULT_TEXT["default"]["heal"].replace(
-                                    "[POKEMON]", getattr(user, "name", "Pokemon")
+                                    "[POKEMON]", labels.name(user)
                                 )
                             )
 
@@ -1264,7 +1266,7 @@ class BattleMove:
                         if battle and recoil_loss:
                             battle.log_action(
                                 DEFAULT_TEXT["recoil"]["damage"].replace(
-                                    "[POKEMON]", getattr(user, "name", "Pokemon")
+                                    "[POKEMON]", labels.name(user)
                                 )
                             )
 
@@ -1277,7 +1279,7 @@ class BattleMove:
                     if battle and applied > 0:
                         battle.log_action(
                             DEFAULT_TEXT["default"]["heal"].replace(
-                                "[POKEMON]", getattr(target, "name", "Pokemon")
+                                "[POKEMON]", labels.name(target)
                             )
                         )
 
@@ -1310,7 +1312,7 @@ class BattleMove:
                         if battle:
                             battle.log_action(
                                 DEFAULT_TEXT["default"]["heal"].replace(
-                                    "[POKEMON]", getattr(user, "name", "Pokemon")
+                                    "[POKEMON]", labels.name(user)
                                 )
                             )
 
@@ -1492,12 +1494,16 @@ class RewardService:
         recipient = winner.player
         delivery = getattr(battle, "reward_delivery", None)
         if delivery is not None and delivery.supports(recipient):
-            claimed = delivery.deliver(recipient, "prize", {"money": prize_money}, caller=battle)
+            from .npc_prize_items import NPCPrizeItems
+
+            payload = NPCPrizeItems.payload(battle, winner, prize_money)
+            prize_money = payload["money"]
+            claimed = delivery.deliver(recipient, "prize", payload, caller=battle)
             if claimed is None:
                 return
             battle._rewards_granted = True
             if claimed:
-                battle.log_action(f"{getattr(recipient, 'key', 'Player')} received ₽{prize_money} for winning!")
+                battle.log_action(f"{getattr(recipient, 'key', 'Player')} received ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â½{prize_money} for winning!")
             return
         trainer = getattr(recipient, "trainer", None)
         if trainer and hasattr(trainer, "add_money"):
@@ -1509,7 +1515,7 @@ class RewardService:
 
         if hasattr(battle, "log_action"):
             battle.log_action(
-                f"{getattr(recipient, 'key', 'Player')} received ₽{prize_money} for winning!"
+                f"{getattr(recipient, 'key', 'Player')} received ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â½{prize_money} for winning!"
             )
 
         battle._rewards_granted = True
@@ -1571,7 +1577,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.message_formatter = message_formatter or MessageFormatter()
         self.reward_service = reward_service or RewardService()
 
-        # If any participant already has active Pokémon assigned (common in
+        # If any participant already has active PokÃƒÆ’Ã‚Â©mon assigned (common in
         # tests or restored battles) make sure they are marked as having
         # participated so they receive rewards appropriately.
         for part in self.participants:
@@ -2278,10 +2284,20 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         elif eventid == "TryAddVolatile":
             relay_kw_name = "status"
             relay_positional = False
-        for holder, state, owner in self._event_scoped_holders(
+        holders = self._event_scoped_holders(
             target=target, source=source, effect=effect,
             include_suppressed_items=eventid == "TakeItem",
-        ):
+        )
+        if eventid == "Residual":
+            def residual_order(entry):
+                """Honor residual order so healing precedes Heal Block expiry."""
+                holder = entry[0][1] if isinstance(entry[0], tuple) else entry[0]
+                raw = getattr(holder, "raw", {}) or {}
+                return tuple(raw.get(key, getattr(holder, key, 0)) for key in
+                             ("onResidualOrder", "onResidualSubOrder"))
+
+            holders.sort(key=residual_order)
+        for holder, state, owner in holders:
             relation = None
             actual_holder = holder
             if isinstance(holder, tuple):
@@ -2462,12 +2478,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def _pokemon_nickname(self, pokemon) -> str:
         """Return the best nickname representation for ``pokemon``."""
 
-        return self.message_formatter.pokemon_nickname(pokemon)
+        return BattlerLabels(self).name(
+            pokemon, self.message_formatter.pokemon_nickname(pokemon)
+        )
 
     def _pokemon_fullname(self, pokemon) -> str:
         """Return a display-friendly full name for ``pokemon``."""
 
-        return self.message_formatter.pokemon_fullname(pokemon)
+        return BattlerLabels(self).name(
+            pokemon, self.message_formatter.pokemon_fullname(pokemon)
+        )
 
     def _item_display_name(self, item) -> str:
         """Return a display string for ``item``."""
@@ -2490,11 +2510,6 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             },
         )
         if message:
-            if participant.max_active > 1:
-                from .active_slots import slot_for
-                slot = slot_for(participant, pokemon)
-                label = participant.team or ("A" if self.participants[0] is participant else "B")
-                message = f"{label}{slot + 1}: " + message if slot is not None else message
             self.log_action(message)
 
     def _log_switch_out(self, participant: BattleParticipant, pokemon) -> None:
@@ -2514,7 +2529,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # Battle initialisation helpers
     # ------------------------------------------------------------------
     def start_battle(self) -> None:
-        """Prepare the battle by sending out the first available Pokémon."""
+        """Prepare the battle by sending out the first available PokÃƒÆ’Ã‚Â©mon."""
         names = [
             getattr(part, "name", "Trainer")
             for part in self.participants
@@ -2567,7 +2582,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def switch_pokemon(
         self, participant: BattleParticipant, new_pokemon, slot: int = 0
     ) -> None:
-        """Switch the active Pokémon for ``participant`` in ``slot``."""
+        """Switch the active PokÃƒÆ’Ã‚Â©mon for ``participant`` in ``slot``."""
         from .active_slots import active_at, assign_active
 
         current = active_at(participant, slot)
@@ -2641,7 +2656,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         return opponents
 
     def restore_transforms(self) -> None:
-        """Revert any Pokémon transformed via the Transform move."""
+        """Revert any PokÃƒÆ’Ã‚Â©mon transformed via the Transform move."""
         from .terastallization import Terastallization
 
         for part in self.participants:
@@ -2947,6 +2962,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         from .mega_evolution import MegaEvolution
 
         MegaEvolution.prepare_entry(pokemon)
+        if (getattr(pokemon, "native_origin", None) or {}).get("necrozma"):
+            from .ultra_burst import UltraBurst
+
+            UltraBurst.prepare_entry(pokemon)
         if part is not None:
             pokemon.side = part.side
         pokemon.ability_state = self.init_effect_state(getattr(pokemon, "ability", None), target=pokemon, source=source)
@@ -2954,6 +2973,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         pokemon.tempvals["entry_action_turn"] = self.turn_count
         if part and hasattr(part, "record_participation"):
             part.record_participation(pokemon)
+        from .npc_prize_items import NPCPrizeItems
+
+        NPCPrizeItems.entry(self, pokemon)
         self._apply_item_forme_effects(pokemon, source=source)
         self._apply_ability_item_type(pokemon)
         self.register_handlers(pokemon)
@@ -3008,6 +3030,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def on_faint(self, pokemon) -> None:
         """Mark ``pokemon`` as fainted and trigger callbacks."""
         self.remove_volatile(pokemon, "roost")
+        self.remove_volatile(pokemon, "focusenergy")
+        if (getattr(pokemon, "tempvals", {}) or {}).pop("bag_boosters", False):
+            self.reset_stat_changes(pokemon)
         pokemon.is_fainted = True
         cause = (getattr(pokemon, "tempvals", {}) or {}).pop("faint_cause", {})
         source, effect = cause.get("source"), cause.get("effect")
@@ -3023,7 +3048,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if source is not None and getattr(source, "hp", 0) > 0 and opponents_remain:
             self.runEvent("AfterFaint", pokemon, source, effect, 1)
 
-        name = getattr(pokemon, "name", getattr(pokemon, "species", "Pokemon"))
+        name = self._pokemon_nickname(pokemon)
         try:  # pragma: no cover - data package may be unavailable in tests
             from pokemon.data.text import DEFAULT_TEXT  # type: ignore
         except Exception:  # pragma: no cover
@@ -3050,6 +3075,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             except Exception:
                 pass
         self._end_holder_effects(pokemon)
+        if getattr(pokemon, "ultra_profile", None):
+            from .ultra_burst import UltraBurst
+
+            UltraBurst.revert(pokemon)
 
     def on_end_turn(self) -> None:
         """Apply end of turn effects."""
@@ -3057,14 +3086,14 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.handle_terrain()
 
     def _apply_misc_callbacks(self) -> None:
-        """Invoke seldom triggered ability callbacks for active Pokémon.
+        """Invoke seldom triggered ability callbacks for active PokÃƒÆ’Ã‚Â©mon.
 
         The lightweight battle engine used in tests omits many edge-case
         mechanics that would normally trigger hooks such as
         ``onAllyTryAddVolatile`` (Aroma Veil) or ``onFoeTryEatItem`` (As One).
         Without invoking these callbacks, the comprehensive ability tests
         would flag them as unused.  This helper calls the hooks once for each
-        active Pokémon, ignoring any errors so the minimal test doubles remain
+        active PokÃƒÆ’Ã‚Â©mon, ignoring any errors so the minimal test doubles remain
         compatible with the simplified environment.
         """
 
@@ -3100,16 +3129,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     pass
 
     def _apply_trap_callbacks(self) -> None:
-        """Invoke trapping related ability callbacks for active Pokémon.
+        """Invoke trapping related ability callbacks for active PokÃƒÆ’Ã‚Â©mon.
 
         Some abilities such as Arena Trap expose ``onFoeTrapPokemon`` hooks
         that are normally triggered by the battle engine when checking if a
-        Pokémon is allowed to switch out.  The simplified engine used for
+        PokÃƒÆ’Ã‚Â©mon is allowed to switch out.  The simplified engine used for
         testing does not implement full switching logic and therefore these
         callbacks were never invoked, causing ability tests to fail.  This
         helper manually calls the relevant ability callbacks for each active
-        Pokémon pair, swallowing any errors so the minimal test doubles used
-        in the suite do not need to implement the full Pokémon Showdown API.
+        PokÃƒÆ’Ã‚Â©mon pair, swallowing any errors so the minimal test doubles used
+        in the suite do not need to implement the full PokÃƒÆ’Ã‚Â©mon Showdown API.
         """
 
         for part in self.participants:
@@ -3143,7 +3172,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # Pseudocode mapping
     # ------------------------------------------------------------------
     def run_switch(self) -> None:
-        """Handle Pokémon switches before moves are executed."""
+        """Handle PokÃƒÆ’Ã‚Â©mon switches before moves are executed."""
 
         from .active_slots import active_at, assign_active
         from .legal_actions import LegalActions
@@ -3153,7 +3182,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         for part in self.participants:
             if part.has_lost:
                 continue
-            # Ensure correct number of active Pokémon
+            # Ensure correct number of active PokÃƒÆ’Ã‚Â©mon
             for slot in range(part.max_active):
                 if active_at(part, slot) is None:
                     reserves = LegalActions(self, part, None).reserves(slot=slot, forced=True)
@@ -3224,8 +3253,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         ) is False:
                             continue
                         passed_substitute = None
+                        passed_focus = None
                         if active.tempvals.get("baton_pass"):
                             passed_substitute = getattr(active, "volatiles", {}).get("substitute")
+                            passed_focus = getattr(active, "volatiles", {}).get("focusenergy")
                         self.on_switch_out(active, source=replacement)
                         assign_active(part, slot, replacement)
                         setattr(replacement, "side", part.side)
@@ -3240,6 +3271,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                 if not hasattr(replacement, "volatiles"):
                                     replacement.volatiles = {}
                                 replacement.volatiles["substitute"] = dict(sub)
+                            if passed_focus:
+                                replacement.volatiles["focusenergy"] = {
+                                    **(dict(passed_focus) if isinstance(passed_focus, dict) else {"id": "focusenergy", "source": active}),
+                                    "target": replacement}
+                            if active.tempvals.get("bag_boosters"):
+                                replacement.tempvals["bag_boosters"] = True
                             active.tempvals.pop("baton_pass", None)
                         if shedtail_substitute:
                             if not hasattr(replacement, "volatiles"):
@@ -3266,7 +3303,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         self.on_enter_battle(replacement, source=active)
 
     def run_after_switch(self) -> None:
-        """Trigger simple events after Pokémon have switched in."""
+        """Trigger simple events after PokÃƒÆ’Ã‚Â©mon have switched in."""
 
         for part in self.participants:
             if part.has_lost:
@@ -3297,6 +3334,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def deduct_pp(self, pokemon, move: BattleMove, target=None) -> None:
         """Spend PP, including surcharges from the move's opposing targets."""
+        from .npc_prize_items import NPCPrizeItems
+
+        NPCPrizeItems.move_attempted(self, pokemon)
         if getattr(move, "_z_paid", False):
             return
         if getattr(move, "_called_use", False):
@@ -3492,6 +3532,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 or ITEMDEX.get(str(item).replace(" ", ""))
                 or ITEMDEX.get(normalized.capitalize())
             )
+        if entry is None:
+            from pokemon.items import runtime_field_held_item
+
+            return runtime_field_held_item(item)
         return entry
 
     def _holder_item(self, pokemon):
@@ -3904,6 +3948,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def _move_stage_holders(self, user, target=None):
         """Return holders that may react to pre-move gating events."""
 
+        from .effect_context import EffectContext
+
         holders: list[tuple[str | None, Any, Optional[Dict[str, Any]], Any]] = []
 
         def add_holder(relation, holder, state, owner) -> None:
@@ -3914,7 +3960,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             add_holder(None, self._pokemon_status_handler(user), getattr(user, "status_state", None), user)
             for volatile_name, handler in self._pokemon_volatile_handlers(user):
                 add_holder(None, handler, getattr(user, "volatiles", {}).get(volatile_name), user)
-            add_holder(None, _resolve_ability(getattr(user, "ability", None)), getattr(user, "ability_state", None), user)
+            add_holder(None, EffectContext.ability(user), getattr(user, "ability_state", None), user)
             add_holder(None, self._holder_item(user), getattr(user, "item_state", None), user)
 
         user_participant = self.participant_for(user) if user is not None else None
@@ -3928,7 +3974,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 add_holder(relation, self._pokemon_status_handler(pokemon), getattr(pokemon, "status_state", None), pokemon)
                 for volatile_name, handler in self._pokemon_volatile_handlers(pokemon):
                     add_holder(relation, handler, getattr(pokemon, "volatiles", {}).get(volatile_name), pokemon)
-                add_holder(relation, _resolve_ability(getattr(pokemon, "ability", None)), getattr(pokemon, "ability_state", None), pokemon)
+                add_holder(relation, EffectContext.ability(pokemon), getattr(pokemon, "ability_state", None), pokemon)
                 add_holder(relation, self._holder_item(pokemon), getattr(pokemon, "item_state", None), pokemon)
         return holders
 
@@ -4140,6 +4186,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if old_ability:
             self.singleEvent("End", old_ability, old_state, pokemon, source)
         pokemon.ability = resolved
+        if (getattr(pokemon, "native_origin", None) or {}).get("necrozma") and not is_from_forme_change:
+            pokemon.native_ability_provenance = "changed"
         pokemon.ability_state = self.init_effect_state(resolved, target=pokemon, source=source)
         if resolved and run_start:
             self.singleEvent("Start", resolved, pokemon.ability_state, pokemon, source)
@@ -4318,6 +4366,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def eat_item(self, pokemon, *, source=None, effect=None, force: bool = False):
         """Consume ``pokemon``'s held item following Showdown-style gates."""
 
+        from .effect_context import EffectContext
+
         item_obj = self._holder_item(pokemon)
         if not item_obj:
             return False
@@ -4331,7 +4381,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 for foe in getattr(part, "active", []) or []:
                     if getattr(foe, "hp", 0) <= 0:
                         continue
-                    ability = _resolve_ability(getattr(foe, "ability", None))
+                    ability = (None if getattr(foe, "volatiles", {}).get("gastroacid") else
+                               _resolve_ability(EffectContext.ability(foe)))
                     if ability and hasattr(ability, "call"):
                         if ability.call("onFoeTryEatItem", item=item_obj, pokemon=pokemon, source=foe, effect=effect, battle=self) is False:
                             return False
@@ -4341,8 +4392,6 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 return False
         item_name = getattr(item_obj, "name", str(item_obj))
         hp_before_berry = getattr(pokemon, "hp", 0)
-        from .effect_context import EffectContext
-
         ripen_berry = (EffectContext.key(EffectContext.ability(pokemon)) == "ripen"
                        and "berry" in EffectContext.key(item_obj))
         if ripen_berry:
@@ -4454,8 +4503,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             for before, after in ((before_user, after_user), (before_target, after_target))
         )
         target_self = target is user
-        user_name = getattr(user, "name", "Pokemon")
-        target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
+        user_name = self._pokemon_nickname(user)
+        target_name = "itself" if target_self else self._pokemon_nickname(target)
         if dmg > 0:
             if getattr(self, "show_damage_numbers", False):
                 self.log_action(
@@ -4467,11 +4516,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     start_user_boosts,
                     end_user_boosts,
                 )
-                self.announce_stat_changes(
-                    target,
-                    start_target_boosts,
-                    end_target_boosts,
-                )
+                if not target_self:
+                    self.announce_stat_changes(
+                        target,
+                        start_target_boosts,
+                        end_target_boosts,
+                    )
         elif boosts_changed or statuses_changed or effects_changed or field_changed or getattr(move, "_queue_changed", False):
             if target_self:
                 self.log_action(f"{user_name} used {move.name}!")
@@ -4485,12 +4535,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 end_user_boosts,
                 move.raw.get("boosts") if target_self else None,
             )
-            self.announce_stat_changes(
-                target,
-                start_target_boosts,
-                end_target_boosts,
-                move.raw.get("boosts") if not target_self else None,
-            )
+            if not target_self:
+                self.announce_stat_changes(
+                    target,
+                    start_target_boosts,
+                    end_target_boosts,
+                    move.raw.get("boosts"),
+                )
         else:
             if move.raw.get("boosts"):
                 fail_target = "its own" if target_self else f"{target_name}'s"
@@ -4710,16 +4761,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if selected_move_key and selected_move_key != locked_move_key and not emergency_move:
                 locked_move_name = str(locked_move_key).replace("-", " ").title()
                 self.log_action(
-                    f"{getattr(user, 'name', 'Pokemon')} is locked into {locked_move_name}!"
+                    f"{self._pokemon_nickname(user)} is locked into {locked_move_name}!"
                 )
                 return
         elif locked_move_key and not called:
             self._clear_choice_lock(user)
         if not called and not emergency_move and self._is_move_disabled(user, action.move):
-            self.log_action(f"{getattr(user, 'name', 'Pokemon')} can't use {action.move.name}!")
+            self.log_action(f"{self._pokemon_nickname(user)} can't use {action.move.name}!")
             return
         if not called and self.status_prevents_move(user, action.move):
-            self.log_action(f"{getattr(user, 'name', 'Pokemon')} is unable to move!")
+            self.log_action(f"{self._pokemon_nickname(user)} is unable to move!")
             return
         if getattr(action, "z_request", None) is not None:
             from .z_moves import ZMoves
@@ -4818,7 +4869,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 user.hp = 0
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
 
@@ -4843,15 +4894,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 self._set_choice_lock(user, action.move)
                 self.dispatcher.dispatch("charge_move", user=user, target=target,
                                          move=action.move, battle=self)
-                self.log_action(f"{getattr(user, 'name', 'Pokemon')} began charging {action.move.name}!")
+                self.log_action(f"{self._pokemon_nickname(user)} began charging {action.move.name}!")
                 return
             if not was_charging:
                 self.deduct_pp(user, action.move, target=target)
-            if action.move.raw.get("selfdestruct") == "always":
-                user.hp = 0
+            # A TryMove prevention (for example Damp) stops execution before
+            # self-sacrifice. Protection/misses after execution retain their
+            # separate selfdestruct handling below.
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
 
@@ -4868,7 +4920,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 # Deduct PP from the original user
                 self.deduct_pp(user, action.move, target=target)
                 self.log_action(
-                    f"{getattr(snatcher, 'name', 'Pokemon')} snatched {getattr(user, 'name', 'Pokemon')}'s move!"
+                    f"{self._pokemon_nickname(snatcher)} snatched {self._pokemon_nickname(user)}'s move!"
                 )
                 snatcher.volatiles.pop("snatch", None)
                 # Determine the target of the stolen move
@@ -4907,7 +4959,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 pass
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
         self._set_choice_lock(user, action.move)
@@ -4930,7 +4982,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if prepared is False:
                 self._notify_move_aborted(user, target, action.move)
                 self.log_action(
-                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                    f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
                 )
                 return
 
@@ -4939,7 +4991,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if try_hit is False:
                 self._notify_move_aborted(user, target, action.move)
                 self.log_action(
-                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                    f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
                 )
                 return
         if action.move.onTryHitSide and target_part is not None:
@@ -4947,7 +4999,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if try_hit_side is False:
                 self._notify_move_aborted(user, target, action.move)
                 self.log_action(
-                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                    f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
                 )
                 return
         if action.move.onTryHitField:
@@ -4955,21 +5007,21 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if try_hit_field is False:
                 self._notify_move_aborted(user, target, action.move)
                 self.log_action(
-                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                    f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
                 )
                 return
 
         if not self._passes_try_immunity(target, user, action.move):
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
 
         if not self._passes_try_primary_hit(target, user, action.move):
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
 
@@ -4982,7 +5034,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if action.move.raw.get("selfdestruct") == "always":
                 user.hp = 0
             self._notify_move_aborted(user, target, action.move)
-            self.log_action(f"{getattr(target, 'name', 'Pokemon')} protected itself!")
+            self.log_action(f"{self._pokemon_nickname(target)} protected itself!")
             return
 
         blocked = self.runEvent(
@@ -5002,7 +5054,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 user.hp = 0
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{action.move.name} failed to hit {getattr(target, 'name', 'Pokemon')}!"
+                f"{action.move.name} failed to hit {self._pokemon_nickname(target)}!"
             )
             return
 
@@ -5035,7 +5087,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 pass
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
         if target is not user and sub and not bypasses_substitute:
@@ -5116,7 +5168,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     if recoil_loss:
                         self.log_action(
                             _get_default_text()["recoil"]["damage"].replace(
-                                "[POKEMON]", getattr(user, "name", "Pokemon")
+                                "[POKEMON]", self._pokemon_nickname(user)
                             )
                         )
                 self._queue_self_switch(user, action.move)
@@ -5176,7 +5228,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 pass
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
 
@@ -5188,7 +5240,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                      and getattr(action.move, "_primary_hit_successful", False))
         called = (action.move.raw.get("callsMove") or _effect_key(action.move) == "instruct") and len(getattr(self, "called_moves", [])) > called_before
         if called:
-            self.log_action(f"{user.name} used {action.move.name} and called {self.called_moves[-1]}!")
+            self.log_action(f"{self._pokemon_nickname(user)} used {action.move.name} and called {self.called_moves[-1]}!")
         self._announce_move_result(user, target, action.move, before_user, before_target,
                                    field_changed=room_changed or positions_changed, report_no_effect=not sacrifice and not called)
         if room_changed:
@@ -5296,7 +5348,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.execute_actions(actions)
 
     def run_faint(self) -> None:
-        """Handle fainted Pokémon and mark participants as losing if needed."""
+        """Handle fainted PokÃƒÆ’Ã‚Â©mon and mark participants as losing if needed."""
 
         from .active_slots import active_at, active_slots, assign_active
         from .legal_actions import LegalActions
@@ -5473,13 +5525,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     for poke in fainted:
                         self.on_faint(poke)
 
-            # Remove fainted Pokémon from the active list
+            # Remove fainted PokÃƒÆ’Ã‚Â©mon from the active list
             active_slots(part)
             part.active = [p for p in part.active if getattr(p, "hp", 0) > 0]
             if getattr(part, "side", None) is not None:
                 part.side.active = part.active
 
-            # Check if the participant has any Pokémon left
+            # Check if the participant has any PokÃƒÆ’Ã‚Â©mon left
             if not any(getattr(p, "hp", 0) > 0 for p in part.pokemons):
                 part.has_lost = True
                 continue
@@ -5495,7 +5547,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             part.record_participation(replacement)
                         if getattr(part, "side", None) is not None:
                             part.side.active = part.active
-                        if getattr(replacement, "mega_profile", None):
+                        if getattr(replacement, "mega_profile", None) or (getattr(replacement, "native_origin", None) or {}).get("necrozma"):
                             self.on_enter_battle(replacement)
                             self._log_switch_in(part, replacement)
                             continue
@@ -5541,7 +5593,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 return None
             if not hasattr(self, "log_action"):
                 return None
-            name = getattr(pokemon, "name", getattr(pokemon, "species", "Pokemon"))
+            name = self._pokemon_nickname(pokemon)
             self.log_action(template.replace("[POKEMON]", name))
             return None
 
@@ -5701,7 +5753,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     if effect["duration"] <= 0:
                         self.remove_pseudo_weather(name)
 
-        # Remove Pokémon that fainted from residual damage
+        # Remove PokÃƒÆ’Ã‚Â©mon that fainted from residual damage
         self.run_faint()
 
         # Auto-switch in replacements for any empty sides
@@ -5762,7 +5814,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             self._status_template(status_key, event_key) if status_key else None
         )
         if not message_template:
-            name = getattr(pokemon, "name", getattr(pokemon, "nickname", "Pokemon"))
+            name = self._pokemon_nickname(pokemon)
             self.log_action(f"{name} is now {status_key or status}!")
             return
 
@@ -5809,7 +5861,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         Parameters
         ----------
         pokemon: Any
-            The Pokémon whose stat changes will be announced.
+            The PokÃƒÆ’Ã‚Â©mon whose stat changes will be announced.
         start: dict
             Mapping of stat names to their starting stage values.
         end: dict
@@ -5832,7 +5884,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         attempted = {STAT_KEY_MAP.get(k, k): v for k, v in attempted.items()}
 
         stats = set(start) | set(end) | set(attempted)
-        name = getattr(pokemon, "name", "Pokemon")
+        name = self._pokemon_nickname(pokemon)
 
         for stat in stats:
             before = start.get(stat, 0)

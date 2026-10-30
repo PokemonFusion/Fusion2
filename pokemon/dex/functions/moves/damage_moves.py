@@ -547,7 +547,7 @@ class Beatup:
 class Belch:
 	def onDisableMove(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
-		consumed = getattr(user, "consumed_berry", False)
+		consumed = getattr(user, "ate_berry", False) or getattr(user, "consumed_berry", False)
 		return not consumed
 
 
@@ -2065,7 +2065,9 @@ class Focusenergy:
 	def onStart(self, *args, **kwargs):
 		user = args[0] if args else None
 		if user and hasattr(user, "volatiles"):
-			user.volatiles["focusenergy"] = True
+			# add_volatile already binds current target/source/effect. Retain
+			# that structured state for reconnect instead of replacing it.
+			user.volatiles.setdefault("focusenergy", {"id": "focusenergy", "target": user})
 		return True
 
 
@@ -3042,6 +3044,8 @@ class Healbell:
 
 
 class Healblock:
+	onResidualOrder = 20
+
 	def durationCallback(self, *args, **kwargs):
 		source = args[1] if len(args) > 1 else kwargs.get("source")
 		effect = args[2] if len(args) > 2 else kwargs.get("effect")
@@ -3079,18 +3083,38 @@ class Healblock:
 			move.effect = "healblock"
 
 	def onRestart(self, *args, **kwargs):
-		target = args[0] if args else kwargs.get("target")
-		if target and hasattr(target, "volatiles"):
-			# simply refresh duration indicator if present
-			target.volatiles["healblock"] = True
-		return True
+		"""An existing block retains its original remaining lifetime."""
+		return False
 
 	def onStart(self, *args, **kwargs):
-		user = args[0] if args else None
-		target = args[1] if len(args) > 1 else None
-		if target and hasattr(target, "volatiles"):
-			target.volatiles["healblock"] = True
+		"""Keep condition state and apply the actual move's bounded lifetime."""
+		target = kwargs.get("target") or kwargs.get("pokemon")
+		if target is None:
+			target = args[1] if len(args) == 2 else args[0] if args else None
+		if target is not None:
+			state = target.volatiles.get("healblock")
+			state = state if isinstance(state, dict) else {}
+			effect = kwargs.get("effect") or (args[2] if len(args) > 2 else None)
+			source = kwargs.get("source") or (args[1] if len(args) > 2 else None)
+			duration = self.durationCallback(source=source, effect=effect)
+			state.setdefault("duration", duration)
+			target.volatiles["healblock"] = state
 		return True
+
+	def onResidual(self, pokemon=None, battle=None, **kwargs):
+		"""Expire once per residual boundary, including old boolean checkpoints."""
+		state = getattr(pokemon, "volatiles", {}).get("healblock")
+		if state is None:
+			return
+		if not isinstance(state, dict):
+			state = {"duration": 5}
+			pokemon.volatiles["healblock"] = state
+		state["duration"] = state.get("duration", 5) - 1
+		if state["duration"] <= 0:
+			if battle:
+				battle.remove_volatile(pokemon, "healblock")
+			else:
+				pokemon.volatiles.pop("healblock", None)
 
 	def onTryHeal(self, amount=None, target=None, **kwargs):
 		"""The relay value precedes the recipient in TryHeal events."""
@@ -4335,15 +4359,37 @@ class Mist:
 		side = args[0] if args else kwargs.get("side")
 		if side and hasattr(side, "screens"):
 			side.screens["mist"] = True
+			if not hasattr(side, "conditions"):
+				side.conditions = {}
+			state = side.conditions.setdefault("mist", {"id": "mist"})
+			state.setdefault("duration", 5)
+			state.setdefault("source", args[1] if len(args) > 1 else kwargs.get("source"))
+			state.setdefault("sourceEffect", "move:mist")
 		return True
 
 	def onTryBoost(self, *args, **kwargs):
 		boosts = args[0] if args else kwargs.get("boosts")
 		target = args[1] if len(args) > 1 else kwargs.get("target")
 		side = getattr(target, "side", None)
-		if side and getattr(side, "screens", {}).get("mist"):
-			return None
-		return boosts
+		source = args[2] if len(args) > 2 else kwargs.get("source")
+		effect = args[3] if len(args) > 3 else kwargs.get("effect")
+		if not isinstance(boosts, dict) or not side or not source or source is target:
+			return boosts
+		state = getattr(side, "conditions", {}).get("mist")
+		if not isinstance(state, dict) or type(state.get("duration")) is not int or state["duration"] <= 0:
+			return boosts
+		battle = kwargs.get("battle") or getattr(target, "battle", None)
+		if battle is not None:
+			own, other = battle.participant_for(target), battle.participant_for(source)
+			if own is None or other is None or battle._allied(own, other):
+				return boosts
+		from pokemon.battle.effect_context import EffectContext
+
+		move_effect = getattr(effect, "effectType", None) == "Move"
+		if move_effect and (getattr(effect, "infiltrates", False)
+				or EffectContext.key(EffectContext.ability(source)) == "infiltrator"):
+			return boosts
+		return {stat: amount for stat, amount in boosts.items() if amount >= 0}
 
 
 class Mistyexplosion:
@@ -5277,7 +5323,7 @@ class Razorwind:
 
 class Recycle:
 	def onHit(self, user, target, battle):
-		"""Restore the last used berry if none is held."""
+		"""Restore one used item and retire its shared recovery aliases."""
 		if getattr(user, "item", None) or getattr(user, "held_item", None):
 			return False
 		item = getattr(user, "last_used_item", None)
@@ -5293,7 +5339,8 @@ class Recycle:
 		else:
 			setattr(user, "item", item)
 			setattr(user, "held_item", item)
-		user.last_used_item = None
+		from pokemon.battle.item_consumption import ItemUseHistory
+		ItemUseHistory.recovered(user)
 		return True
 
 

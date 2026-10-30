@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "key": "exp-candy-counter-v1",
+  "room": "EXP Candy Counter",
+  "entrance": "expcandy",
+  "return_exit": "back",
+  "description": "A sign lists finite Exp. Candy XS, S, M, L and XL. Use +store to buy and +use <full name>=<current target> outside battle. Earned moves remain stored; +learn pending offers active choices. No automatic evolution or revival. The back exit returns to the hub. No refill or resale.",
+  "buy_only": true,
+  "refill": "none",
+  "offers": [
+    {"item": "Exp. Candy XS", "price": 100, "quantity": 10},
+    {"item": "Exp. Candy S", "price": 800, "quantity": 10},
+    {"item": "Exp. Candy M", "price": 3000, "quantity": 5},
+    {"item": "Exp. Candy L", "price": 10000, "quantity": 2},
+    {"item": "Exp. Candy XL", "price": 30000, "quantity": 1}
+  ]
+}

@@ -49,6 +49,20 @@ class MegaEvolutionCases(unittest.TestCase):
 
     def tearDown(self):
         """End only this case's battle and close its menus before schema deletion."""
+        if self._testMethodName == "test_reject_egg" and self.session:
+            from pokemon.battle.handler import battle_handler
+            from pokemon.battle.roster_eligibility import BattleRosterRecoveryRequired
+
+            # This deliberately stale roster must honor #918's protected end.
+            # Keep its checkpoint/marker intact; only this disposable schema
+            # owns final cleanup, never a gameplay egg or reservation rewrite.
+            before = deepcopy(self.session.data.to_dict())
+            with self.assertRaises(BattleRosterRecoveryRequired):
+                self.session.end()
+            self.assertEqual(self.session.data.to_dict(), before)
+            self.assertTrue(self.session.storage.get("roster_recovery"))
+            battle_handler.unregister(self.session)
+            self.session = None
         acquisition.AcquisitionCases.tearDown(self)
         acquisition.ObjectDB.objects.filter(pk__in=self.installed_objects).delete()
 

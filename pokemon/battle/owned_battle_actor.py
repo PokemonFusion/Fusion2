@@ -44,7 +44,7 @@ class OwnedBattleActor:
 
         if (
             participant not in battle.participants
-            or battle.battle_over
+            or (battle.battle_over and active)
             or getattr(battle.type, "name", "") not in {"WILD", "TRAINER", "PVP"}
             or (len(battle.participants) != 2 and not (
                 getattr(battle, 'multi', False) and len(battle.participants) == 4
@@ -131,14 +131,15 @@ class OwnedBattleActor:
         if (getattr(pokemon, "native_origin", None) or {}).get("necrozma") and mechanic != "z":
             return True
         identifier = Terastallization.identifier(pokemon)
-        for name in ("tera", "mega", "z"):
+        for name in ("tera", "mega", "z", "ultra"):
             if name == mechanic:
                 continue
             pending = getattr(battle, name + "_pending", {}).get(side, {})
             if pending.get("pokemon") == identifier:
                 return True
         return bool(
-            getattr(pokemon, "terastallized", None)
+            (mechanic != "z" and bool(getattr(pokemon, "ultra_profile", None)))
+            or getattr(pokemon, "terastallized", None)
             or getattr(pokemon, "mega_evolved", False)
             or getattr(pokemon, "z_activated", False)
             or getattr(pokemon, "transformed", False)

@@ -36,12 +36,13 @@ def render_move_gui(
 	slots: List[Any],
 	pp_overrides: Optional[Dict[int, int]] = None,
 	total_width: int = 76,
+	**kwargs,
 ) -> str:
 	"""Proxy to :func:`pokemon.ui.move_gui.render_move_gui`."""
 
 	from pokemon.ui.move_gui import render_move_gui as _render
 
-	return _render(slots, pp_overrides=pp_overrides, total_width=total_width)
+	return _render(slots, pp_overrides=pp_overrides, total_width=total_width, **kwargs)
 
 
 def render_battle_ui(

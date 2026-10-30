@@ -108,7 +108,7 @@ def test_original_eight_status_and_sixteen_signatures_stay_exact():
     from pokemon.battle.z_status_pairs import STATUS_PAIRS
     from pokemon.battle.z_signature_pairs import SIGNATURE_PAIRS
 
-    assert len(STATUS_PAIRS) == 14 and len(SIGNATURE_PAIRS) == 16
+    assert len(STATUS_PAIRS) == 15 and len(SIGNATURE_PAIRS) == 16
     for profiles, digest in [
         (STATUS_PAIRS[:8], "0b86cdd34a0a26058ef128c66a40c7d116af104a362ec5ec25bfe91826a1d02d"),
         (SIGNATURE_PAIRS, "c20d86a160ccf1d2fea55f0c6ad7d0ba951d46e6b195e859b17cee7623926d43"),

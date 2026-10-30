@@ -16,6 +16,7 @@ class CmdUiMode(Command):
       With no argument, the command shows your current mode.
       The ascii option uses the simple room layout and ASCII battle symbols.
       The unicode option uses the fancy room layout and Unicode battle symbols.
+      The screenreader option also removes battle HUD borders, color and HP artwork.
     """
 
     key = "+uimode"

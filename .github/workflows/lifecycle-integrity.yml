@@ -37,6 +37,7 @@ on:
       - 'server/conf/settings.py'
       - 'server/conf/telnet.py'
       - 'server/conf/amp.py'
+      - 'server/conf/server_service.py'
       - 'utils/server_logging.py'
       - 'commands/player/cmd_nickname.py'
       - 'menus/capture_nickname.py'
@@ -58,7 +59,8 @@ on:
       - 'pytest.ini'
       - 'Makefile'
       - 'tools/run_mandatory_tests.py'
-      - 'tools/audit_item_availability.py'
+      - 'tools/audits/**'
+      - 'tools/qa/**'
       - 'docs/testing/item-stat-type-plan-2026-10-22.json'
       - 'docs/offline-battle-testing.md'
       - 'tests/**'
@@ -122,6 +124,18 @@ jobs:
         run: python tests/integration/alcremie_cases.py
       - name: Existing trade-held item equivalents, player commands and safe retries
         run: python tests/integration/trade_held_cases.py
+      - name: Link Cord bag evolutions, native forms and atomic consumption
+        run: python tests/integration/link_cord_cases.py
+      - name: Held stat item rules, native abilities, consumption and checkpoint rollback
+        run: python tests/integration/item_repair_cases.py
+      - name: Eighteen stat items, paired next-action damage and order after checkpoint restore
+        run: python tests/integration/item_next_action_cases.py
+      - name: Indirect item damage, blocked residual healing, Gene and manual medicine Embargo
+        run: python tests/integration/item_medicine_and_hp_cases.py
+      - name: Six explicit Z source additions, owned payment, native learning and rollback
+        run: python tests/integration/z_next_six_sources_cases.py
+      - name: Four field recovery equivalents, friendship costs and atomic final-copy use
+        run: python tests/integration/remedy_recovery_cases.py
       - name: Peat Block purchase, ordinary Ursaluna evolution and atomic retries
         run: python tests/integration/peat_block_cases.py
       - name: Kubfu Scroll purchase, both Urshifu styles and atomic retries
@@ -131,7 +145,7 @@ jobs:
       - name: NPC challenge constructor failure and persistent cleanup retries
         run: python tests/integration/trainer_challenge_cases.py
       - name: Evolution conditions and commands
-        run: pytest -q tests/test_evolution.py tests/test_evolution_conditions.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py tests/test_trade_held_evolution.py tests/test_trade_safety.py
+        run: pytest -q tests/evolution/test_evolution.py tests/evolution/test_evolution_conditions.py tests/evolution/test_evolve_command_safety.py tests/items/test_hold_command_safety.py tests/evolution/test_trade_held_evolution.py tests/ownership/test_trade_safety.py
       - name: Adventure and gym recovery with concurrent PostgreSQL claims
         run: python tests/integration/recovery_cases.py
       - name: Battle EXP, HP, PP and post-win healing on PostgreSQL
@@ -160,6 +174,10 @@ jobs:
         run: python tests/integration/cloud_gameplay_cases.py
       - name: Real AMP input routing through reload and session synchronization
         run: python tests/integration/amp_reload_cases.py
+      - name: Server listener close barrier and real AMP socket handoff
+        run: |
+          python -B tests/integration/server_shutdown_cases.py
+          python -B tests/integration/reload_socket_cases.py
       - name: Capture replay debits and durable Ether restoration on PostgreSQL
         run: python tests/integration/capture_ether_cases.py
       - name: Captured PP, Full Restore and inventory name aliases on PostgreSQL
@@ -172,6 +190,20 @@ jobs:
         run: python tests/integration/field_food_cases.py
       - name: Field berry feeding, EV reduction, friendship and transactional persistence
         run: python tests/integration/field_berry_cases.py
+      - name: Focused Training Grounds, free EV reset, earned milestones and real elapsed session
+        run: python -B tests/integration/training_grounds_cases.py
+      - name: Named training Finder drops, real use and explicit public activity routes
+        run: python -B tests/integration/training_finder_cases.py
+      - name: Chesto Sitrus Lum growing masks, source travel and atomic harvests
+        run: python -B tests/integration/nursery_next_three_cases.py
+      - name: Native day night evolution source travel, stale context and atomic consumption
+        run: python -B tests/integration/contextual_evolution_cases.py
+      - name: Reusable Soothe Bell field friendship, native evolution and atomic feeding
+        run: python -B tests/integration/soothe_bell_cases.py
+      - name: Mirror Herb native egg teaching, exact PP, source travel and concurrent confirmation
+        run: python -B tests/integration/mirror_herb_cases.py
+      - name: NPC prize item participation, item transfer, sealed payouts and atomic retry
+        run: python -B tests/integration/npc_prize_item_cases.py
       - name: Legacy recovery berry field routes, guards, rollback and final-copy use
         run: python tests/integration/legacy_berry_cases.py
       - name: Vitamin and feather field training, caps, HP and atomic concurrent use

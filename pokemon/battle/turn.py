@@ -201,7 +201,12 @@ class TurnManager:
 				prompt_hook()
 			except Exception:
 				log_warn("Failed to prompt active Pokémon", exc_info=True)
-		self.msg("The battle awaits your move.")
+		from pokemon.ui.compact_battle import uses_compact
+
+		trainers = getattr(self, "trainers", []) or []
+		for trainer in trainers:
+			if not uses_compact(trainer):
+				self._msg_to(trainer, "The battle awaits your move.")
 		if self.battle and getattr(self.battle, "turn_count", 0) == 1:
 			log_info(f"Prompted first turn for battle {self.battle_id}")
 
@@ -225,10 +230,14 @@ class TurnManager:
 		self._set_player_control(False)
 		self._notify_turn_banner(upcoming=True)
 		battle_finished = False
+		self._battle_ui_pending_events = []
+		self._battle_ui_collecting = True
 		try:
 			execute = getattr(self, "execute_persistent_turn", self.battle.run_turn)
 			execute()
 		except Exception:
+			self._battle_ui_collecting = False
+			self._battle_ui_pending_events = []
 			err_txt = traceback.format_exc()
 			self.turn_state["error"] = err_txt
 			if callable(debug_hook):
@@ -245,6 +254,9 @@ class TurnManager:
 			self.msg("The turn could not be saved. Use +battle/retry to retry the retained choices.")
 			return
 		else:
+			self._battle_ui_collecting = False
+			self._battle_ui_last_events = tuple(self._battle_ui_pending_events)
+			self._battle_ui_pending_events = []
 			self._sync_active_battle_state()
 			battle = self.battle
 			roster_size = 0
@@ -281,6 +293,12 @@ class TurnManager:
 				except Exception:
 					pass
 			if battle_finished:
+				publisher = getattr(safe_import("pokemon.battle.interface"), "publish_compact_events", None)
+				if callable(publisher):
+					try:
+						publisher(self)
+					except Exception:
+						log_warn("Failed to display final battle turn", exc_info=True)
 				result_hook = getattr(self, "_handle_battle_result", None)
 				if callable(result_hook):
 					try:

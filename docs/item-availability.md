@@ -1,5 +1,87 @@
 # Finding and using items
 
+## October 29 activity and field routes
+
+The [Training Grounds](training-grounds.md) provide free deliberate EV sessions
+and confirmed partial/full resets. The optional Training Trail has a five-percent
+named Finder chance, one item per successful search, with a three-second
+character cooldown. Its 15 items supplement training; useful completed sessions
+also earn Candy and Cap milestones. Neither waiting alone nor a reset earns
+progress or rewards.
+
+The private nursery now accepts Oran, Cheri, Pecha, Rawst, Aspear, Chesto, Sitrus
+and Lum. It retains one bed and seed, four one-hour stages and one to five berries.
+[Link Cord](link-cord-evolution.md) has separate finite source authoring.
+The [field-item guide](contextual-and-field-items.md) covers public day/night
+context recipes, reusable Soothe Bell feeding, confirmed Mirror Herb teaching
+at configured Daycares and nonstacking standard NPC prize bonuses.
+
+These recipes and activity flags require explicit world placement. Their
+command/SQL and private socket evidence is separate from the existing-world
+stock observation below. No automatic installation, refill or deployment follows
+from an item definition or these additions. Cleanse Tag and Pure Incense hunt
+reduction remain intentionally deferred by #938.
+
+## October 29 bounded additions
+
+[Six additional Z source mappings](testing/z-next-six-sources-2026-10-29.md) bring
+the local registry to69 mappings on35 crystals. The [four field recovery medicines](remedy-recovery.md)
+add Remedy, Fine Remedy, Superb Remedy and Jubilife Muffin through `+use`.
+Their [receipt](testing/item-additions-2026-10-29.md) records the tested local
+candidate and its separate publication/deployment limits. The new
+[source-only index](testing/item-availability-additions-index-2026-10-29.json)
+contains646 definitions and498 scoped items; all498 world entries remain
+unverified in that artifact. No new permanent source or stock is installed.
+The [remaining scope decisions](design/item-backlog-next-batches-2026-10-29.md)
+keep later features and intentional hunt-item deferrals explicit.
+
+## October 29 repair candidate
+
+The [held-item guide](held-item-repairs.md) describes the repaired stat,
+indirect-damage, residual-healing and Berserk Gene behavior. The
+[manual medicine policy](battle-recovery-items.md) includes target-specific
+Embargo checks. Their [dated evidence](testing/item-repairs-2026-10-29.md) keeps
+offline tests, captured command/SQL observations, publication and deployment
+separate. The [new source-only index](testing/item-availability-repairs-index-2026-10-29.json)
+contains 642 definitions and 494 scoped items, including Link Cord. Its coarse
+capability labels are not complete facet acceptance; no fresh world snapshot was
+supplied, so all 494 current-world availability entries remain unverified.
+
+Ordinary [consent trades](operations/consent-trading.md) use `+trade` without
+automatic evolution. [Link Cord](link-cord-evolution.md) is consumed from the bag
+by `+evolve <id> Link Cord` for its 14 exact mappings. Existing trade-held item
+evolutions keep their held-item route. Public acquisition remains a separate check.
+
+## Current public counters (October26 release)
+
+At Alpha Test Hub31 these ordinary exits reach finite buy-only counters. Use
+`+store`, choose **Buy items** and inspect actual quantities; `back` returns to
+the hub. There is no automatic refill or resale.
+
+| Exit | Supplies |
+| --- | --- |
+| `supplies` | Potion, Oran Berry, Fresh Water, Fire Stone, Leftovers, Smoke Ball |
+| `statusmeds` | Six status medicines |
+| `recoverymeds` | Super/Hyper Potion, Revive/Max Revive |
+| `ppmeds` | Ether/Max Ether, Elixir/Max Elixir |
+| `stones` | Water, Thunder, Leaf, Ice, Sun and Moon Stone |
+| `vitamins` | HP Up, Protein, Iron, Calcium, Zinc and Carbos |
+| `capacity` | PP Up/Max and Ability Capsule/Patch; sold out at acceptance |
+| `helditems` | Sitrus, Lum, Focus Sash and Choice items; Choice offers sold out |
+| `seeds` | Cheri, Pecha, Rawst and Aspear; plant/water four real-hour stages here |
+| `expcandy` | XS, S, M, L and XL; XL sold out at acceptance |
+| `mints` | All21 nature mints; sold out at acceptance |
+
+The [released report](testing/remaining-item-released-player-2026-10-26.md) and
+[dated per-item index](testing/item-availability-released-index-2026-10-26.json)
+record72 offers:43 in stock and29 sold out at final observation. Later sales
+can deplete them. The other421 scoped definitions remain world-unverified.
+Real nursery harvest/use, Candy progression/learning, mint genetics and both
+native Ultra lifecycles passed ordinary-player checks. Live QA fixtures and
+temporary capture/crystal helpers were removed; sealed audit histories remain.
+Temporary helpers do not certify permanent public acquisition. Earlier dated
+source-only reports and then-pending gates below remain historical evidence.
+
 Use `+store` in a shop, choose **Buy items**, then enter the complete displayed
 item name and amount, such as `Potion 1`. The shop needs stock and you need
 enough money. `+itemdex` describes items; it does not tell you where they are
@@ -48,10 +130,11 @@ The later [47-pair Mega route](mega-evolution.md) supplies ordinary `+mega` befo
 10,000-price Counter recipe. Its local automated acceptance is separate from
 deployment and permanent public stock; the [per-stone matrix](design/mega-stones.md)
 records accepted effects, source limits and the remaining CAP/required-move exclusions.
-The later [Z route](z-moves.md) accepts62 explicit source mappings on34
-existing crystals through `+zmove`, including 14 status sources and 16
-signatures. The [matrix](design/z-crystals.md) names the exact native/source
-limits; other unreviewed source moves and Ultra remain deferred. The native
+The later [Z route](z-moves.md) accepts69 explicit source mappings on35
+existing crystals through `+zmove`, including 15 status sources,16 unchanged
+signatures and one separately guarded [Ultra signature](ultra-burst.md).
+The [matrix](design/z-crystals.md) names the older exact native/source
+limits; other unreviewed source moves remain deferred. The native
 [Necrozma combine/separate route](necrozma.md) accepts two real owned sources
 and the matching Dusk-Mane/Sunsteel or Dawn-Wings/Moongeist signature, with
 durable native-pair proof. Its [released local acceptance](testing/necrozma-released-retry-2026-10-24.md)
@@ -148,3 +231,20 @@ ordinary routes. Their [source index](testing/item-availability-finite-sources-i
 records authored stock separately from unknown world access. They are not
 installed in PF2-Dev by code publication. The original permanent six-item
 counter and its dated acceptance remain separate; all new recipes are no-refill.
+
+The later [seven mochi](ev-mochi.md) reuse safe field training, and
+[Cheri/Pecha/Rawst/Aspear growing](berry-nursery.md) reuses the private nursery
+lifecycle. The [updated source index](testing/item-availability-field-training-seeds-index-2026-10-25.json)
+keeps459 world entries unknown, preserves the earlier452 definition fingerprints
+and names their optional finite recipes. Controlled-clock growing and captured
+command/SQL effects do not complete #893's four real elapsed hours or certify
+permanent public stock.
+
+The later EXP Candy, manual battle boosters and21 nature mints retain their
+separate guides and dated local receipts. The October25 [source-only index](testing/item-availability-ultra-index-2026-10-25.json)
+preserves all493 scoped definition fingerprints and adds the explicitly guarded
+[Ultra route](ultra-burst.md):63 mappings on35 crystals, including the unchanged
+16 signatures and one separate native Ultra profile. All493 world entries stay
+unverified in this source-only artifact. [Ultra qualification](testing/ultra-burst-2026-10-25.md)
+does not replace #888's deliberately released gate; mint #904 and the finite
+counter/nursery/EXP source releases also remain separate.

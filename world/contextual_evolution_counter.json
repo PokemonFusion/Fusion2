@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "key": "contextual-evolution-counter-v1",
+  "room": "Contextual Evolution Counter",
+  "entrance": "evolutionitems",
+  "return_exit": "back",
+  "refill": "none",
+  "buy_only": true,
+  "description": "Finite held evolution items: Oval Stone for native Happiny in Day Grove, Razor Claw for native Sneasel in Night Grove, and Razor Fang for native Gligar in Night Grove. Buy with +store, equip using +hold, travel to the matching grove and use +evolve <full ID>. Other native forms retain their own rules. Back returns to the hub.",
+  "offers": [
+    {"item": "Oval Stone", "price": 2000, "quantity": 5},
+    {"item": "Razor Claw", "price": 5000, "quantity": 5},
+    {"item": "Razor Fang", "price": 5000, "quantity": 5}
+  ]
+}

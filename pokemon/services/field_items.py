@@ -32,7 +32,10 @@ class FieldMedicineUse:
         ).order_by("slot", "pk").values(
             "pokemon_id", "location_type", "slot", "pokemon__nickname", "pokemon__species"
         ))
-        fusion_id = str(getattr(self.caller.db, "fusion_id", ""))
+        from pokemon.services.battle_rewards import BattleRewards
+
+        fusion_id = str(BattleRewards.stored_attribute(
+            BattleRewards.character(self.caller), "fusion_id", default="") or "")
         eligible = [p for p in placements if p["location_type"] == "party"
                     or str(p["pokemon_id"]) == fusion_id]
         text = query.strip()

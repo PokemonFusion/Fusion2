@@ -1,8 +1,8 @@
 # Z-Moves
 
-The 18 generic crystals accept 32 reviewed damaging source pairs in the
+The 18 generic crystals accept 37 reviewed damaging source pairs in the
 [current matrix](design/z-crystals.md). For example **Normalium Z + an actual
-active Tackle slot → Breakneck Blitz**, 100-power Physical Normal damage. Fourteen
+active Tackle slot → Breakneck Blitz**, 100-power Physical Normal damage. Fifteen
 selected status sources and 16 signatures are also accepted, with exact native
 holders in that matrix. All other source moves remain deferred. These are bounded
 routes; holding a crystal does not enable every move of its type.
@@ -19,8 +19,12 @@ the other five are 175. The later [physical batch](testing/z-six-physical-source
 adds Body Slam, Crunch, Dragon Claw, Earthquake, Rock Slide and Iron Head.
 The [status batch](testing/z-six-status-sources-2026-10-25.md) adds Recover,
 Roost, Protect, Toxic, Thunder Wave and Synthesis with their exact reviewed
-bonuses. The current total is 62 mappings on 34 crystals (32 generic,
-14 status, 16 signatures). All other sources stay deferred.
+bonuses. The separate [Ultra route](ultra-burst.md) adds one guarded Photon
+signature. The [October 29 six-source batch](testing/z-next-six-sources-2026-10-29.md)
+adds Fire Blast and Flare Blitz/Firium Z, Hydro Pump/Waterium Z, Thunder/Electrium Z,
+Earth Power/Groundium Z and Calm Mind/Psychium Z. The current total is69 mappings
+on35 crystals:37 generic,15 status,16 unchanged signatures and one Ultra.
+Other unreviewed sources stay deferred.
 Ordinary Surf retains its spread targets; its Z copy does not. Flamethrower's
 ordinary burn chance is not copied. Current Charizard/Slowpoke level-up data
 provides their respective source at level30; actual wild access still requires
@@ -54,13 +58,14 @@ stacking is unavailable; different allies have separate mechanic budgets.
 Holding any Z-Crystal prevents Terastallization. Klutz, Embargo and Magic Room
 do not disable activation of the actual matching crystal.
 
-An optional Z-Crystal Counter recipe supplies one of each of the 34 accepted crystals for 10,000 each,
+An optional Z-Crystal Counter recipe supplies one of each of the earlier34 crystals for 10,000 each,
 without automatic refill. It must be deliberately installed at a chosen hub;
 this change does not add shops or stock to a running world. The published
 evidence uses disposable PostgreSQL and production commands with a captured
 player transport. Live deployment and socket acceptance are separate.
 An existing Counter with an older offer set requires an explicit stock review;
 re-running installation rejects drift and does not expand or refill it.
+That recipe does not offer Ultranecrozium Z; its source requires a separate review.
 
 Selected status sources are Splash, Growl, Swords Dance, Haze, Memento, Destiny
 Bond, Tailwind and Curse, plus Recover, Roost, Protect, Toxic, Thunder Wave and
@@ -69,8 +74,9 @@ a blocked base effect keeps a started bonus. Memento prepares one HP-only heal
 for that same side/active slot's next conscious incoming holder. Tailwind's
 critical bonus lasts until switching; its side timer survives reconnect without
 resetting. Curse uses the holder's current Ghost/non-Ghost type when acting.
-Recover/Roost/Protect/Synthesis clear only negative user stages; Toxic adds
-Defense +1 and Thunder Wave adds Special Defense +1. Useful Roost temporarily
+Recover/Roost/Protect/Synthesis/Calm Mind clear only negative user stages; Toxic adds
+Defense +1 and Thunder Wave adds Special Defense +1. Calm Mind then applies its
+ordinary +1 Special Attack/+1 Special Defense through normal ability rules. Useful Roost temporarily
 removes Flying through the rest of the turn, then restores it; fixed Tera
 typing stays fixed. Synthesis uses effective weather and common healing
 prevention. Repeated Protect uses the modern one-third progression; a
@@ -98,4 +104,7 @@ forms and stale/forged pair proof cannot qualify. Public source includes
 `+necrozma`; a running game needs a deliberate release and schema upgrade.
 [Released local socket acceptance](testing/necrozma-released-retry-2026-10-24.md)
 passed for #831's dated candidate; it does not certify this newer item build or
-shared-game deployment. Ultra remains excluded.
+shared-game deployment. The separate [Ultra Burst route](ultra-burst.md) adds
+one explicitly guarded Photon Geyser signature after native activation and a
+later completed turn. It preserves all16 prior signature fingerprints and
+uses the existing Z budget/PP boundary; #888 retains its released acceptance.

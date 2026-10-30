@@ -96,11 +96,11 @@ class HuntSystem:
 			hunter.ndb.field_ability = getattr(party[0], "ability", None)
 
 	def _check_itemfinder(self, hunter) -> Optional[str]:
-		"""Use only the explicitly authored Potion source; never report a phantom item."""
+		"""Use only a named authored Finder source; never report a phantom item."""
 		room = self.room
 		if getattr(room.db, "noitem", False):
 			return None
-		if not getattr(room.db, "itemfinder_item", None):
+		if not getattr(room.db, "itemfinder_item", None) and not getattr(room.db, "itemfinder_profile", None):
 			return None
 		from pokemon.services.itemfinder import ItemfinderClaim
 

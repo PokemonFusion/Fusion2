@@ -19,7 +19,11 @@ def attack_prompt(inst, caller, move_name, target=None, actor=None):
 
     from pokemon.battle._shared import _normalize_key
     from pokemon.battle.legal_actions import LegalActions
+    from pokemon.battle.labels import BattlerLabels
     from utils.battle_display import render_move_gui
+    from pokemon.battle.interface import get_battle_ui_width
+    from pokemon.ui.compact_battle import BattleText, screen_reader
+    from pokemon.ui.move_gui import battle_move_views, render_move_details
     try:
         choices = inst.choices_for(caller)
         position, pokemon = choices.actor(actor)
@@ -31,20 +35,42 @@ def attack_prompt(inst, caller, move_name, target=None, actor=None):
     legal = choices.legal_moves(pokemon)
     if legal and all(action.move.key.lower() == "struggle" for action in legal):
         slots = [legal[0].move]
-    pp = {index: next((action.move.pp for action in legal
-                       if _normalize_key(action.move.key) == _normalize_key(move.name)), 0)
-          for index, move in enumerate(slots)}
+    views = battle_move_views(pokemon, slots)
+    pp = {index: getattr(move, "current_pp", None) for index, move in enumerate(views)}
+    legal_keys = {_normalize_key(action.move.key) for action in legal}
+    unavailable = {index: "UNAVAILABLE" for index, move in enumerate(slots)
+                   if move is not None and _normalize_key(move.name) not in legal_keys}
 
     def submit(text, selected_target=None):
         """Reject stale interactive input before interpreting a move selection."""
         if text.lower() in {"cancel", "quit", "exit", "abort", ".abort", "0"}:
             caller.msg("Action cancelled.")
             return False
+        if text.startswith("?"):
+            try:
+                choices._check(position, pokemon)
+            except ValueError as error:
+                caller.msg(str(error))
+                return False
+            query = text[1:].strip()
+            detail = next((index for index, move in enumerate(slots)
+                           if move is not None and (query.upper() == "ABCD"[index]
+                           or _normalize_key(query) == _normalize_key(move.name))), None)
+            if detail is None:
+                caller.msg("Move details: ? A, ? B, ? C, or ? D.")
+            else:
+                caller.msg(render_move_details(views[detail], pp[detail], get_battle_ui_width(caller),
+                                               accessible=screen_reader(caller)))
+            return True
         parts = text.rsplit(None, 1)
         if len(parts) == 2 and re.fullmatch(r"[AB][12]", parts[1], re.IGNORECASE):
             text, selected_target = parts
         if len(text) == 1 and text.upper() in "ABCD" and ord(text.upper()) - ord("A") < len(slots):
-            text = slots[ord(text.upper()) - ord("A")].name
+            selected = slots[ord(text.upper()) - ord("A")]
+            if selected is None:
+                caller.msg("That move slot is empty. Choose another move or cancel.")
+                return True
+            text = selected.name
         try:
             choices._check(position, pokemon)
             choices.move(text, selected_target, actor=position)
@@ -55,11 +81,19 @@ def attack_prompt(inst, caller, move_name, target=None, actor=None):
     if move_name:
         submit(move_name, target)
         return
-    fields = ", ".join(f"{name}: {pos.pokemon.name}" for name, pos in inst.data.turndata.positions.items()
+    labels = BattlerLabels(inst.battle)
+    fields = ", ".join(labels.name(pos.pokemon) if labels.position(pos.pokemon)
+                       else f"{name}: {pos.pokemon.name}"
+                       for name, pos in inst.data.turndata.positions.items()
                        if LegalActions.conscious(pos.pokemon))
-    prompt = f"Move for {position} ({pokemon.name}):\n" + render_move_gui(slots, pp_overrides=pp)
-    prompt += "\n" + fields + "\nChoose a letter/name and target (e.g. A B1), or cancel. Spread/self moves need no target."
-    get_input(caller, prompt, lambda _caller, _prompt, result: submit(result.strip()))
+    width = get_battle_ui_width(caller)
+    prompt = f"Move for {position} ({pokemon.name}):\n" + render_move_gui(
+        views, pp_overrides=pp, total_width=width, viewer=caller, unavailable=unavailable)
+    prompt += "\n" + fields + "\nChoose a letter/name and target (e.g. A B1). Self/spread moves need no target."
+    prompt += "\nDetails: ? A. Cancel: cancel."
+    text = BattleText(width, screen_reader(caller))
+    text.add(prompt)
+    get_input(caller, text.render(), lambda _caller, _prompt, result: submit(result.strip()))
 
 
 def switch_prompt(inst, caller, selection, actor=None):

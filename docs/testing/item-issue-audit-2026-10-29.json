@@ -1,0 +1,3979 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "repository": "PokemonFusion/Fusion2",
+  "scope": "All 176 [Items]-prefixed issues, open and closed. Literal item/items label searches returned zero.",
+  "search_partition_counts": [
+    25,
+    85,
+    66
+  ],
+  "search_partitions_under_connector_limit": true,
+  "local_commit": "19f8eab5f4c7d2236542f3157e1791754b6921cf",
+  "remote_staging": "9c36beec68b2e3b6a413b2c4c93785f620831e48",
+  "unpublished_commits": [
+    "19f8eab5f4c7d2236542f3157e1791754b6921cf Replace training shops proposal with Training Grounds design",
+    "ef70f375b8f902900e2601502c909542667d08a2 Record approved item backlog issue publication",
+    "d409fad8ead83c04648f9402b02d3cbca3935a89 Qualify stat-item next actions after checkpoint restore",
+    "fb63e260d7ac4ff37631114aad8529f8d27b3914 Record bounded follow-ups for remaining item scope decisions",
+    "a28e350f6c6777b6ea2d44cccbec141bc4c8b540 Qualify six Z sources and four field recovery medicines",
+    "af476a950cd21842050c3e79c58adb1731b75c47 Repair held stat, indirect damage and battle medicine item rules"
+  ],
+  "status_counts": {
+    "closed_with_retained_resolution_evidence": 151,
+    "aggregate_tracker_incomplete": 1,
+    "implemented_local_unpublished": 9,
+    "repair_gate_closeout_pending": 1,
+    "scope_decision_recorded_followup_open": 6,
+    "intentional_deferral_recorded": 1,
+    "implemented_published_access_and_live_acceptance_pending": 1,
+    "access_content_and_acceptance_incomplete": 1,
+    "nursery_extension_incomplete": 1,
+    "egg_move_teaching_incomplete": 1,
+    "friendship_effect_incomplete": 1,
+    "npc_prize_effect_incomplete": 1,
+    "design_incomplete": 1
+  },
+  "prior_test_evidence": {
+    "mandatory_orders": 3,
+    "passed_each": 8135,
+    "skipped_each": 4032,
+    "sql_cases_across_three_distinct_batches": 374,
+    "candidate_fingerprints_verified_now": 35,
+    "fresh_test_run_in_this_audit": false
+  },
+  "verified_candidate_source_fingerprints": {
+    "commands/player/cmd_battle_item.py": "982163a58c9fe3aff002572df70b2e9e87d2b95c1758093f014eae71a8ef216b",
+    "pokemon/battle/effect_context.py": "be60a3f71fbb323c174e8190235d3a5193fa0ed130f544daec63e0dced62e38c",
+    "pokemon/battle/engine.py": "65c894ab9b80bd4470e8a80db52b2a9699cbf48cc239d1641167fcef511f0f35",
+    "pokemon/battle/held_item_effects.py": "9546fc20e7d499bad59b182c0baf3d569d4886b99effcca95026c1090fb6ddb2",
+    "pokemon/battle/item_boosts.py": "a0934ccce0a035c597733cb7245d314f0d829df88b552d2dbad9a053ed906842",
+    "pokemon/battle/logic.py": "7a35e908c46b0e8ed84e0e40aed21555b55f3ebf0682923091432257846a7a7e",
+    "pokemon/battle/player_choices.py": "1da8f63c62ec0d7d33a23b0e71225572d07092a88557dc3af5fa615d9f3701b4",
+    "pokemon/battle/state.py": "c557eb3be1f2714db0691e0f7947003cdd3fdef6914e562ca578818191898c36",
+    "pokemon/battle/tests/test_held_hp_and_gene_repairs.py": "65e924f24cb0ac1c12f870b680cd1bea7110aee56c6e3fcda4dd02a352bf4b90",
+    "pokemon/battle/tests/test_held_stat_boost_rules.py": "8723805a08a79d78939019061774590eba6bb31c77c8606d2d820b41531b85e8",
+    "pokemon/battle/tests/test_item_core_runtime.py": "49a4b6eb59a9954170354f39da6440768a7853406e44cffd1eced98b4ef2af26",
+    "pokemon/dex/functions/items_funcs.py": "c5fd44d557f28b6163764c1a04aabb74016bb06ca0039d1cc0ee1ffdf4936f41",
+    "pokemon/dex/functions/moves/damage_moves.py": "90075b485ae4360c4cb95d78af5463b5df4e1bd6210153e3027011d8c2e4d824",
+    "pokemon/services/battle_items.py": "fc9dd3fa15c9ecd12fd5327487e33b458b6a7a66c0efbe607f65dda306421491",
+    "tests/integration/isolated_battle_logs.py": "d3105ac18098a17d2adfa5446b1346195a6c6a44cb32d46020eebff491d6da3e",
+    "tests/integration/item_medicine_and_hp_cases.py": "a27a3d23d4ae6a2d3d37aa6e8e947ee1937945e9b146d522647e54678b75a77a",
+    "tests/integration/item_repair_cases.py": "a7b1bedf381fca595f8ee8edf323e85376709bda47c05d6dfdeb4e063c1b5c72",
+    "tests/test_battle_medicine_embargo.py": "94ff5f7b815b8b348f3f165af53391efea72f794a732da4c9a741c2484202276",
+    "commands/player/cmd_inventory.py": "ea7c41bdb83277699ceb69ef9d3612e32ced909ea5f791cc3af7de852b513383",
+    "pokemon/battle/tests/test_z_existing_sources.py": "cf990d979d96ceb4e8d966f21e47f68db9783052ed0db66b1d2fcdbfe5c346b0",
+    "pokemon/battle/tests/test_z_next_six_sources.py": "cc874936128362bb91e903a82e838d5aad8f2a720d6b55b503a6329b00302154",
+    "pokemon/battle/tests/test_z_physical_sources.py": "f29b24f359b5c4331bdc53b180acaf4b4188833d10fd0073d3481ce43751907a",
+    "pokemon/battle/tests/test_z_special_sources.py": "27e433f06b118c350f03c42c3a08400ea6742abaca4adfb56846bd9b010039ab",
+    "pokemon/battle/tests/test_z_status_sources.py": "3931c2069e80657ac59b305923d27258f38bcc1a611ab9d86b7a872f98b1bc86",
+    "pokemon/battle/z_generic_pairs.py": "32d7a75504e732f808acd9f2411a05dd17379f67c56d13a94d37eff4a8b82e79",
+    "pokemon/battle/z_status_pairs.py": "71c22bcf7f2a0ef60b611043a1e5eab0b7b839adaba3bcec9393cd7dfec1f658",
+    "pokemon/items.py": "23783cc4052a9b2d07abc515558523beba976f8cfa8638e9541b27ed4eac3992",
+    "pokemon/services/field_recovery_equivalents.py": "86fdebf36d1319917395c6160e20b19319c04f58a897eb5a1caebe194a806fd0",
+    "tests/integration/remedy_recovery_cases.py": "a86b5f2bf5ad64b5d11694566498943c00f0553685bad7d725d3934a34d94d59",
+    "tests/integration/z_next_six_sources_cases.py": "d9e80a9ec825133fa67fbcbdf48eb8f5cb860c975f4c9186cbcc717c4d75e839",
+    "tests/test_item_availability.py": "748037412292695eb10c654bbd34112bdf8ea0b084b3ef3deb055c550d86a886",
+    "tests/test_remedy_recovery.py": "84e6a1bc0c113a29eb3bf77e15d0fbeda469a79ae83a8aeedfbb294431686512",
+    "tools/audit_item_availability.py": "7f51c34d51cca2700ccbed0e38583ae6c7bd81373b71b3fa665896fee16ed320",
+    "tests/integration/item_next_action_cases.py": "f53af212a8920a5b0e2ed4b9430cfacdad47028d7c78226b9a06e5614085b152",
+    ".github/workflows/lifecycle-integrity.yml": "b2cb3e389aaa3f205887ce3e5ae3e0702c4c6a7be3b8917c74fe398f689f099c"
+  },
+  "inspected_feature_foundations": {
+    "947": [
+      "pokemon/services/evolution.py",
+      "pokemon/evolution_items.py"
+    ],
+    "948": [
+      "pokemon/services/berry_growing.py",
+      "tests/integration/berry_growing_cases.py"
+    ],
+    "949": [
+      "commands/player/cmd_daycare.py",
+      "pokemon/services/daycare.py"
+    ],
+    "950": [
+      "pokemon/services/field_berries.py"
+    ],
+    "951": [
+      "pokemon/services/battle_rewards.py"
+    ],
+    "952": [
+      "pokemon/services/field_training.py",
+      "pokemon/services/itemfinder.py",
+      "pokemon/hyper_training.py"
+    ]
+  },
+  "feature_foundation_fingerprints": {
+    "pokemon/services/evolution.py": "6cd38c72265d0bde61a8f96c65dd54df21f99688a3219f8ff43c492fda3f1670",
+    "pokemon/evolution_items.py": "6331b39945e4e8c3a36972039dff66786f99fdfd9a170772e051abc2258e5215",
+    "pokemon/services/berry_growing.py": "5fe44e4c8de08175aac0dc8d2fdb5e6d8543680ffb733517fc667e485006b3a6",
+    "tests/integration/berry_growing_cases.py": "7a9d833d4542680b5673e9fe732d953e65b011c2020519920d5fdc334a22242a",
+    "commands/player/cmd_daycare.py": "f64a44a4cbc7fe421d324fb13ed59c08dcbdbc3e7c1a40adcc2006d1380dcca2",
+    "pokemon/services/daycare.py": "70600e4584c1ccb2500a85a14f4dd5341615bf7f11d97ad614eac47d11655b00",
+    "pokemon/services/field_berries.py": "c66a86d5e7a42de629760609db2284fd4faa5e341655d72ca0d3eec68441e50b",
+    "pokemon/services/battle_rewards.py": "60b5ee8df62a31ddcc813dbedaea507e2e99c047bf44755c6c261617908ba97e",
+    "pokemon/services/field_training.py": "9eb3789fc1b041c7c8f9a721da02a33663bd93dbc2116fd6d847c0944761b06a",
+    "pokemon/services/itemfinder.py": "9ebb281b9ecb6496727d7c03fe3bacf0913bbae10f2e9d34a18aee7c464823fc",
+    "pokemon/hyper_training.py": "04406a8b9300a0b433a9daf3e0ae34a4eafb651e7e32ffbcdb87df026e7ed7a1"
+  },
+  "known_remaining_evidence": {
+    "947": "Existing room time_of_day context is implemented; proposed daygrove/nightgrove content remains a plan.",
+    "948": "BerryGrowing.seeds contains Oran/Cheri/Pecha/Rawst/Aspear only.",
+    "949": "Current Daycare command/service has no Mirror Herb teaching route.",
+    "950": "FieldBerryUse computes base friendship gains directly without a Soothe Bell modifier.",
+    "951": "BattleRewards already pays a persisted payload once, but lacks the proposed held-item participation/multiplier facet.",
+    "952": "Field item EV/Hyper Training effects exist; the Training Grounds activity, balance and dependable reward design remain unspecified.",
+    "939": "Implementation/test files match published staging. Its own issue retains unfinished source planning and logged-in live acceptance checkboxes."
+  },
+  "recommended_phases": [
+    {
+      "phase": 1,
+      "issues": [
+        922,
+        923,
+        924,
+        925,
+        926,
+        927,
+        928,
+        929,
+        932,
+        935,
+        930,
+        931,
+        933,
+        934,
+        936,
+        937,
+        938
+      ],
+      "delivery": "Publish/verify the tested candidate with authorization, accept repairs #920-#928, clear #929, then sign off the already implemented #932/#935 additions. Reconcile scope handoffs and deferral without duplicate coding."
+    },
+    {
+      "phase": 2,
+      "issues": [
+        952
+      ],
+      "delivery": "Finish Training Grounds, affordable retraining and supplementary item-access design; produce measured session/build examples and bounded follow-ups."
+    },
+    {
+      "phase": 3,
+      "issues": [],
+      "origin": 952,
+      "delivery": "Deliver the new design in three subsequent batches: focused EV training; affordable retraining; named Finder/advanced/milestone rewards. These follow-ups do not yet exist and are not claimed implemented."
+    },
+    {
+      "phase": 4,
+      "issues": [
+        939
+      ],
+      "delivery": "Finish Link Cord acquisition policy/source and authorized live acceptance; retain the published 14-map implementation."
+    },
+    {
+      "phase": 5,
+      "issues": [
+        947
+      ],
+      "delivery": "Contextual evolution access through the existing engine."
+    },
+    {
+      "phase": 6,
+      "issues": [
+        948
+      ],
+      "delivery": "Three-name nursery extension and real elapsed acceptance."
+    },
+    {
+      "phase": 7,
+      "issues": [
+        950
+      ],
+      "delivery": "Soothe Bell field friendship modifier and useful evolution."
+    },
+    {
+      "phase": 8,
+      "issues": [
+        949
+      ],
+      "delivery": "Mirror Herb teaching and concurrent move/custody protections."
+    },
+    {
+      "phase": 9,
+      "issues": [
+        951
+      ],
+      "delivery": "Once-only nonstacking NPC prize support, last due to economy and persistence scope."
+    },
+    {
+      "phase": 10,
+      "issues": [
+        919
+      ],
+      "delivery": "Final supported/source/deferred reconciliation and authorized release/player acceptance; close the tracker only with honest child status."
+    }
+  ],
+  "dependency_notes": [
+    "#929 is the hard gate for additional feature implementation. #923 depends on already-closed #921; #925/#928 reuse its consumption boundary.",
+    "#952 design precedes its three proposed implementation batches; no training shops are planned.",
+    "#947/#948/#950/#949/#951 are independent after #929. Their listed order is a recommended delivery sequence, not invented hard dependencies.",
+    "Real elapsed nursery checks can overlap independent later work without clock manipulation.",
+    "Keep acquisition/source installation, logged-in acceptance, published code and deployment separate."
+  ],
+  "limits": [
+    "Read-only issue/code/evidence audit; no issues changed or closed.",
+    "Retained resolution evidence is not a fresh exhaustive runtime regression or deployment check.",
+    "No live server or stock inspection was performed in this audit.",
+    "All 151 closed issues have retained resolution-report references. This is documentary verification, not a new exhaustive mechanics or live replay.",
+    "Scope records are closure-review candidates, not proof their generated runtime follow-ups work.",
+    "No GitHub state/body mutation, source edit, push, deployment, stock change or server operation is part of this audit.",
+    "The two unrelated untracked region-design documents are preserved."
+  ],
+  "issues": [
+    {
+      "issue": 747,
+      "title": "[Items][Tracker] Repair existing gameplay items before adding missing support",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/747",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T01:49:42Z",
+      "closed_at": "2026-10-22T01:49:42Z",
+      "checked_criteria": 22,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/alcremie-sweets-2026-10-21.json",
+        "docs/testing/alcremie-sweets-2026-10-21.md",
+        "docs/testing/battle-item-support-2026-10-21.json",
+        "docs/testing/field-berries-2026-10-20.json",
+        "docs/testing/field-berries-2026-10-20.md",
+        "docs/testing/field-food-2026-10-21.json",
+        "docs/testing/field-food-2026-10-21.md",
+        "docs/testing/field-medicine-2026-10-20.json",
+        "docs/testing/field-medicine-2026-10-20.md",
+        "docs/testing/full-battle-postformfix-2026-10-20.md",
+        "docs/testing/item-support-closeout-2026-10-21.json",
+        "docs/testing/item-support-closeout-2026-10-21.md",
+        "docs/testing/kubfu-scrolls-2026-10-21.json",
+        "docs/testing/kubfu-scrolls-2026-10-21.md",
+        "docs/testing/leader-crest-2026-10-21.json",
+        "docs/testing/leader-crest-2026-10-21.md",
+        "docs/testing/peat-block-2026-10-21.json",
+        "docs/testing/peat-block-2026-10-21.md",
+        "docs/testing/smoke-ball-2026-10-21.json",
+        "docs/testing/smoke-ball-2026-10-21.md",
+        "docs/testing/trade-held-evolution-2026-10-21.json",
+        "docs/testing/trade-held-evolution-2026-10-21.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_inventory.py",
+        "pokemon/battle/player_choices.py",
+        "pokemon/battle/turns.py",
+        "pokemon/data/evolution.py",
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/dex/items/itemsdex.py",
+        "pokemon/services/evolution.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 748,
+      "title": "[Items][P1] Enable field medicine and party/reserve revival targeting",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/748",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T01:32:44Z",
+      "closed_at": "2026-10-21T01:18:24Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-repairs-2026-10-20.md",
+        "docs/testing/field-medicine-2026-10-20.json",
+        "docs/testing/field-medicine-2026-10-20.md",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.json",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_battle_item.py",
+        "commands/player/cmd_inventory.py",
+        "pokemon/battle/player_choices.py",
+        "pokemon/battle/turns.py",
+        "pokemon/services/battle_items.py",
+        "tools/run_mandatory_tests.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 749,
+      "title": "[Items][P1] Connect existing PP restoratives and herbal medicines",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/749",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T01:32:51Z",
+      "closed_at": "2026-10-21T01:18:28Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-repairs-2026-10-20.md",
+        "docs/testing/field-medicine-2026-10-20.json",
+        "docs/testing/field-medicine-2026-10-20.md",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.json",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_inventory.py",
+        "pokemon/battle/turns.py",
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/services/battle_items.py",
+        "pokemon/services/move_management.py",
+        "tools/run_mandatory_tests.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 750,
+      "title": "[Items][P1] Repair existing berry healing, PP, status and conditional triggers",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/750",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T00:49:17Z",
+      "closed_at": "2026-10-21T00:49:17Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-repairs-2026-10-20.md",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.json",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/battledata.py",
+        "pokemon/battle/damage.py",
+        "pokemon/battle/engine.py",
+        "pokemon/battle/pokemon_factory.py",
+        "pokemon/battle/tests/test_additional_item_effects.py",
+        "pokemon/battle/tests/test_diagnosed_item_effects.py",
+        "pokemon/battle/tests/test_forced_item_form_eligibility.py",
+        "pokemon/battle/tests/test_item_core_runtime.py",
+        "pokemon/battle/tests/test_remaining_item_effects.py",
+        "pokemon/dex/functions/items_funcs.py",
+        "tests/test_battle_item_command.py",
+        "tests/test_useitem_pp.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 751,
+      "title": "[Items][P1] Repair Shell Bell healing and Eviolite eligibility",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/751",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T00:49:23Z",
+      "closed_at": "2026-10-21T00:49:23Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-repairs-2026-10-20.md",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.json",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/damage.py",
+        "pokemon/battle/engine.py",
+        "pokemon/battle/pokemon_factory.py",
+        "pokemon/battle/tests/test_additional_item_effects.py",
+        "pokemon/battle/tests/test_diagnosed_item_effects.py",
+        "pokemon/battle/tests/test_forced_item_form_eligibility.py",
+        "pokemon/battle/tests/test_item_core_runtime.py",
+        "pokemon/battle/tests/test_remaining_item_effects.py",
+        "pokemon/dex/functions/items_funcs.py",
+        "tests/test_battle_item_command.py",
+        "tests/test_useitem_pp.py",
+        "utils/pokemon_utils.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 752,
+      "title": "[Items][P1] Repair held-item protection and weather suppression",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/752",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T00:49:29Z",
+      "closed_at": "2026-10-21T00:49:29Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-repairs-2026-10-20.md",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.json",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/conditions.py",
+        "pokemon/battle/damage.py",
+        "pokemon/battle/engine.py",
+        "pokemon/battle/tests/test_additional_item_effects.py",
+        "pokemon/battle/tests/test_diagnosed_item_effects.py",
+        "pokemon/battle/tests/test_forced_item_form_eligibility.py",
+        "pokemon/battle/tests/test_remaining_item_effects.py",
+        "pokemon/battle/turns.py",
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/dex/functions/moves/damage_moves.py",
+        "tests/test_battle_item_command.py",
+        "tests/test_useitem_pp.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 753,
+      "title": "[Items][P1] Complete conditional held-item and type-Gem effects",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/753",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T00:49:34Z",
+      "closed_at": "2026-10-21T00:49:34Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-repairs-2026-10-20.md",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.json",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/damage.py",
+        "pokemon/battle/engine.py",
+        "pokemon/battle/tests/test_additional_item_effects.py",
+        "pokemon/battle/tests/test_diagnosed_item_effects.py",
+        "pokemon/battle/tests/test_forced_item_form_eligibility.py",
+        "pokemon/battle/tests/test_remaining_item_effects.py",
+        "pokemon/battle/turns.py",
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/dex/items/itemsdex.py",
+        "tests/battle_contract_catalog.py",
+        "tests/test_battle_item_command.py",
+        "tests/test_useitem_pp.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 754,
+      "title": "[Items][P2] Enable existing berry feeding and EV-reduction effects",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/754",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T10:16:23Z",
+      "closed_at": "2026-10-21T02:12:51Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/field-berries-2026-10-20.json",
+        "docs/testing/field-berries-2026-10-20.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_inventory.py",
+        "pokemon/battle/tests/test_live_ability_reactions.py",
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/dex/items/itemsdex.py",
+        "pokemon/helpers/berry_system.py",
+        "pokemon/models/stats.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 755,
+      "title": "[Items][P2] Complete evolution support for existing trade-held items",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/755",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T22:08:09Z",
+      "closed_at": "2026-10-21T22:08:09Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/trade-held-evolution-2026-10-21.json",
+        "docs/testing/trade-held-evolution-2026-10-21.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_learn_evolve.py",
+        "pokemon/data/evolution.py",
+        "pokemon/services/evolution.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 756,
+      "title": "[Items][P2] Make the seven existing Sweets usable for Alcremie evolution",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/756",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T21:44:14Z",
+      "closed_at": "2026-10-21T21:44:14Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/alcremie-sweets-2026-10-21.json",
+        "docs/testing/alcremie-sweets-2026-10-21.md"
+      ],
+      "retained_source_references": [
+        "pokemon/data/evolution.py",
+        "pokemon/dex/items/itemsdex.py",
+        "pokemon/dex/pokedex/galar.py",
+        "pokemon/services/evolution.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 757,
+      "title": "[Items][P2] Reconcile remaining held-item support into bounded verification batches",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/757",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T10:58:45Z",
+      "closed_at": "2026-10-21T10:58:44Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-repairs-2026-10-20.md",
+        "docs/testing/battle-item-support-2026-10-21.json",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.json",
+        "docs/testing/full-battle-items-postrepair-2026-10-20.md",
+        "docs/testing/item-support-closeout-2026-10-21.json",
+        "docs/testing/item-support-closeout-2026-10-21.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/tests/test_exhaustive_dex_smoke.py",
+        "pokemon/battle/tests/test_item_core_runtime.py",
+        "tests/battle_contract_catalog.py",
+        "tests/battle_contract_coverage.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 758,
+      "title": "[Items][P3] Add missing healing food, drink and revival equivalents",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/758",
+      "github_state": "closed",
+      "updated_at": "2026-10-21T23:35:58Z",
+      "closed_at": "2026-10-21T23:35:58Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/field-food-2026-10-21.json",
+        "docs/testing/field-food-2026-10-21.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_inventory.py",
+        "pokemon/dex/items/itemsdex.py",
+        "pokemon/items.py",
+        "pokemon/services/battle_items.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 759,
+      "title": "[Items][P3] Add Smoke Ball as a functional held escape item",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/759",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T00:05:30Z",
+      "closed_at": "2026-10-22T00:05:30Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/smoke-ball-2026-10-21.json",
+        "docs/testing/smoke-ball-2026-10-21.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_battle_item.py",
+        "pokemon/battle/player_choices.py",
+        "pokemon/battle/turns.py",
+        "pokemon/items.py",
+        "tests/integration/smoke_ball_cases.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 760,
+      "title": "[Items][P3] Add Peat Block with an authoritative Ursaluna evolution rule",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/760",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T00:29:36Z",
+      "closed_at": "2026-10-22T00:29:36Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/peat-block-2026-10-21.json",
+        "docs/testing/peat-block-2026-10-21.md"
+      ],
+      "retained_source_references": [
+        "pokemon/data/evolution.py",
+        "pokemon/dex/pokedex/galar.py",
+        "pokemon/items.py",
+        "pokemon/services/evolution.py",
+        "tests/integration/peat_block_cases.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 761,
+      "title": "[Items][P3] Add Leader's Crest qualification and Kingambit evolution evidence",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/761",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T01:25:49Z",
+      "closed_at": "2026-10-22T01:25:49Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/leader-crest-2026-10-21.json",
+        "docs/testing/leader-crest-2026-10-21.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/battleinstance.py",
+        "pokemon/data/evolution.py",
+        "pokemon/dex/pokedex/paldea.py",
+        "pokemon/items.py",
+        "pokemon/services/evolution.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 762,
+      "title": "[Items][P3] Define non-plot Kubfu evolution item equivalents",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/762",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T01:49:14Z",
+      "closed_at": "2026-10-22T01:49:13Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/kubfu-scrolls-2026-10-21.json",
+        "docs/testing/kubfu-scrolls-2026-10-21.md"
+      ],
+      "retained_source_references": [
+        "pokemon/data/evolution.py",
+        "pokemon/dex/pokedex/galar.py",
+        "pokemon/items.py",
+        "pokemon/services/evolution.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 763,
+      "title": "[Items][Tracker] Finish remaining non-plot item support after the October 22 audit",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/763",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:25:54Z",
+      "closed_at": "2026-10-23T08:25:54Z",
+      "checked_criteria": 62,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/ability-items-2026-10-22.json",
+        "docs/testing/ability-items-2026-10-22.md",
+        "docs/testing/battle-item-validation-2026-10-22.json",
+        "docs/testing/battle-item-validation-2026-10-22.md",
+        "docs/testing/battle-recovery-foods-2026-10-22.json",
+        "docs/testing/battle-recovery-foods-2026-10-22.md",
+        "docs/testing/berry-player-routes-2026-10-22.json",
+        "docs/testing/berry-player-routes-2026-10-22.md",
+        "docs/testing/field-training-2026-10-22.json",
+        "docs/testing/field-training-2026-10-22.md",
+        "docs/testing/hyper-training-2026-10-22.json",
+        "docs/testing/hyper-training-2026-10-22.md",
+        "docs/testing/hyper-training-fixtures-2026-10-22.json",
+        "docs/testing/hyper-training-fixtures-2026-10-22.md",
+        "docs/testing/incense-2026-10-22.json",
+        "docs/testing/incense-2026-10-22.md",
+        "docs/testing/item-availability-2026-10-22.json",
+        "docs/testing/item-availability-2026-10-22.md",
+        "docs/testing/item-availability-index-2026-10-22.json",
+        "docs/testing/item-designs-2026-10-22.md",
+        "docs/testing/item-feedback-2026-10-22.json",
+        "docs/testing/item-feedback-2026-10-22.md",
+        "docs/testing/item-followup-index-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.md",
+        "docs/testing/item-live-2026-10-22.json",
+        "docs/testing/item-live-2026-10-22.md",
+        "docs/testing/legacy-berries-2026-10-22.json",
+        "docs/testing/legacy-berries-2026-10-22.md",
+        "docs/testing/mega-core-2026-10-23.md",
+        "docs/testing/mega-design-2026-10-22.json",
+        "docs/testing/mega-design-2026-10-22.md",
+        "docs/testing/mega-stones-2026-10-23.md",
+        "docs/testing/pp-capacity-2026-10-22.json",
+        "docs/testing/pp-capacity-2026-10-22.md",
+        "docs/testing/rare-candy-2026-10-22.json",
+        "docs/testing/rare-candy-2026-10-22.md",
+        "docs/testing/z-core-2026-10-23.json",
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_inventory.py",
+        "pokemon/battle/player_choices.py",
+        "pokemon/models/core.py",
+        "pokemon/services/field_berries.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 764,
+      "title": "[Items][P1] Make Rare Candy use atomic and validate current owned targets",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/764",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T05:53:56Z",
+      "closed_at": "2026-10-22T05:53:56Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/rare-candy-2026-10-22.json",
+        "docs/testing/rare-candy-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_inventory.py",
+        "pokemon/services/field_items.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 765,
+      "title": "[Items][P1] Fix PP Up and PP Max capacity rules, target safety and move selection",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/765",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T13:37:55Z",
+      "closed_at": "2026-10-22T13:37:55Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/pp-capacity-2026-10-22.json",
+        "docs/testing/pp-capacity-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_inventory.py",
+        "pokemon/models/core.py",
+        "pokemon/services/battle_items.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 766,
+      "title": "[Items][P2] Reject unsupported battle items before spending an action",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/766",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T14:21:22Z",
+      "closed_at": "2026-10-22T14:21:22Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-validation-2026-10-22.json",
+        "docs/testing/battle-item-validation-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/player_choices.py",
+        "pokemon/battle/turns.py",
+        "pokemon/services/battle_items.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 767,
+      "title": "[Items][P2] Enable field use for nine existing legacy recovery berries",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/767",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T15:27:43Z",
+      "closed_at": "2026-10-22T15:27:43Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/legacy-berries-2026-10-22.json",
+        "docs/testing/legacy-berries-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/dex/items/itemsdex.py",
+        "pokemon/services/field_berries.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 768,
+      "title": "[Items][P2] Support existing vitamins and feathers through safe field use",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/768",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T15:53:59Z",
+      "closed_at": "2026-10-22T15:53:58Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/field-training-2026-10-22.json",
+        "docs/testing/field-training-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_inventory.py",
+        "pokemon/helpers/pokemon_helpers.py",
+        "pokemon/models/validators.py",
+        "pokemon/services/field_berries.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 769,
+      "title": "[Items][P2] Implement existing Ability Capsule and Ability Patch field routes",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/769",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T16:26:22Z",
+      "closed_at": "2026-10-22T16:26:22Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/ability-items-2026-10-22.json",
+        "docs/testing/ability-items-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_inventory.py",
+        "pokemon/data/evolution.py",
+        "pokemon/items.py",
+        "pokemon/services/evolution.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 770,
+      "title": "[Items][P2] Give existing Bottle Caps a bounded Hyper Training player route",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/770",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T17:11:06Z",
+      "closed_at": "2026-10-22T17:11:06Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/hyper-training-2026-10-22.json",
+        "docs/testing/hyper-training-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_inventory.py",
+        "pokemon/helpers/pokemon_helpers.py",
+        "pokemon/models/core.py",
+        "utils/pokemon_utils.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 771,
+      "title": "[Items][P2] Verify five excluded incense boosters through ordinary battles",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/771",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T18:15:46Z",
+      "closed_at": "2026-10-22T18:15:46Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-support-2026-10-21.json",
+        "docs/testing/incense-2026-10-22.json",
+        "docs/testing/incense-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/dex/items/itemsdex.py",
+        "tools/reconcile_item_support.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 772,
+      "title": "[Items][P2][QA] Record obtainable item coverage and current player-route acceptance",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/772",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T20:52:49Z",
+      "closed_at": "2026-10-22T20:52:49Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-support-2026-10-21.json",
+        "docs/testing/item-availability-2026-10-22.json",
+        "docs/testing/item-availability-2026-10-22.md",
+        "docs/testing/item-availability-index-2026-10-22.json",
+        "docs/testing/item-support-closeout-2026-10-21.json",
+        "docs/testing/item-world-snapshot-2026-10-22.json"
+      ],
+      "retained_source_references": [
+        "tools/reconcile_item_support.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 773,
+      "title": "[Items][P3] Add reviewed manual battle use for existing recovery foods and berries",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/773",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T21:37:31Z",
+      "closed_at": "2026-10-22T21:37:31Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-recovery-foods-2026-10-22.json",
+        "docs/testing/battle-recovery-foods-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/player_choices.py",
+        "pokemon/services/battle_items.py",
+        "pokemon/services/field_berries.py",
+        "pokemon/services/field_food.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 774,
+      "title": "[Items][P3][DESIGN] Scope a non-plot player activation slice for existing Mega Stones",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/774",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T22:25:20Z",
+      "closed_at": "2026-10-22T22:25:19Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-design-2026-10-22.json",
+        "docs/testing/mega-design-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/player_choices.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 775,
+      "title": "[Items][P3][DESIGN] Scope a non-plot player activation slice for existing Z-Crystals",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/775",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T22:35:53Z",
+      "closed_at": "2026-10-22T22:35:53Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-designs-2026-10-22.json",
+        "docs/testing/item-designs-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/player_choices.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 776,
+      "title": "[Items][P3][DESIGN] Define bounded player routes for berry growing and flavor-berry use",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/776",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T22:35:56Z",
+      "closed_at": "2026-10-22T22:35:56Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-designs-2026-10-22.json",
+        "docs/testing/item-designs-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "pokemon/helpers/berry_system.py",
+        "pokemon/services/field_berries.py",
+        "tests/test_berry_system.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 777,
+      "title": "[Items][P3] Add non-plot Gimmighoul Coin qualification and Gholdengo evolution",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/777",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T23:43:18Z",
+      "closed_at": "2026-10-22T23:43:18Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-followup-index-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "pokemon/data/evolution.py",
+        "pokemon/dex/pokedex/paldea.py",
+        "pokemon/services/evolution.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 778,
+      "title": "[Items][P3] Add medicinal Rage Candy Bar and Hopo Berry field equivalents",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/778",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T23:43:22Z",
+      "closed_at": "2026-10-22T23:43:22Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-followup-index-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "pokemon/items.py",
+        "pokemon/services/field_berries.py",
+        "pokemon/services/field_food.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 779,
+      "title": "[Items][P2] Replace the Itemfinder message-only result with a bounded real acquisition route",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/779",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T23:43:26Z",
+      "closed_at": "2026-10-22T23:43:26Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-2026-10-22.json",
+        "docs/testing/item-availability-2026-10-22.md",
+        "docs/testing/item-availability-index-2026-10-22.json",
+        "docs/testing/item-followup-index-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.md",
+        "docs/testing/item-world-snapshot-2026-10-22.json"
+      ],
+      "retained_source_references": [
+        "world/hunt_system.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 780,
+      "title": "[Items][P2] Add a reviewed authored wild held-item acquisition slice",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/780",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T23:43:30Z",
+      "closed_at": "2026-10-22T23:43:29Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-2026-10-22.json",
+        "docs/testing/item-availability-2026-10-22.md",
+        "docs/testing/item-availability-index-2026-10-22.json",
+        "docs/testing/item-followup-index-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.md",
+        "docs/testing/item-world-snapshot-2026-10-22.json"
+      ],
+      "retained_source_references": [
+        "pokemon/services/capture.py",
+        "pokemon/services/encounters.py",
+        "world/hunt_system.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 781,
+      "title": "[Items][P2][CONTENT] Author a small discoverable non-plot item supply route",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/781",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T23:43:33Z",
+      "closed_at": "2026-10-22T23:43:33Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-2026-10-22.json",
+        "docs/testing/item-availability-2026-10-22.md",
+        "docs/testing/item-availability-index-2026-10-22.json",
+        "docs/testing/item-followup-index-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.md",
+        "docs/testing/item-world-snapshot-2026-10-22.json"
+      ],
+      "retained_source_references": [
+        "pokemon/adventures/templates.py",
+        "world/alpha_test_zone.ev"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 782,
+      "title": "[Items][P2][QA] Walk the current item routes on an intentionally released build",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/782",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T00:12:01Z",
+      "closed_at": "2026-10-23T00:12:01Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-live-2026-10-22.json",
+        "docs/testing/item-live-2026-10-22.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 783,
+      "title": "[Items][QA] Refresh Hyper Training contention fixtures before asserting committed flags",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/783",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T22:42:09Z",
+      "closed_at": "2026-10-22T22:42:09Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-recovery-foods-2026-10-22.json",
+        "docs/testing/battle-recovery-foods-2026-10-22.md",
+        "docs/testing/hyper-training-fixtures-2026-10-22.json",
+        "docs/testing/hyper-training-fixtures-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "tests/integration/hyper_training_cases.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 784,
+      "title": "[Items][P3] Add guarded Venusaurite Mega effects and side reservations",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/784",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T04:08:22Z",
+      "closed_at": "2026-10-23T04:08:22Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-core-2026-10-23.json",
+        "docs/testing/mega-core-2026-10-23.md",
+        "docs/testing/mega-design-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_store.py",
+        "pokemon/battle/player_choices.py",
+        "pokemon/battle/terastallization.py",
+        "pokemon/battle/turns.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 785,
+      "title": "[Items][P3] Persist Mega state and integrate Tera, switches and cleanup",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/785",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T04:08:25Z",
+      "closed_at": "2026-10-23T04:08:25Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-core-2026-10-23.json",
+        "docs/testing/mega-core-2026-10-23.md",
+        "docs/testing/mega-design-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_store.py",
+        "pokemon/battle/player_choices.py",
+        "pokemon/battle/terastallization.py",
+        "pokemon/battle/turns.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 786,
+      "title": "[Items][P3] Enable and accept the Venusaurite +mega player route",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/786",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T04:08:28Z",
+      "closed_at": "2026-10-23T04:08:28Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-core-2026-10-23.json",
+        "docs/testing/mega-core-2026-10-23.md",
+        "docs/testing/mega-design-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_store.py",
+        "pokemon/battle/player_choices.py",
+        "pokemon/battle/terastallization.py",
+        "pokemon/battle/turns.py",
+        "tools/run_mandatory_tests.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 787,
+      "title": "[Items][P3] Author an opt-in Venusaurite shop and purchase-to-Mega walkthrough",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/787",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T04:08:32Z",
+      "closed_at": "2026-10-23T04:08:32Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-core-2026-10-23.json",
+        "docs/testing/mega-core-2026-10-23.md",
+        "docs/testing/mega-design-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_store.py",
+        "pokemon/battle/player_choices.py",
+        "pokemon/battle/terastallization.py",
+        "pokemon/battle/turns.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 788,
+      "title": "[Items][P3] Enable six contact and offensive Mega Stone pairs",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/788",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:08Z",
+      "closed_at": "2026-10-23T05:06:08Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-design-2026-10-22.md",
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/turns.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 789,
+      "title": "[Items][P3] Enable six weather, entry and speed Mega Stone pairs",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/789",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:11Z",
+      "closed_at": "2026-10-23T05:06:11Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-design-2026-10-22.md",
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/turns.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 790,
+      "title": "[Items][P3] Enable six type-conversion and Skill Link Mega Stone pairs",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/790",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:14Z",
+      "closed_at": "2026-10-23T05:06:14Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-design-2026-10-22.md",
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/turns.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 791,
+      "title": "[Items][P3] Enable six move-power and coverage Mega Stone pairs",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/791",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:18Z",
+      "closed_at": "2026-10-23T05:06:18Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-design-2026-10-22.md",
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/turns.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 792,
+      "title": "[Items][P3] Enable six reflection, priority and trapping Mega Stone pairs",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/792",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:21Z",
+      "closed_at": "2026-10-23T05:06:21Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-design-2026-10-22.md",
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/turns.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 793,
+      "title": "[Items][P3] Enable six defensive and immunity Mega Stone pairs",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/793",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:25Z",
+      "closed_at": "2026-10-23T05:06:25Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-design-2026-10-22.md",
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/turns.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 794,
+      "title": "[Items][P3] Enable six environment, support and accuracy Mega Stone pairs",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/794",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:28Z",
+      "closed_at": "2026-10-23T05:06:28Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-design-2026-10-22.md",
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/turns.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 795,
+      "title": "[Items][P3] Enable Ampharosite and both Mewtwonite branches",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/795",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:31Z",
+      "closed_at": "2026-10-23T05:06:31Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-design-2026-10-22.md",
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/turns.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 796,
+      "title": "[Items][P3] Enable Kangaskhanite with real Parental Bond turn effects",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/796",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:35Z",
+      "closed_at": "2026-10-23T05:06:35Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-design-2026-10-22.md",
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/turns.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 797,
+      "title": "[Items][P3] Implement guarded Normalium Z / Tackle action effects",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/797",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:23:33Z",
+      "closed_at": "2026-10-23T08:23:33Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 798,
+      "title": "[Items][P3] Persist Z declarations and integrate battle mechanic budgets",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/798",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:23:37Z",
+      "closed_at": "2026-10-23T08:23:37Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 799,
+      "title": "[Items][P3] Accept the Normalium Z player command and opt-in source",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/799",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:23:43Z",
+      "closed_at": "2026-10-23T08:23:43Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 800,
+      "title": "[Items][P3] Accept 6 generic Z-Crystal damage slices (1)",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/800",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:23:46Z",
+      "closed_at": "2026-10-23T08:23:46Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 801,
+      "title": "[Items][P3] Accept 6 generic Z-Crystal damage slices (2)",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/801",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:23:49Z",
+      "closed_at": "2026-10-23T08:23:49Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 802,
+      "title": "[Items][P3] Accept 5 generic Z-Crystal damage slices (3)",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/802",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:23:53Z",
+      "closed_at": "2026-10-23T08:23:53Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 803,
+      "title": "[Items][P3] Accept bounded Z status boosts and self-healing effects",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/803",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:23:56Z",
+      "closed_at": "2026-10-23T08:23:56Z",
+      "checked_criteria": 3,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 804,
+      "title": "[Items][P3] Accept bounded special Z status effects and move restrictions",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/804",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:23:59Z",
+      "closed_at": "2026-10-23T08:23:59Z",
+      "checked_criteria": 3,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 805,
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (1)",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/805",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:24:02Z",
+      "closed_at": "2026-10-23T08:24:02Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 806,
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (2)",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/806",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:24:05Z",
+      "closed_at": "2026-10-23T08:24:05Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 807,
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (3)",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/807",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:24:08Z",
+      "closed_at": "2026-10-23T08:24:08Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 808,
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (4)",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/808",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:24:11Z",
+      "closed_at": "2026-10-23T08:24:11Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 809,
+      "title": "[Items][P3] Persist one Oran Berry bed and atomic growth operations",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/809",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T02:34:38Z",
+      "closed_at": "2026-10-23T02:34:38Z",
+      "checked_criteria": 3,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/berry-player-routes-2026-10-22.json",
+        "docs/testing/berry-player-routes-2026-10-22.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 810,
+      "title": "[Items][P3] Add ordinary Oran growing commands and opt-in nursery content",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/810",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T02:34:41Z",
+      "closed_at": "2026-10-23T02:34:41Z",
+      "checked_criteria": 3,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/berry-player-routes-2026-10-22.json",
+        "docs/testing/berry-player-routes-2026-10-22.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 811,
+      "title": "[Items][P3] Add the bounded Razz Berry field snack equivalent",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/811",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T02:34:44Z",
+      "closed_at": "2026-10-23T02:34:44Z",
+      "checked_criteria": 3,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/berry-player-routes-2026-10-22.json",
+        "docs/testing/berry-player-routes-2026-10-22.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 812,
+      "title": "[Items][P3] Accept durable Oran growth and independent Razz snack player slices",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/812",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T02:34:47Z",
+      "closed_at": "2026-10-23T02:34:47Z",
+      "checked_criteria": 3,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/berry-player-routes-2026-10-22.json",
+        "docs/testing/berry-player-routes-2026-10-22.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 813,
+      "title": "[Items][P2] Make ordinary shop purchases atomic across stock, money and bag",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/813",
+      "github_state": "closed",
+      "updated_at": "2026-10-22T23:43:13Z",
+      "closed_at": "2026-10-22T23:43:13Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-followup-index-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.json",
+        "docs/testing/item-followups-2026-10-22.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 814,
+      "title": "[Items][P2] Correct boosted PP displays and evolution success messages",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/814",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T00:43:37Z",
+      "closed_at": "2026-10-23T00:43:37Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-feedback-2026-10-22.json",
+        "docs/testing/item-feedback-2026-10-22.md"
+      ],
+      "retained_source_references": [
+        "commands/player/cmd_learn_evolve.py",
+        "utils/display.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 815,
+      "title": "[Items][Prerequisite] Run new Mega abilities once with correct startup context",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/815",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:38Z",
+      "closed_at": "2026-10-23T05:06:38Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 816,
+      "title": "[Items][Prerequisite] Honor effective ability suppression in Mega effect consumers",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/816",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:41Z",
+      "closed_at": "2026-10-23T05:06:41Z",
+      "checked_criteria": 3,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 817,
+      "title": "[Items][Prerequisite] Give Trace and Healer owned initialization and private battle RNG",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/817",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:45Z",
+      "closed_at": "2026-10-23T05:06:45Z",
+      "checked_criteria": 3,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 818,
+      "title": "[Items][Prerequisite] Complete Prankster, Shadow Tag and Parental Bond qualification rules",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/818",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:48Z",
+      "closed_at": "2026-10-23T05:06:48Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 819,
+      "title": "[Items][Prerequisite] Gate Technician by the actual move power",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/819",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T05:06:52Z",
+      "closed_at": "2026-10-23T05:06:51Z",
+      "checked_criteria": 3,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-stones-2026-10-23.json",
+        "docs/testing/mega-stones-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 820,
+      "title": "[Items][Deferred native prerequisite] Review fused Necrozma lifecycle before fused Z holders",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/820",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T10:22:58Z",
+      "closed_at": "2026-10-23T10:22:58Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/necrozma-design-2026-10-23.json",
+        "docs/testing/necrozma-design-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 821,
+      "title": "[Items][P3] Preserve damaging Z types through conversion abilities",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/821",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:24:14Z",
+      "closed_at": "2026-10-23T08:24:14Z",
+      "checked_criteria": 3,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 822,
+      "title": "[Items][P3] Resolve paid Z spread targets independently",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/822",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:24:18Z",
+      "closed_at": "2026-10-23T08:24:18Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 823,
+      "title": "[Items][P3] Preserve original Z source PP in reconstructed move history",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/823",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:24:20Z",
+      "closed_at": "2026-10-23T08:24:20Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 824,
+      "title": "[Items][P3] Preserve Z target ability immunity before substitute damage",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/824",
+      "github_state": "closed",
+      "updated_at": "2026-10-23T08:24:24Z",
+      "closed_at": "2026-10-23T08:24:24Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-core-2026-10-23.md",
+        "docs/testing/z-special-2026-10-23.json",
+        "docs/testing/z-special-2026-10-23.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 825,
+      "title": "[Items][P3] Add canonical Necrozma pair and companion reservations",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/825",
+      "github_state": "closed",
+      "updated_at": "2026-10-24T19:59:40Z",
+      "closed_at": "2026-10-24T19:59:40Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/necrozma-design-2026-10-23.md",
+        "docs/testing/necrozma-items-2026-10-24.json",
+        "docs/testing/necrozma-items-2026-10-24.md",
+        "docs/testing/necrozma-release-plan-2026-10-24.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 826,
+      "title": "[Items][P3] Enforce Necrozma reservations across conflicting operations",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/826",
+      "github_state": "closed",
+      "updated_at": "2026-10-24T20:00:11Z",
+      "closed_at": "2026-10-24T20:00:11Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/necrozma-design-2026-10-23.md",
+        "docs/testing/necrozma-items-2026-10-24.json",
+        "docs/testing/necrozma-items-2026-10-24.md",
+        "docs/testing/necrozma-release-plan-2026-10-24.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 827,
+      "title": "[Items][P3] Implement atomic Necrozma combine and separate",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/827",
+      "github_state": "closed",
+      "updated_at": "2026-10-24T20:00:20Z",
+      "closed_at": "2026-10-24T20:00:20Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/necrozma-design-2026-10-23.md",
+        "docs/testing/necrozma-items-2026-10-24.json",
+        "docs/testing/necrozma-items-2026-10-24.md",
+        "docs/testing/necrozma-release-plan-2026-10-24.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 828,
+      "title": "[Items][P3] Preserve Necrozma form-move slots and PP across player routes",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/828",
+      "github_state": "closed",
+      "updated_at": "2026-10-24T20:00:27Z",
+      "closed_at": "2026-10-24T20:00:27Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/necrozma-design-2026-10-23.md",
+        "docs/testing/necrozma-items-2026-10-24.json",
+        "docs/testing/necrozma-items-2026-10-24.md",
+        "docs/testing/necrozma-release-plan-2026-10-24.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 829,
+      "title": "[Items][P3] Add the ordinary Necrozma combine/separate player flow",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/829",
+      "github_state": "closed",
+      "updated_at": "2026-10-24T20:00:34Z",
+      "closed_at": "2026-10-24T20:00:34Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/necrozma-design-2026-10-23.md",
+        "docs/testing/necrozma-items-2026-10-24.json",
+        "docs/testing/necrozma-items-2026-10-24.md",
+        "docs/testing/necrozma-release-plan-2026-10-24.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 830,
+      "title": "[Items][P3] Accept fused Necrozma battles and existing Z signatures",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/830",
+      "github_state": "closed",
+      "updated_at": "2026-10-24T20:00:40Z",
+      "closed_at": "2026-10-24T20:00:40Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/necrozma-design-2026-10-23.md",
+        "docs/testing/necrozma-items-2026-10-24.json",
+        "docs/testing/necrozma-items-2026-10-24.md",
+        "docs/testing/necrozma-release-plan-2026-10-24.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 831,
+      "title": "[Items][QA] Verify Necrozma lifecycle on an intentionally released build",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/831",
+      "github_state": "closed",
+      "updated_at": "2026-10-24T22:54:58Z",
+      "closed_at": "2026-10-24T22:54:58Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/necrozma-design-2026-10-23.md",
+        "docs/testing/necrozma-items-2026-10-24.md",
+        "docs/testing/necrozma-pp-repair-2026-10-24.json",
+        "docs/testing/necrozma-release-plan-2026-10-24.json",
+        "docs/testing/necrozma-release-plan-2026-10-24.md",
+        "docs/testing/necrozma-released-local-2026-10-24.json",
+        "docs/testing/necrozma-released-local-2026-10-24.md",
+        "docs/testing/necrozma-released-retry-2026-10-24.json",
+        "docs/testing/necrozma-released-retry-2026-10-24.md",
+        "docs/testing/necrozma-retry-release-plan-2026-10-24.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 852,
+      "title": "[Items][Tracker] October 25 audit: repair existing items before extending support",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/852",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:43:03Z",
+      "closed_at": "2026-10-27T01:43:03Z",
+      "checked_criteria": 42,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-boosters-2026-10-25.md",
+        "docs/testing/ev-mochi-2026-10-25.md",
+        "docs/testing/exp-candy-2026-10-25.md",
+        "docs/testing/finite-item-sources-2026-10-25.md",
+        "docs/testing/item-availability-exp-candy-index-2026-10-25.json",
+        "docs/testing/item-availability-field-training-seeds-index-2026-10-25.json",
+        "docs/testing/item-availability-physical-status-z-index-2026-10-25.json",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/item-replenishment-2026-10-25.md",
+        "docs/testing/item-source-migration-compatibility-2026-10-25.md",
+        "docs/testing/item-source-player-commands-2026-10-25.json",
+        "docs/testing/item-source-released-player-2026-10-25.json",
+        "docs/testing/item-source-released-player-2026-10-25.md",
+        "docs/testing/item-source-retry-release-plan-2026-10-25.md",
+        "docs/testing/nature-mints-2026-10-25.md",
+        "docs/testing/nursery-seeds-2026-10-25.md",
+        "docs/testing/recovery-move-prerequisites-2026-10-25.md",
+        "docs/testing/remaining-item-fusion-cleanup-supplement-2026-10-26.md",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/renewable-item-sources-2026-10-25.md",
+        "docs/testing/ultra-burst-2026-10-25.json",
+        "docs/testing/ultra-burst-2026-10-25.md",
+        "docs/testing/z-six-physical-sources-2026-10-25.md",
+        "docs/testing/z-six-status-sources-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 853,
+      "title": "[Items][Fix] Use native identity for nine species-specific stat and critical-hit items",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/853",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T06:16:00Z",
+      "closed_at": "2026-10-25T06:15:59Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/native-stat-items-2026-10-25.json",
+        "docs/testing/native-stat-items-2026-10-25.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py",
+        "utils/pokemon_utils.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 854,
+      "title": "[Items][Fix] Correct native eligibility for seven legendary held-item boosters",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/854",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T07:29:22Z",
+      "closed_at": "2026-10-25T07:29:22Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/legendary-item-identity-2026-10-25.json",
+        "docs/testing/legendary-item-identity-2026-10-25.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 855,
+      "title": "[Items][Fix] Remove nickname-based theft protection from the 17 Plates",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/855",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T08:27:36Z",
+      "closed_at": "2026-10-25T08:27:36Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/plate-theft-identity-2026-10-25.json",
+        "docs/testing/plate-theft-identity-2026-10-25.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/engine.py",
+        "pokemon/dex/functions/items_funcs.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 856,
+      "title": "[Items][Fix] Correct theft eligibility for 17 Memories and four Drives",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/856",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T09:34:59Z",
+      "closed_at": "2026-10-25T09:34:59Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/memory-drive-theft-2026-10-25.json",
+        "docs/testing/memory-drive-theft-2026-10-25.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 857,
+      "title": "[Items][Fix] Correct removal protection for seven Origin, Primal and Rusted items",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/857",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T10:53:22Z",
+      "closed_at": "2026-10-25T10:53:22Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/origin-primal-rusted-theft-2026-10-25.json",
+        "docs/testing/origin-primal-rusted-theft-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 858,
+      "title": "[Items][Fix] Reconcile held Pecha, PSN Cure and Burnt Berry status effects",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/858",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T12:43:56Z",
+      "closed_at": "2026-10-25T12:43:56Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/held-status-berries-2026-10-25.json",
+        "docs/testing/held-status-berries-2026-10-25.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/services/recovery_effects.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 859,
+      "title": "[Items][Docs] Rebuild current support and availability reporting after the held-item repairs",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/859",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T12:44:02Z",
+      "closed_at": "2026-10-25T12:44:02Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-2026-10-25.json",
+        "docs/testing/item-availability-2026-10-25.md"
+      ],
+      "retained_source_references": [
+        "tools/audit_item_availability.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 860,
+      "title": "[Items][QA] Release the repaired item candidate and verify ordinary player routes",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/860",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T15:06:28Z",
+      "closed_at": "2026-10-25T15:06:28Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-repair-player-commands-2026-10-25.json",
+        "docs/testing/item-repair-release-plan-2026-10-25.json",
+        "docs/testing/item-repair-release-plan-2026-10-25.md",
+        "docs/testing/item-repair-release-plan-v2-2026-10-25.md",
+        "docs/testing/item-repair-released-player-2026-10-25.json",
+        "docs/testing/item-repair-released-player-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 861,
+      "title": "[Items][Scope] Plan sustainable non-plot item acquisition in bounded source batches",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/861",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:41:24Z",
+      "closed_at": "2026-10-25T13:45:50Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/finite-item-sources-2026-10-25.md",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/item-replenishment-2026-10-25.md",
+        "docs/testing/item-scope-decisions-2026-10-25.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/renewable-item-sources-2026-10-25.md"
+      ],
+      "retained_source_references": [
+        "pokemon/services/item_supply.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 862,
+      "title": "[Items][Sources] Make the existing six-item Supply Corner reachable to ordinary players",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/862",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T20:02:32Z",
+      "closed_at": "2026-10-25T20:02:31Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-source-migration-compatibility-2026-10-25.md",
+        "docs/testing/item-source-player-commands-2026-10-25.json",
+        "docs/testing/item-source-release-plan-2026-10-25.json",
+        "docs/testing/item-source-release-plan-2026-10-25.md",
+        "docs/testing/item-source-released-player-2026-10-25.json",
+        "docs/testing/item-source-released-player-2026-10-25.md",
+        "docs/testing/item-source-retry-release-plan-2026-10-25.md"
+      ],
+      "retained_source_references": [
+        "pokemon/services/item_supply.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 863,
+      "title": "[Items][Support] Add Flamethrower and Surf to the existing generic Z player route",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/863",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T13:45:42Z",
+      "closed_at": "2026-10-25T13:45:45Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-existing-sources-2026-10-25.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/z_profiles.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 864,
+      "title": "[Items][Scope] Plan remaining generic and status Z sources in small tested batches",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/864",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T21:38:19Z",
+      "closed_at": "2026-10-25T13:45:56Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/recovery-move-prerequisites-2026-10-25.md",
+        "docs/testing/z-six-physical-sources-2026-10-25.md",
+        "docs/testing/z-six-special-sources-2026-10-25.md",
+        "docs/testing/z-six-status-sources-2026-10-25.md",
+        "docs/testing/z-source-scope-2026-10-25.json"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 865,
+      "title": "[Items][Scope] Define a safe non-plot Ultra Burst route for Ultranecrozium Z",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/865",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:41:27Z",
+      "closed_at": "2026-10-25T13:46:03Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/item-scope-decisions-2026-10-25.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/ultra-burst-2026-10-25.md",
+        "docs/testing/ultra-photon-preparation-erratum-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 866,
+      "title": "[Items][Scope] Define feeding equivalents for the 13 remaining flavor berries",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/866",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T16:35:11Z",
+      "closed_at": "2026-10-25T13:46:10Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/flavor-snacks-released-player-2026-10-25.md",
+        "docs/testing/item-scope-decisions-2026-10-25.json"
+      ],
+      "retained_source_references": [
+        "pokemon/services/berry_snack.py",
+        "pokemon/services/field_items.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 867,
+      "title": "[Items][Scope] Plan additional nursery seeds beyond Oran in small berry batches",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/867",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:41:30Z",
+      "closed_at": "2026-10-25T13:46:16Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/item-scope-decisions-2026-10-25.json",
+        "docs/testing/nursery-seeds-2026-10-25.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 868,
+      "title": "[Items][Scope] Define EXP Candy items and an atomic ordinary-player leveling route",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/868",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:41:33Z",
+      "closed_at": "2026-10-25T13:46:22Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/exp-candy-2026-10-25.md",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/item-scope-decisions-2026-10-25.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 869,
+      "title": "[Items][Scope] Define nature-mint training while preserving genetic nature",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/869",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:41:38Z",
+      "closed_at": "2026-10-25T13:46:27Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/item-scope-decisions-2026-10-25.json",
+        "docs/testing/nature-mints-2026-10-25.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 870,
+      "title": "[Items][Scope] Define EV mochi and a safe Fresh-Start reset route",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/870",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T23:41:27Z",
+      "closed_at": "2026-10-25T13:46:33Z",
+      "checked_criteria": 7,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/ev-mochi-2026-10-25.md",
+        "docs/testing/item-scope-decisions-2026-10-25.json"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 871,
+      "title": "[Items][Scope] Define eight manual battle stat and protection boosters",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/871",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T01:41:11Z",
+      "closed_at": "2026-10-25T13:46:39Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-boosters-2026-10-25.md",
+        "docs/testing/item-scope-decisions-2026-10-25.json"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 872,
+      "title": "[Items][Fix] Preserve real ability callbacks across held-item form entry",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/872",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T10:53:28Z",
+      "closed_at": "2026-10-25T10:53:28Z",
+      "checked_criteria": 4,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-form-abilities-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 873,
+      "title": "[Items][Fix] Prevent Synchronize status reflection loops around held berry cures",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/873",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T12:43:46Z",
+      "closed_at": "2026-10-25T12:43:46Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/synchronize-status-berries-2026-10-25.json",
+        "docs/testing/synchronize-status-berries-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 874,
+      "title": "[Items][Fix] Reconnect held-item update handlers without replaying battle entry",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/874",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T12:43:40Z",
+      "closed_at": "2026-10-25T12:43:40Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/restored-item-updates-2026-10-25.json",
+        "docs/testing/restored-item-updates-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 875,
+      "title": "[Items][Fix] Expire Embargo so held recovery can resume",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/875",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T12:43:51Z",
+      "closed_at": "2026-10-25T12:43:51Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/embargo-item-duration-2026-10-25.json",
+        "docs/testing/embargo-item-duration-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 876,
+      "title": "[Items][Build] Add explicit capped operator replenishment for opted-in sources",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/876",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T22:31:39Z",
+      "closed_at": "2026-10-25T22:31:39Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-replenishment-2026-10-25.json",
+        "docs/testing/item-replenishment-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 877,
+      "title": "[Items][Build] Author a finite public source for six status medicines",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/877",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:38:38Z",
+      "closed_at": "2026-10-27T01:38:38Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/finite-item-sources-2026-10-25.json",
+        "docs/testing/finite-item-sources-2026-10-25.md",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 878,
+      "title": "[Items][Build] Author a finite public source for four stronger healing/revival medicines",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/878",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:38:44Z",
+      "closed_at": "2026-10-27T01:38:44Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/finite-item-sources-2026-10-25.json",
+        "docs/testing/finite-item-sources-2026-10-25.md",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 879,
+      "title": "[Items][Build] Author a finite public source for four PP recovery medicines",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/879",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:38:47Z",
+      "closed_at": "2026-10-27T01:38:50Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/finite-item-sources-2026-10-25.json",
+        "docs/testing/finite-item-sources-2026-10-25.md",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 880,
+      "title": "[Items][Build] Author a finite public source for six evolution stones",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/880",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:38:55Z",
+      "closed_at": "2026-10-27T01:38:55Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/finite-item-sources-2026-10-25.json",
+        "docs/testing/finite-item-sources-2026-10-25.md",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 881,
+      "title": "[Items][Build] Author a finite public source for six vitamins",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/881",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:39:00Z",
+      "closed_at": "2026-10-27T01:39:00Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/finite-item-sources-2026-10-25.json",
+        "docs/testing/finite-item-sources-2026-10-25.md",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 882,
+      "title": "[Items][Build] Author a finite public source for PP capacity and ability items",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/882",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:39:06Z",
+      "closed_at": "2026-10-27T01:39:06Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/finite-item-sources-2026-10-25.json",
+        "docs/testing/finite-item-sources-2026-10-25.md",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 883,
+      "title": "[Items][Build] Author a finite public source for six held staples",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/883",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:39:34Z",
+      "closed_at": "2026-10-27T01:39:34Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/finite-item-sources-2026-10-25.json",
+        "docs/testing/finite-item-sources-2026-10-25.md",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 884,
+      "title": "[Items][Build] Qualify named Potion finder and Rattata/Oran renewable sources",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/884",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T02:59:49Z",
+      "closed_at": "2026-10-26T02:59:49Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/renewable-item-sources-2026-10-25.json",
+        "docs/testing/renewable-item-sources-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 885,
+      "title": "[Items][Build] Bind Ultra eligibility and legitimate active Photon preparation",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/885",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T04:43:10Z",
+      "closed_at": "2026-10-26T04:43:10Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/reusable-item-completion-2026-10-26.md",
+        "docs/testing/ultra-burst-2026-10-25.json",
+        "docs/testing/ultra-burst-2026-10-25.md",
+        "docs/testing/ultra-photon-preparation-erratum-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 886,
+      "title": "[Items][Build] Persist Ultra declaration and reversible battle lifecycle",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/886",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T04:43:16Z",
+      "closed_at": "2026-10-26T04:43:16Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/reusable-item-completion-2026-10-26.md",
+        "docs/testing/ultra-burst-2026-10-25.json",
+        "docs/testing/ultra-burst-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 887,
+      "title": "[Items][Build] Add guarded Ultra command and Light That Burns the Sky",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/887",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T04:43:22Z",
+      "closed_at": "2026-10-26T04:43:22Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/reusable-item-completion-2026-10-26.md",
+        "docs/testing/ultra-burst-2026-10-25.json",
+        "docs/testing/ultra-burst-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 888,
+      "title": "[Items][Build] Qualify both Ultra lifecycles on a released build",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/888",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:39:39Z",
+      "closed_at": "2026-10-27T01:39:39Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md",
+        "docs/testing/ultra-burst-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 889,
+      "title": "[Items][Build] Add explicit flavor berry snack batch 1",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/889",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T16:34:15Z",
+      "closed_at": "2026-10-25T16:34:15Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/flavor-snacks-2026-10-25.md",
+        "docs/testing/flavor-snacks-released-player-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 890,
+      "title": "[Items][Build] Add explicit flavor berry snack batch 2",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/890",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T16:34:21Z",
+      "closed_at": "2026-10-25T16:34:21Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/flavor-snacks-2026-10-25.md",
+        "docs/testing/flavor-snacks-released-player-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 891,
+      "title": "[Items][Build] Add explicit flavor berry snack batch 3",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/891",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T16:34:26Z",
+      "closed_at": "2026-10-25T16:34:26Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/flavor-snacks-2026-10-25.md",
+        "docs/testing/flavor-snacks-released-player-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 892,
+      "title": "[Items][Build] Grow Cheri, Pecha, Rawst and Aspear through the durable nursery",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/892",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T23:42:34Z",
+      "closed_at": "2026-10-25T23:40:07Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/nursery-seeds-2026-10-25.json",
+        "docs/testing/nursery-seeds-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 893,
+      "title": "[Items][Build] Deliver four seed sources and real elapsed nursery acceptance",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/893",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:39:45Z",
+      "closed_at": "2026-10-27T01:39:45Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/nursery-seeds-2026-10-25.json",
+        "docs/testing/nursery-seeds-2026-10-25.md",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 894,
+      "title": "[Items][Build] Add five EXP Candy definitions and atomic field progression",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/894",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T00:39:22Z",
+      "closed_at": "2026-10-26T00:39:22Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/exp-candy-2026-10-25.json",
+        "docs/testing/exp-candy-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 895,
+      "title": "[Items][Build] Preserve crossed-level EXP Candy learning and reconnect choices",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/895",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T00:39:28Z",
+      "closed_at": "2026-10-26T00:39:28Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/exp-candy-2026-10-25.json",
+        "docs/testing/exp-candy-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 896,
+      "title": "[Items][Build] Qualify EXP Candy acquisition, multi-level use and later gameplay",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/896",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:39:50Z",
+      "closed_at": "2026-10-27T01:39:50Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/exp-candy-2026-10-25.md",
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 897,
+      "title": "[Items][Build] Store mint training separately from genetic Nature",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/897",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T02:59:54Z",
+      "closed_at": "2026-10-26T02:59:54Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/nature-mints-2026-10-25.json",
+        "docs/testing/nature-mints-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 898,
+      "title": "[Items][Build] Integrate trained Nature across stats, forms, displays and custody",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/898",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T03:00:00Z",
+      "closed_at": "2026-10-26T03:00:00Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/nature-mints-2026-10-25.json",
+        "docs/testing/nature-mints-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 899,
+      "title": "[Items][Build] Add nature mint item batch 1",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/899",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T03:00:07Z",
+      "closed_at": "2026-10-26T03:00:07Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/nature-mints-2026-10-25.json",
+        "docs/testing/nature-mints-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 900,
+      "title": "[Items][Build] Add nature mint item batch 2",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/900",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T03:00:13Z",
+      "closed_at": "2026-10-26T03:00:13Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/nature-mints-2026-10-25.json",
+        "docs/testing/nature-mints-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 901,
+      "title": "[Items][Build] Add nature mint item batch 3",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/901",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T03:00:21Z",
+      "closed_at": "2026-10-26T03:00:21Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/nature-mints-2026-10-25.json",
+        "docs/testing/nature-mints-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 902,
+      "title": "[Items][Build] Add nature mint item batch 4",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/902",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T03:00:28Z",
+      "closed_at": "2026-10-26T03:00:28Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/nature-mints-2026-10-25.json",
+        "docs/testing/nature-mints-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 903,
+      "title": "[Items][Build] Add nature mint item batch 5",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/903",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T03:00:34Z",
+      "closed_at": "2026-10-26T03:00:34Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/nature-mints-2026-10-25.json",
+        "docs/testing/nature-mints-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 904,
+      "title": "[Items][Build] Qualify all21 mints across training, genetics and released gameplay",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/904",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T01:39:56Z",
+      "closed_at": "2026-10-27T01:39:56Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-released-index-2026-10-26.json",
+        "docs/testing/nature-mints-2026-10-25.md",
+        "docs/testing/remaining-item-player-commands-2026-10-26.json",
+        "docs/testing/remaining-item-release-plan-2026-10-26.md",
+        "docs/testing/remaining-item-released-player-2026-10-26.json",
+        "docs/testing/remaining-item-released-player-2026-10-26.md",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.json",
+        "docs/testing/remaining-item-retained-cleanup-plan-2026-10-26.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 905,
+      "title": "[Items][Build] Add six EV mochi through safe shared field training",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/905",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T23:42:37Z",
+      "closed_at": "2026-10-25T23:40:13Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/ev-mochi-2026-10-25.json",
+        "docs/testing/ev-mochi-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 906,
+      "title": "[Items][Build] Add Fresh-Start Mochi atomic reset and training acceptance",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/906",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T23:42:39Z",
+      "closed_at": "2026-10-25T23:40:19Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/ev-mochi-2026-10-25.json",
+        "docs/testing/ev-mochi-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 907,
+      "title": "[Items][Build] Add six X items with guarded manual battle action persistence",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/907",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T01:40:27Z",
+      "closed_at": "2026-10-26T01:40:27Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-boosters-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 908,
+      "title": "[Items][Build] Implement Dire Hit with actual Focus Energy critical outcomes",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/908",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T01:40:33Z",
+      "closed_at": "2026-10-26T01:40:33Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-boosters-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 909,
+      "title": "[Items][Build] Implement Guard Spec. with timed source-aware Mist protection",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/909",
+      "github_state": "closed",
+      "updated_at": "2026-10-26T01:40:39Z",
+      "closed_at": "2026-10-26T01:40:39Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/battle-boosters-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 910,
+      "title": "[Items][Build] Qualify six special attacks through explicit Z mappings",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/910",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T17:39:12Z",
+      "closed_at": "2026-10-25T17:39:12Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-six-special-sources-2026-10-25.json",
+        "docs/testing/z-six-special-sources-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 911,
+      "title": "[Items][Build] Qualify six physical attacks through explicit Z mappings",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/911",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T21:36:20Z",
+      "closed_at": "2026-10-25T21:36:20Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-six-physical-sources-2026-10-25.json",
+        "docs/testing/z-six-physical-sources-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 912,
+      "title": "[Items][Build] Qualify six status sources through explicit Z mappings",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/912",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T21:36:23Z",
+      "closed_at": "2026-10-25T21:36:23Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/z-six-status-sources-2026-10-25.json",
+        "docs/testing/z-six-status-sources-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 913,
+      "title": "[Items][Repair] Fix ordinary Roost and Synthesis prerequisites before new status Z sources",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/913",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T21:36:12Z",
+      "closed_at": "2026-10-25T21:36:12Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/recovery-move-prerequisites-2026-10-25.json",
+        "docs/testing/recovery-move-prerequisites-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 914,
+      "title": "[Items][Repair] Correct ordinary Protect repeat probability before Z-Protect",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/914",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T21:36:15Z",
+      "closed_at": "2026-10-25T21:36:15Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/recovery-move-prerequisites-2026-10-25.json",
+        "docs/testing/recovery-move-prerequisites-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 916,
+      "title": "[Items][Repair] Preserve Thunder Wave move-type immunity before its Z mapping",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/916",
+      "github_state": "closed",
+      "updated_at": "2026-10-25T21:36:18Z",
+      "closed_at": "2026-10-25T21:36:18Z",
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/recovery-move-prerequisites-2026-10-25.json",
+        "docs/testing/recovery-move-prerequisites-2026-10-25.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 919,
+      "title": "[Items][Tracker] Repair October 27 item-route defects before expanding support",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/919",
+      "github_state": "open",
+      "updated_at": "2026-10-27T08:27:00Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-stone-theft-2026-10-27.md",
+        "docs/testing/reactive-consumption-2026-10-27.md"
+      ],
+      "retained_source_references": [],
+      "audit_status": "aggregate_tracker_incomplete",
+      "next_action": "Update progress after every batch; retain links to all outstanding implementation/acceptance children and close only after final reconciliation.",
+      "plan_phase": 10
+    },
+    {
+      "issue": 920,
+      "title": "[Items][P1][Repair] Use native identity for the 47 Mega Stone theft checks",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/920",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T06:27:07Z",
+      "closed_at": "2026-10-27T06:27:06Z",
+      "checked_criteria": 5,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/mega-stone-theft-2026-10-27.json",
+        "docs/testing/mega-stone-theft-2026-10-27.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/item_identity.py",
+        "pokemon/battle/mega_pairs.py",
+        "pokemon/dex/functions/items_funcs.py",
+        "tools/run_mandatory_tests.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 921,
+      "title": "[Items][P1][Repair] Restore guarded consumption and recovery history for six reactive items",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/921",
+      "github_state": "closed",
+      "updated_at": "2026-10-27T08:26:17Z",
+      "closed_at": "2026-10-27T08:26:17Z",
+      "checked_criteria": 6,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [
+        "docs/testing/reactive-consumption-2026-10-27.json",
+        "docs/testing/reactive-consumption-2026-10-27.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py"
+      ],
+      "audit_status": "closed_with_retained_resolution_evidence",
+      "next_action": "Keep out of the new implementation queue unless a fresh scoped regression is reproduced.",
+      "plan_phase": null
+    },
+    {
+      "issue": 922,
+      "title": "[Items][P1][Repair] Apply canonical boost rules to six pinch-stat berries",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/922",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:00Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 6,
+      "retained_resolution_reports": [
+        "docs/testing/item-additions-2026-10-29.md",
+        "docs/testing/item-next-action-2026-10-29.md",
+        "docs/testing/item-repairs-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/utils/boosts.py"
+      ],
+      "audit_status": "implemented_local_unpublished",
+      "next_action": "Do not reimplement. Publish the tested candidate with authorization, verify CI and acceptance scope, then reconcile/close the ticket.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 923,
+      "title": "[Items][P1][Repair] Apply canonical boost rules to eight reactive stat consumables",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/923",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:12Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 6,
+      "retained_resolution_reports": [
+        "docs/testing/item-additions-2026-10-29.md",
+        "docs/testing/item-next-action-2026-10-29.md",
+        "docs/testing/item-repairs-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/utils/boosts.py"
+      ],
+      "audit_status": "implemented_local_unpublished",
+      "next_action": "Do not reimplement. Publish the tested candidate with authorization, verify CI and acceptance scope, then reconcile/close the ticket.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 924,
+      "title": "[Items][P1][Repair] Apply canonical boost rules to the four terrain seeds",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/924",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:15Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 5,
+      "retained_resolution_reports": [
+        "docs/testing/item-additions-2026-10-29.md",
+        "docs/testing/item-next-action-2026-10-29.md",
+        "docs/testing/item-repairs-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/utils/boosts.py"
+      ],
+      "audit_status": "implemented_local_unpublished",
+      "next_action": "Do not reimplement. Publish the tested candidate with authorization, verify CI and acceptance scope, then reconcile/close the ticket.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 925,
+      "title": "[Items][P2][Repair] Route five held-item damage effects through indirect-damage guards",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/925",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:18Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 6,
+      "retained_resolution_reports": [
+        "docs/testing/item-additions-2026-10-29.md",
+        "docs/testing/item-next-action-2026-10-29.md",
+        "docs/testing/item-repairs-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/indirect_damage.py",
+        "pokemon/dex/functions/items_funcs.py"
+      ],
+      "audit_status": "implemented_local_unpublished",
+      "next_action": "Do not reimplement. Publish the tested candidate with authorization, verify CI and acceptance scope, then reconcile/close the ticket.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 926,
+      "title": "[Items][P2][Repair] Make Leftovers and Black Sludge respect Heal Block",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/926",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:20Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 5,
+      "retained_resolution_reports": [
+        "docs/testing/item-additions-2026-10-29.md",
+        "docs/testing/item-next-action-2026-10-29.md",
+        "docs/testing/item-repairs-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/engine.py",
+        "pokemon/dex/functions/items_funcs.py"
+      ],
+      "audit_status": "implemented_local_unpublished",
+      "next_action": "Do not reimplement. Publish the tested candidate with authorization, verify CI and acceptance scope, then reconcile/close the ticket.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 927,
+      "title": "[Items][P2][Repair] Enforce Embargo on manual battle medicine targets",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/927",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:23Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 5,
+      "retained_resolution_reports": [
+        "docs/testing/item-additions-2026-10-29.md",
+        "docs/testing/item-next-action-2026-10-29.md",
+        "docs/testing/item-repairs-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/player_choices.py",
+        "pokemon/services/battle_items.py"
+      ],
+      "audit_status": "implemented_local_unpublished",
+      "next_action": "Do not reimplement. Publish the tested candidate with authorization, verify CI and acceptance scope, then reconcile/close the ticket.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 928,
+      "title": "[Items][P2][Repair] Correct the existing Berserk Gene effect and consumption lifecycle",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/928",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:36Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 5,
+      "retained_resolution_reports": [
+        "docs/testing/item-additions-2026-10-29.md",
+        "docs/testing/item-next-action-2026-10-29.md",
+        "docs/testing/item-repairs-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "pokemon/dex/functions/items_funcs.py",
+        "pokemon/dex/items/itemsdex.py"
+      ],
+      "audit_status": "implemented_local_unpublished",
+      "next_action": "Do not reimplement. Publish the tested candidate with authorization, verify CI and acceptance scope, then reconcile/close the ticket.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 929,
+      "title": "[Items][P2][Gate] Reconcile item support evidence after the October 27 repairs",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/929",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:39Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 6,
+      "retained_resolution_reports": [
+        "docs/testing/battle-item-support-2026-10-21.json",
+        "docs/testing/item-additions-2026-10-29.md",
+        "docs/testing/item-next-action-2026-10-29.md",
+        "docs/testing/item-repairs-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "tools/audit_item_availability.py"
+      ],
+      "audit_status": "repair_gate_closeout_pending",
+      "next_action": "Reconcile all nine repairs on the final published candidate, preserve facet limits and clear the gate before further feature implementation.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 930,
+      "title": "[Items][P2][Scope] Review depleted public offers and the next 15 existing-item sources",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/930",
+      "github_state": "open",
+      "updated_at": "2026-10-29T13:31:35Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 6,
+      "retained_resolution_reports": [
+        "docs/testing/item-availability-released-index-2026-10-26.json"
+      ],
+      "retained_source_references": [
+        "pokemon/services/finite_item_supply.py",
+        "pokemon/services/item_replenishment.py"
+      ],
+      "audit_status": "scope_decision_recorded_followup_open",
+      "next_action": "Review the existing scope decision/checklist and hand off to #952; do not implement this parent as a second copy of its child.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 931,
+      "title": "[Items][P3][Scope] Define ordinary non-plot access for contextual item evolutions",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/931",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:51Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 5,
+      "retained_resolution_reports": [],
+      "retained_source_references": [
+        "pokemon/services/evolution.py"
+      ],
+      "audit_status": "scope_decision_recorded_followup_open",
+      "next_action": "Review the existing scope decision/checklist and hand off to #947; do not implement this parent as a second copy of its child.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 932,
+      "title": "[Items][P3][Support] Qualify the next six explicit Z-Move source mappings",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/932",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:42Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 6,
+      "retained_resolution_reports": [
+        "docs/testing/item-additions-2026-10-29.md",
+        "docs/testing/item-next-action-2026-10-29.md",
+        "docs/testing/item-repairs-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "pokemon/battle/z_generic_pairs.py",
+        "pokemon/battle/z_profiles.py",
+        "pokemon/battle/z_status_pairs.py"
+      ],
+      "audit_status": "implemented_local_unpublished",
+      "next_action": "Do not reimplement. Publish/verify the tested candidate; sign off this addition only after accepting repairs #920-#928 and clearing #929.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 933,
+      "title": "[Items][P3][Scope] Define the next bounded berry-growing expansion",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/933",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:28:01Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 5,
+      "retained_resolution_reports": [],
+      "retained_source_references": [
+        "pokemon/services/berry_growing.py"
+      ],
+      "audit_status": "scope_decision_recorded_followup_open",
+      "next_action": "Review the existing scope decision/checklist and hand off to #948; do not implement this parent as a second copy of its child.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 934,
+      "title": "[Items][P3][Scope] Define safe non-plot Mirror Herb egg-move teaching",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/934",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:28:04Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 6,
+      "retained_resolution_reports": [],
+      "retained_source_references": [
+        "pokemon/services/breeding_rules.py"
+      ],
+      "audit_status": "scope_decision_recorded_followup_open",
+      "next_action": "Review the existing scope decision/checklist and hand off to #949; do not implement this parent as a second copy of its child.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 935,
+      "title": "[Items][P3][Add] Add four non-plot recovery equivalents through shared field medicine",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/935",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:27:45Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 6,
+      "retained_resolution_reports": [
+        "docs/testing/item-additions-2026-10-29.md",
+        "docs/testing/item-next-action-2026-10-29.md",
+        "docs/testing/item-repairs-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "pokemon/items.py",
+        "pokemon/services/field_food.py",
+        "pokemon/services/field_items.py"
+      ],
+      "audit_status": "implemented_local_unpublished",
+      "next_action": "Do not reimplement. Publish/verify the tested candidate; sign off this addition only after accepting repairs #920-#928 and clearing #929.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 936,
+      "title": "[Items][P3][Scope] Define Soothe Bell and an authoritative friendship-item route",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/936",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:28:07Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 6,
+      "retained_resolution_reports": [],
+      "retained_source_references": [],
+      "audit_status": "scope_decision_recorded_followup_open",
+      "next_action": "Review the existing scope decision/checklist and hand off to #950; do not implement this parent as a second copy of its child.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 937,
+      "title": "[Items][P3][Scope] Define non-plot Amulet Coin and Luck Incense reward support",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/937",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:28:10Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 6,
+      "retained_resolution_reports": [],
+      "retained_source_references": [
+        "pokemon/services/battle_rewards.py"
+      ],
+      "audit_status": "scope_decision_recorded_followup_open",
+      "next_action": "Review the existing scope decision/checklist and hand off to #951; do not implement this parent as a second copy of its child.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 938,
+      "title": "[Items][P3][Scope] Define useful Cleanse Tag and Pure Incense behavior for PF2 hunts",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/938",
+      "github_state": "open",
+      "updated_at": "2026-10-29T12:28:12Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 5,
+      "retained_resolution_reports": [],
+      "retained_source_references": [
+        "world/hunt_system.py"
+      ],
+      "audit_status": "intentional_deferral_recorded",
+      "next_action": "Record/close as an intentional Cleanse Tag/Pure Incense deferral; no runtime implementation is selected.",
+      "plan_phase": 1
+    },
+    {
+      "issue": 939,
+      "title": "[Items][P3][Scope] Define a consumable bag Link Cord for trade-only evolutions",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/939",
+      "github_state": "open",
+      "updated_at": "2026-10-29T05:22:49Z",
+      "closed_at": null,
+      "checked_criteria": 5,
+      "unchecked_criteria": 2,
+      "retained_resolution_reports": [
+        "docs/testing/link-cord-2026-10-28.md",
+        "docs/testing/link-cord-2026-10-29.md"
+      ],
+      "retained_source_references": [
+        "pokemon/evolution_items.py",
+        "pokemon/services/evolution.py"
+      ],
+      "audit_status": "implemented_published_access_and_live_acceptance_pending",
+      "next_action": "Keep all 14 existing mappings. Select/author an acquisition route and complete separately authorized logged-in live/reconnect acceptance.",
+      "plan_phase": 4
+    },
+    {
+      "issue": 947,
+      "title": "[Items][P3][Access] Qualify three contextual held evolutions through public day/night locations",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/947",
+      "github_state": "open",
+      "updated_at": "2026-10-29T06:33:59Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [],
+      "retained_source_references": [],
+      "audit_status": "access_content_and_acceptance_incomplete",
+      "next_action": "Author day/night contexts and the three native held-evolution routes; qualify travel, wrong context, one debit and reconnect through existing evolution code.",
+      "plan_phase": 5
+    },
+    {
+      "issue": 948,
+      "title": "[Items][P3][Growing] Add Chesto, Sitrus and Lum to the private nursery",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/948",
+      "github_state": "open",
+      "updated_at": "2026-10-29T06:34:01Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [],
+      "retained_source_references": [],
+      "audit_status": "nursery_extension_incomplete",
+      "next_action": "Extend only the five-seed allowlist by Chesto/Sitrus/Lum; qualify source/cycle/concurrency and a separate real four-hour crop run.",
+      "plan_phase": 6
+    },
+    {
+      "issue": 949,
+      "title": "[Items][P3][Support] Implement guarded Mirror Herb egg-move teaching",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/949",
+      "github_state": "open",
+      "updated_at": "2026-10-29T06:34:03Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [],
+      "retained_source_references": [],
+      "audit_status": "egg_move_teaching_incomplete",
+      "next_action": "Implement the reviewed Daycare Mirror Herb command with native egg metadata, empty slots, stale-safe confirmation and exact PP/item conservation.",
+      "plan_phase": 8
+    },
+    {
+      "issue": 950,
+      "title": "[Items][P3][Support] Add Soothe Bell through the field friendship boundary",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/950",
+      "github_state": "open",
+      "updated_at": "2026-10-29T06:34:05Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [],
+      "retained_source_references": [],
+      "audit_status": "friendship_effect_incomplete",
+      "next_action": "Implement the held Soothe Bell positive EV-berry friendship modifier, caps and atomic state; qualify a useful friendship evolution.",
+      "plan_phase": 7
+    },
+    {
+      "issue": 951,
+      "title": "[Items][P3][Support] Add nonstacking Amulet Coin and Luck Incense NPC prize receipts",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/951",
+      "github_state": "open",
+      "updated_at": "2026-10-29T06:34:08Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 0,
+      "retained_resolution_reports": [],
+      "retained_source_references": [],
+      "audit_status": "npc_prize_effect_incomplete",
+      "next_action": "Persist genuine participation and apply a nonstacking x2 standard NPC TRAINER prize through once-only reward receipts; retain all exclusions.",
+      "plan_phase": 9
+    },
+    {
+      "issue": 952,
+      "title": "[Items][P2][Design] Define Training Grounds, affordable retraining and Item Finder rewards",
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/952",
+      "github_state": "open",
+      "updated_at": "2026-10-29T13:31:24Z",
+      "closed_at": null,
+      "checked_criteria": 0,
+      "unchecked_criteria": 8,
+      "retained_resolution_reports": [],
+      "retained_source_references": [],
+      "audit_status": "design_incomplete",
+      "next_action": "Choose activity, progress, cost, retraining, Finder weights and milestones; create bounded training, retraining and reward implementation/acceptance deliveries.",
+      "plan_phase": 2
+    }
+  ]
+}

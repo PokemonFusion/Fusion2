@@ -1,6 +1,26 @@
 # Tools
 
-Utilities and data-generation scripts used to build game data.
+[Documentation home](../docs/index.md) | [Code map](../docs/code-map.md) |
+[Application tests](../tests/README.md) | [Testing and evidence](../docs/testing/README.md)
+
+## Find a tool
+
+| Location | Purpose |
+| --- | --- |
+| [run_mandatory_tests.py](run_mandatory_tests.py) | Stable entry point for the canonical fresh-process test gate |
+| [qa](qa/README.md) | Controlled battle/dex player QA, effect probes, case catalogs, server observers, coverage reports |
+| [audits](audits/README.md) | Item availability/support reconciliation, CI inspection, organization reporting |
+| [data_generation](data_generation/) | Upstream conversion and game-data generation |
+| [item_scrapers](item_scrapers/) | Item scraping and comparison tools |
+
+The former flat live-QA scripts are now under `tools/qa/`; the four audit
+scripts are under `tools/audits/`. The mandatory gate retains its established
+`python -B tools/run_mandatory_tests.py` command. The existing generation and
+scraper folders retain their paths.
+
+QA preparation and player runs can create fixtures or change game state. Read
+the linked guide and prerequisites before executing them. See
+[workspace hygiene](../docs/workspace-hygiene.md) for scratch and retained output.
 
 ## data_generation
 

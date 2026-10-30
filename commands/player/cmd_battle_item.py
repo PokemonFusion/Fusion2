@@ -42,6 +42,16 @@ class CmdBattleItem(Command):
       Sacred Ash and other unsupported items are rejected before queuing.
       A supported medicine that has no effect still spends its queued action,
       but consumes no item. Smoke Ball uses +hold before battle, then +flee.
+      Embargo prevents medicine on the affected active target. Unaffected
+      reserves remain eligible; Magic Room and Klutz do not block bag medicine.
+      X Attack/Defense/Sp. Atk/Sp. Def/Speed/Accuracy add two matching stages
+      through ordinary ability rules. Use +item A1 X Attack=1, targeting the
+      actor's own current party slot. Two-participant singles/doubles only;
+      already capped targets reject before queuing. Embargo prevents these
+      bag boosters; Magic Room, Klutz and Heal Block do not suppress them.
+      Dire Hit gives Focus Energy (+2 critical stages); an active copy has
+      no effect. Guard Spec. gives side Mist for five turns, including the
+      activation turn; an active copy cannot refresh its duration.
     """
 
     key = "+battle/item"
@@ -105,6 +115,12 @@ class CmdBattleItem(Command):
                 self.caller.msg(str(error))
             return
 
+        from pokemon.items import BATTLE_BOOSTER_ITEMS
+        from pokemon.names import normalize_name
+
+        if normalize_name(item_name) in BATTLE_BOOSTER_ITEMS:
+            self.caller.msg("Refresh this battle's ordinary choices before using a battle booster.")
+            return
         try:
             BattleItemCapability.validate(item_name, battle=inst.battle)
         except ValueError as error:

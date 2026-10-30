@@ -559,7 +559,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         return f"{', '.join(names[:-1])}, and {names[-1]}"
 
     def _prompt_active_pokemon(self) -> None:
-        """Notify trainers which Pokémon require commands this turn."""
+        """Notify trainers which PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon require commands this turn."""
 
         if not self.data:
             return
@@ -582,6 +582,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             prompts.setdefault(trainer, []).append(f"{pos_name} ({name})" if doubles else str(name))
 
         for trainer, names in prompts.items():
+            from pokemon.ui.compact_battle import uses_compact
+
+            if uses_compact(trainer):
+                continue
             message = f"Choose an action for {self._format_pokemon_names(names)}."
             self._msg_to(trainer, message)
             if len(positions) > 2:
@@ -655,8 +659,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if active_mon is None:
             active_mon = team_members[0]
 
-        species_raw = getattr(active_mon, "name", None) or getattr(active_mon, "species", None) or "Pokémon"
-        species_text = str(species_raw).strip() or "Pokémon"
+        species_raw = getattr(active_mon, "name", None) or getattr(active_mon, "species", None) or "PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon"
+        species_text = str(species_raw).strip() or "PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon"
         if species_text.lower().startswith("wild "):
             species_text = species_text[5:]
         shell_name = f"Wild {species_text}".strip()
@@ -774,7 +778,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         obj.turn_state = {}
         obj.ndb = type("NDB", (), {})()
         logic = BattleLogic.from_dict({"data": data, "state": state})
-        # Ensure Pokémon have their correct moves restored before resuming.
+        # Ensure PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon have their correct moves restored before resuming.
         try:
             teams: Dict[str, Team] = getattr(logic.data, "teams", {}) or {}
             raw_movesets: Dict[Any, Dict[str, str]] = getattr(logic.state, "movesets", {}) or {}
@@ -1049,8 +1053,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         obj.teamA = team_a_objs
         obj.teamB = team_b_objs
         from .necrozma import NativeNecrozmaBattle
+        from .roster_eligibility import BattleRosterEligibility
 
-        NativeNecrozmaBattle.validate_roster(obj.battle)
+        roster_recovery = BattleRosterEligibility.quarantine(obj)
+        if not roster_recovery:
+            NativeNecrozmaBattle.validate_roster(obj.battle)
 
         log_info(
             f"Restore complete: player={getattr(obj.captainA, 'key', obj.captainA)} "
@@ -1083,13 +1090,16 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if getattr(obj.state, 'multi', None):
             from .multi_state import attach_players
             attach_players(obj)
-        obj._restore_declarations()
-        obj._bind_reward_delivery()
-        obj.storage.set("state", obj._compact_state_for_persist(obj.state.to_dict()))
+        if not roster_recovery:
+            obj._restore_declarations()
+            obj._bind_reward_delivery()
+            obj.storage.set("state", obj._compact_state_for_persist(obj.state.to_dict()))
+        else:
+            obj.msg(f"Battle #{battle_id} is paused for egg-roster recovery. Ask staff; no saved choices were replayed.")
         return obj
 
     def start(self) -> None:
-        """Start a battle against a wild Pokémon, trainer or another player."""
+        """Start a battle against a wild PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon, trainer or another player."""
         log_info(f"Starting battle {self.battle_id} in room #{getattr(self.room, 'id', '?')}")
         # make sure this battle's ID is tracked on the room
         room = self.captainA.location
@@ -1110,7 +1120,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         pending_ai_profile = getattr(self, "_pending_opponent_ai_profile", None)
         opponent_shell = None
         if battle_type == BattleType.WILD and not self.captainB:
-            shell_name = f"Wild {getattr(opponent_poke, 'name', 'Pokémon')}"
+            shell_name = f"Wild {getattr(opponent_poke, 'name', 'PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon')}"
             opponent_shell = SimpleNamespace(
                 name=shell_name,
                 key=shell_name,
@@ -1122,7 +1132,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 db=SimpleNamespace(),
             )
         elif battle_type == BattleType.TRAINER:
-            trainer_name = opponent_name or f"Trainer {getattr(opponent_poke, 'name', 'Pokémon')}"
+            trainer_name = opponent_name or f"Trainer {getattr(opponent_poke, 'name', 'PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon')}"
             opponent_shell = SimpleNamespace(
                 name=trainer_name,
                 key=trainer_name,
@@ -1320,7 +1330,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if battle_format not in {"single", "double"}:
             raise ValueError("Choose the single or double battle format.")
         if active_count == 2 and any(sum(p.hp > 0 for p in party) < 2 for party in (player_pokemon, opp_pokemon)):
-            raise ValueError("Doubles requires two conscious Pokémon on each side.")
+            raise ValueError("Doubles requires two conscious PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon on each side.")
 
         try:
             player_participant = BattleParticipant(
@@ -1476,12 +1486,17 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     def _prepare_player_party(self, trainer, full_heal: bool = False) -> List[Pokemon]:
         """Return a list of battle-ready Pokemon for a trainer.
 
-        If ``full_heal`` is ``True`` the Pokémon start with full HP regardless
+        If ``full_heal`` is ``True`` the PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon start with full HP regardless
         of any stored current HP value. This is primarily useful for scripted
         encounters that override health when constructing temporary teams.
         """
         log_info(f"Preparing party for {getattr(trainer, 'key', trainer)} (full_heal={full_heal})")
-        party = get_battle_party_with_fusion(trainer)
+        from .roster_eligibility import BattleRosterEligibility
+        from pokemon.helpers.party_helpers import pokemon_is_usable
+
+        party = BattleRosterEligibility.models(get_battle_party_with_fusion(trainer))
+        if not party or (not full_heal and not any(pokemon_is_usable(mon) for mon in party)):
+            raise ValueError("You don't have any Pokemon able to battle.")
         pokemons: List[Pokemon] = []
         for poke in party:
             battle_poke = build_battle_pokemon_from_model(poke, full_heal=full_heal)
@@ -1537,6 +1552,13 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Move players to the battle room and notify watchers."""
         self._bind_reward_delivery()
         log_info(f"Setting up battle room for {self.battle_id}")
+        from .npc_prize_items import NPCPrizeItems
+
+        if self.battle and NPCPrizeItems.enabled(self.battle):
+            NPCPrizeItems.initial(self.battle)
+            if NPCPrizeItems.freeze(self.battle):
+                self.logic.sync_runtime_state()
+                self.storage.set("state", self._compact_state_for_persist(self.state.to_dict()))
         self.add_watcher(self.captainA)
         if self.captainB and getattr(self.captainB, "id", None) is not None:
             self.add_watcher(self.captainB)
@@ -1663,7 +1685,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
     def _sync_player_pokemon_state(self, *, strict=False) -> None:
         """Keep protected Mega ownership checks locked through their owned writes."""
-        guarded = any(getattr(poke, "mega_guard_stone", None) or getattr(poke, "z_guard_crystal", None)
+        from .roster_eligibility import BattleRosterEligibility
+
+        BattleRosterEligibility.require(self)
+        guarded = any(getattr(poke, "mega_guard_stone", None) or getattr(poke, "z_guard_crystal", None) or getattr(poke, "ultra_guard_crystal", None)
                       or (getattr(poke, "native_origin", None) or {}).get("necrozma")
                       for participant in getattr(self.battle, "participants", [])
                       for poke in participant.pokemons)
@@ -1681,7 +1706,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Persist battle results back to the owning player models.
 
         ``BattleSession`` creates temporary battle representations of a
-        trainer's Pokémon. This helper mirrors the resulting HP and status back
+        trainer's PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon. This helper mirrors the resulting HP and status back
         onto the owning :class:`~pokemon.models.core.OwnedPokemon` instances so
         that battles leave lasting effects on a player's party.
         """
@@ -1734,7 +1759,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     from pokemon.services.ownership import fresh_owned
 
                     mon = fresh_owned(mon.pk, lock=True)
-                source_guard = getattr(poke, "mega_guard_stone", None) or getattr(poke, "z_guard_crystal", None)
+                source_guard = getattr(poke, "mega_guard_stone", None) or getattr(poke, "z_guard_crystal", None) or getattr(poke, "ultra_guard_crystal", None)
                 if source_guard:
                     from pokemon.battle.owned_battle_actor import OwnedBattleActor
                     from pokemon.models.core import OwnedPokemon
@@ -1796,6 +1821,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """End the battle and clean up."""
         if getattr(self, "_ended", False):
             return
+        from .roster_eligibility import BattleRosterEligibility
+
+        BattleRosterEligibility.require(self)
         if getattr(getattr(self, 'state', None), 'multi', None):
             from .multi_battle import outcomes
             outcomes(self, reason='completed' if self.battle.battle_over else 'aborted')
@@ -1829,6 +1857,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             from .z_moves import ZMoves
 
             ZMoves.validate_roster(self.battle)
+            from .ultra_burst import UltraBurst
+
+            UltraBurst.validate_roster(self.battle)
             from .necrozma import NativeNecrozmaBattle
 
             NativeNecrozmaBattle.validate_roster(self.battle)
@@ -1845,9 +1876,15 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             from .mega_evolution import MegaEvolution
 
             MegaEvolution.cleanup(self.battle)
+            from .ultra_burst import UltraBurst
+
+            UltraBurst.cleanup(self.battle)
             from .z_moves import ZMoves
 
             ZMoves.cleanup(self.battle)
+            from .battle_boosters import BattleBoosters
+
+            BattleBoosters.cleanup(self.battle)
         self._sync_player_pokemon_state(strict=True)
         self._set_player_control(False)
         self._cleanup_saved_battle()
@@ -1877,7 +1914,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     start_capture_nickname(trainer)
                 except Exception:
                     log_warn("Unable to open capture nickname prompt", exc_info=True)
-                    self._msg_to(trainer, "Use +nickname to choose a name for your captured Pokémon.")
+                    self._msg_to(trainer, "Use +nickname to choose a name for your captured PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon.")
 
     def _bind_reward_delivery(self):
         """Bind one durable identity to fresh and reconstructed battle engines."""
@@ -1891,6 +1928,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if self.battle and self.state and BattleRewards.supports(self.captainA):
             self.battle.reward_delivery = BattleRewards(self.state.reward_id)
         metadata = getattr(self, "encounter_metadata", {}) or {}
+        if self.battle:
+            self.battle.prize_source_type = metadata.get("source_type")
         if self.battle and metadata.get("source_type") == "gym_leader" and metadata.get("reward_policy") == "badge_only":
             self.battle.award_xp = self.battle.award_txp = self.battle.award_prizes = False
             self.state.xp = self.state.txp = False
@@ -2033,6 +2072,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                         raise ValueError("The saved item target is no longer on that side.")
                     action = Action(actor, ActionType.ITEM, target, item=item, priority=6, pokemon=pokemon,
                                     target_pokemon=chosen, target_slot=slot_for(target, chosen), item_move=declaration.get("item_move"))
+                    from .battle_boosters import BattleBoosters
+
+                    if BattleBoosters.supports(item) and (declaration.get("booster_version") != 1
+                            or chosen is not pokemon or action.item_move is not None):
+                        raise ValueError("The saved booster target/policy requires a fresh choice.")
                     position.declareItem(item)
                 elif "run" in declaration:
                     action = Action(actor, ActionType.RUN, self.battle.opponent_of(actor), pokemon=pokemon, priority=9)
@@ -2070,8 +2114,16 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if not BattleRewards.supports(self.captainA):
             self.battle.run_turn()
             return
-        from django.db import transaction
+        from django.db import connection, transaction
         from evennia.objects.models import ObjectDB
+        from .battle_boosters import BattleBoosters
+
+        from .ultra_burst import UltraBurst
+        from .npc_prize_items import NPCPrizeItems
+
+        if (BattleBoosters.tracked(self.battle) or UltraBurst.tracked(self.battle)
+                or NPCPrizeItems.tracked(self.battle)) and connection.in_atomic_block:
+            raise ValueError("Submit this item or Ultra turn outside a containing transaction; no turn changed.")
         snapshot = self.logic.to_dict()
         adventure_result = getattr(self, "_adventure_result", None)
         controllers = {(getattr(part, 'controller_id', None) or part.team): part.player for part in self.battle.participants}
@@ -2087,21 +2139,35 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 ids = sorted(BattleRewards.character(player).pk for player in controllers.values()
                              if BattleRewards.supports(player))
                 list(ObjectDB.objects.select_for_update().filter(pk__in=ids).order_by("pk"))
+                from .roster_eligibility import BattleRosterEligibility
+
+                BattleRosterEligibility.require(self)
                 from .necrozma import NativeNecrozmaBattle
 
                 NativeNecrozmaBattle.lock_sources(self.battle)
-                if getattr(self.state, 'multi', None):
+                from .battle_boosters import BattleBoosters
+                from .npc_prize_items import NPCPrizeItems
+
+                if (getattr(self.state, 'multi', None) or BattleBoosters.tracked(self.battle)
+                        or UltraBurst.tracked(self.battle) or NPCPrizeItems.tracked(self.battle)):
                     saved = BattleRewards.stored_attribute(self.room, self.storage._key('state')) or {}
                     if (saved.get('reward_id') != self.state.reward_id or saved.get('ending')
                             or saved.get('mechanic_turn', 0) != self.battle.mechanic_turn
-                            or dict(saved.get('declare', {})) != dict(self.state.declare)):
-                        raise ValueError('This Multi turn changed; refresh and choose again.')
+                            or dict(saved.get('declare', {})) != dict(self.state.declare)
+                            or saved.get('booster_effects', {}) != self.state.booster_effects
+                            or saved.get('ultra_pending', {}) != self.state.ultra_pending
+                            or saved.get('ultra_used', []) != self.state.ultra_used
+                            or saved.get('npc_prize_qualifications', {}) != self.state.npc_prize_qualifications):
+                        raise ValueError('This battle turn changed; refresh and choose again.')
                 from .mega_evolution import MegaEvolution
 
                 MegaEvolution.validate_roster(self.battle)
                 from .z_moves import ZMoves
 
                 ZMoves.validate_roster(self.battle)
+                from .ultra_burst import UltraBurst
+
+                UltraBurst.validate_roster(self.battle)
                 from .necrozma import NativeNecrozmaBattle
 
                 NativeNecrozmaBattle.validate_roster(self.battle)
@@ -2170,6 +2236,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     def choices_for(self, caller):
         """Return the player's authoritative view of legal per-slot choices."""
         from .player_choices import PlayerChoices
+        from .roster_eligibility import BattleRosterEligibility
+
+        BattleRosterEligibility.require(self)
         if getattr(getattr(self, 'state', None), 'multi', None):
             from pokemon.services.battle_rewards import BattleRewards
             saved = BattleRewards.stored_attribute(self.room, self.storage._key('state')) or {}

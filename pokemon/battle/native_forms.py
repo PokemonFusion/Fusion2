@@ -41,6 +41,7 @@ class NativeBattleForm:
                     "max_hp": pokemon.max_hp}
         data = SimpleNamespace(species=species, level=pokemon.level,
                                ivs=pokemon.ivs, evs=pokemon.evs, nature=pokemon.nature,
+                               trained_stat_nature=getattr(pokemon, "trained_stat_nature", None),
                                hyper_training=HyperTraining.trained(pokemon))
         stats = get_stats(data)
         maximum = get_max_hp(data)

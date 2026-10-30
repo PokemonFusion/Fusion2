@@ -10,9 +10,11 @@ For setup instructions and other notes migrated from the original Evennia README
 
 Project documentation lives in the [docs](docs/) folder:
 
-- [Quickstart and Overview](docs/index.md)
-- [Code Map](docs/code-map.md)
-- [Reference Materials](docs/reference)
+- [Documentation home](docs/index.md) - choose a guide, design, or verification report.
+- [Feature guides](docs/guides.md) - find player and builder workflows by system.
+- [Code map](docs/code-map.md) - trace commands, logic, storage, and tests.
+- [Verification reports](docs/testing/README.md) - dated evidence and its limits.
+- [Local workspace hygiene](docs/workspace-hygiene.md) - keep test output organized.
 
 The codebase targets **Python 3.12**. To run the server you must install the Python requirements, including `psycopg2` for PostgreSQL support:
 
@@ -36,9 +38,12 @@ export PF2_NO_EVENNIA=1
 make test
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+For the canonical mandatory gate, use `python -B tools/run_mandatory_tests.py`
+with the project's Python environment. See [CONTRIBUTING.md](CONTRIBUTING.md)
+and [offline battle testing](docs/offline-battle-testing.md) for the different
+test targets and their scope.
 
-A project-wide [.editorconfig](.editorconfig) enforces tab indentation and LF line endings. Linting is configured through [ruff.toml](ruff.toml), and tests are discovered via [pytest.ini](pytest.ini). Copy [.env.example](.env.example) to `.env` to configure local environment variables. Common development tasks are provided by the [Makefile](Makefile):
+A project-wide [.editorconfig](.editorconfig) specifies space indentation and LF line endings. Ruff is configured in [pyproject.toml](pyproject.toml), and tests are discovered via [pytest.ini](pytest.ini). Use [.env.example](.env.example) as the local environment template. Common development tasks are provided by the [Makefile](Makefile):
 
 ```bash
 make setup  # install dependencies

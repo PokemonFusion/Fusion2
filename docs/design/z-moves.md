@@ -1,6 +1,9 @@
 # Non-plot Z-Crystal activation contract (#775)
 
-Status: **42 explicit generic/status/signature mappings on 34 crystals accepted locally**.
+Status: **69 explicit mappings on 35 crystals accepted locally**, including one
+separately guarded [Ultra profile](../ultra-burst.md). The original 42-mapping
+inventory below is historical; the [current matrix](z-crystals.md) names the
+bounded additions and their dated evidence.
 See the [player guide](../z-moves.md), [foundation](../testing/z-core-2026-10-23.md)
 and [status/signature qualification](../testing/z-special-2026-10-23.md).
 The first-slice rules below remain the contract; later combinations are gated

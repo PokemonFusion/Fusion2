@@ -1,7 +1,9 @@
 # Nature mint training contract (#869)
 
-Accepted design scope after the repair/report gates. Runtime mints are absent;
-closing this design will not claim they work or that sources are installed.
+Accepted design scope after the repair/report gates. The scoped implementation
+is described in [the player guide](../nature-mints.md); publication, isolated
+migration qualification, source installation and released acceptance remain
+separate. Design closure alone does not establish those later gates.
 
 The [official mint description](https://swordshield.pokemon.com/en-au/gameplay/features-raise-pokemon/)
 distinguishes changed stat growth from unchanged actual Nature. Pin the twenty

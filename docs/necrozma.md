@@ -67,7 +67,10 @@ attacks/items/flee or the matching existing [Z signature](z-moves.md). The cryst
 is reusable; normal Z prevention, one source PP and one use per side apply.
 Switching, fainting, revival, reconnecting and ending battle preserve the native
 pair. Only explicit field separation releases the companion. This initial
-route excludes Mega, Tera, Dynamax, Ultra and four-controller Multi Battles.
+route excludes Mega, Tera, Dynamax and four-controller Multi Battles.
+The separately guarded [Ultra Burst route](ultra-burst.md) requires legitimate
+Photon preparation before combining and its own current battle proof. The
+older released report does not certify this newer runtime or permanent stock.
 
 The feature adds no source Pokémon, spawn chart, shop, crystal, live stock or
 plot content. Availability depends on the world's existing authored sources.

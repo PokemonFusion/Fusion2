@@ -1,0 +1,130 @@
+{
+  "status": "PROPOSAL ONLY: replacement cleanup and one additional Evennia stop/start require explicit approval",
+  "date": "2026-10-26",
+  "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
+  "original_plan_commit": "920b3a9eb18ba2443cf7e070858135d3e8a79d93",
+  "original_plan_sha256": "7c58491865e7191c65b31f81a4e4d0cdcb29410ce90d5adac807ff3e4db247e6",
+  "prior_supplement_commit": "7b38c7d5141cffae379a54a98c7c59c99aa4570c",
+  "operator_task_root": "/home/evennia/testing/.remaining-items-20261026-2259c9",
+  "tag": "remaining-items-156fa4b2e9f94e18a344d300372259c9",
+  "names": [
+    "ItemCompleteDusk2259c9",
+    "ItemCompleteDawn2259c9",
+    "ItemCompleteRawst2259c9",
+    "ItemCompleteAspear2259c9"
+  ],
+  "controller_filename": "cleanup_logged_out.py",
+  "controller_sha256": "1e495f7c7d0d5c73b3b8a7c4fb1acbb13b71286007cabef4f401676fdffee10a",
+  "controller_source": "\"\"\"Remove only receipted new QA identities/private objects while the game is stopped.\"\"\"\n\nimport hashlib\nimport json\nimport socket\nimport sys\n\n\ndef port_open(port):\n    \"\"\"Require the exact stopped instance before removing its temporary fixtures.\"\"\"\n    with socket.socket() as probe:\n        probe.settimeout(1)\n        return probe.connect_ex((\"127.0.0.1\", port)) == 0\n\n\ndef remove_qa(plan, players, world):\n    \"\"\"Collector proof and all-table comparison refuse any non-QA cascade/write.\"\"\"\n    from django.apps import apps\n    from django.db import connection, transaction\n    from django.db.models import Q\n    from django.db.models.deletion import Collector\n    from evennia.accounts.models import AccountDB\n    from evennia.objects.models import ObjectDB\n    from evennia.typeclasses.models import Attribute, Tag\n    from pokemon.models.breeding import BreedingCycle, BreedingEgg\n    from pokemon.models.core import OwnedPokemon\n    from pokemon.models.daycare import DaycareEntry\n    from pokemon.models.market import MarketListing\n    from pokemon.models.necrozma import NecrozmaCombination\n    from pokemon.models.onboarding import OnboardingCompletion\n    from pokemon.models.ownership import OwnershipTransfer, PokemonReservation\n    from pokemon.models.storage import PokemonPlacement\n\n    tag = plan[\"tagged_qa\"][\"tag\"]\n    names = plan[\"tagged_qa\"][\"ordinary_player_names\"]\n    assert players[\"tag\"] == world[\"tag\"] == tag\n    assert [row[\"name\"] for row in players[\"players\"]] == names\n    actorids = {row[\"player\"] for row in players[\"players\"]}\n    accountids = {row[\"account\"] for row in players[\"players\"]}\n    privateids = actorids | {row[\"id\"] for row in world[\"objects\"]}\n    assert len(actorids) == len(accountids) == 4\n\n    with transaction.atomic():\n        list(ObjectDB.objects.select_for_update().filter(pk__in=privateids).order_by(\"pk\"))\n        for row in players[\"players\"]:\n            actor = ObjectDB.objects.get(pk=row[\"player\"], db_key=row[\"name\"], db_tags__db_key=tag)\n            account = AccountDB.objects.get(pk=row[\"account\"], username=row[\"name\"], db_tags__db_key=tag)\n            # Ordinary unpuppet/logout clears the transient active account FK.\n            assert ObjectDB.objects.filter(pk=actor.pk).values_list(\"db_account_id\", flat=True).get() is None\n            account_state = AccountDB.objects.filter(pk=account.pk).values(\"db_is_connected\", \"is_superuser\").get()\n            assert not account_state[\"db_is_connected\"] and not account_state[\"is_superuser\"]\n            assert [value.pk for value in (account.attributes.get(\"_playable_characters\") or [])] == [actor.pk]\n            for other in AccountDB.objects.exclude(pk=account.pk):\n                assert actor.pk not in [value.pk for value in (other.attributes.get(\"_playable_characters\") or [])]\n            assert not account.db_is_connected and not actor.db.battle_id and not actor.db.battle_lock\n            assert not actor.contents\n        assert set(ObjectDB.objects.filter(db_tags__db_key=tag).values_list(\"pk\", flat=True)) == privateids\n        assert set(AccountDB.objects.filter(db_tags__db_key=tag).values_list(\"pk\", flat=True)) == accountids\n        assert not ObjectDB.objects.filter(db_account_id__in=accountids).exclude(pk__in=actorids).exists()\n        for row in world[\"objects\"]:\n            obj = ObjectDB.objects.get(pk=row[\"id\"], db_key=row[\"key\"])\n            assert obj.db_typeclass_path == row[\"typeclass\"]\n            assert obj.db_location_id == row[\"location\"] and obj.db_destination_id == row[\"destination\"]\n            assert not ObjectDB.objects.filter(Q(db_location_id=obj.pk) | Q(db_destination_id=obj.pk) | Q(db_home_id=obj.pk)).exclude(pk__in=privateids).exists()\n        owned = OwnedPokemon.objects.filter(trainer__user_id__in=actorids)\n        ownedids = set(owned.values_list(\"pk\", flat=True))\n        assert not NecrozmaCombination.objects.filter(Q(host_id__in=ownedids) | Q(companion_id__in=ownedids)).exists()\n        assert not PokemonReservation.objects.filter(pokemon_id__in=ownedids).exists()\n        # A normal permanent onboarding form remains reserved after +unfuse.\n        # Accept only inactive, fully consistent forms on these exact four QA owners.\n        from pokemon.services.fusion_transitions import FusionTransitions\n        forms = set()\n        for identifier in actorids:\n            actor = ObjectDB.objects.get(pk=identifier)\n            state = FusionTransitions(actor).inspect()\n            assert state[\"active\"] is None and not state[\"problems\"]\n            current = set(state[\"forms\"])\n            assert not (forms & current)\n            assert set(map(str, OwnedPokemon.objects.filter(trainer__user_id=identifier, pk__in=current).values_list(\"pk\", flat=True))) == current\n            forms.update(current)\n        assert set(map(str, PokemonPlacement.objects.filter(pokemon_id__in=ownedids, location_type=\"fusion\").values_list(\"pokemon_id\", flat=True))) == forms\n        assert not PokemonPlacement.objects.filter(pokemon_id__in=ownedids).exclude(location_type__in=(\"party\", \"box\", \"fusion\")).exists()\n        assert not DaycareEntry.objects.filter(storage__user_id__in=actorids, state=\"active\").exists()\n        assert not owned.exclude(held_item=\"\").exclude(held_item__isnull=True).exists()\n        cycles = BreedingCycle.objects.filter(origin_character_id__in=actorids)\n        assert not cycles.filter(state=\"producing\").exists()\n        eggs = BreedingEgg.objects.filter(cycle__in=cycles)\n        assert not eggs.exclude(pokemon_id__in=ownedids).exclude(pokemon__isnull=True).exists()\n        listings = MarketListing.objects.filter(seller_character_id__in=actorids)\n        assert not listings.filter(state=\"active\").exists()\n        assert not listings.exclude(buyer_character_id__in=actorids).exclude(buyer_character_id__isnull=True).exists()\n        transfers = OwnershipTransfer.objects.filter(Q(proposer_id__in=actorids) | Q(recipient_id__in=actorids))\n        assert not transfers.exclude(proposer_id__in=actorids).exists()\n        assert not transfers.exclude(recipient_id__in=actorids).exists()\n        assert not transfers.filter(state=\"pending\").exists()\n        onboarding = OnboardingCompletion.objects.filter(origin_character_id__in=actorids)\n        assert onboarding.count() == 4\n        objects = list(ObjectDB.objects.filter(pk__in=privateids))\n        accounts = list(AccountDB.objects.filter(pk__in=accountids))\n        tags = list(Tag.objects.filter(db_key=tag))\n        attrids = {attr.pk for obj in objects + accounts for attr in obj.db_attributes.all()}\n        models = [model for model in apps.get_models(include_auto_created=True)\n                  if model._meta.managed and not model._meta.proxy]\n\n        def snapshot():\n            \"\"\"Keep full private row values only in memory for this atomic comparison.\"\"\"\n            return {model._meta.db_table: (model._meta.pk.attname,\n                    list(model._base_manager.order_by(\"pk\").values())) for model in models}\n\n        all_before = snapshot()\n        manual = {}\n        # PROTECT is deliberate for real histories. Remove only explicitly selected\n        # closed QA receipts first; the all-row comparison still covers this phase.\n        for queryset in (eggs, listings, transfers, onboarding):\n            manual.setdefault(queryset.model._meta.db_table, set()).update(queryset.values_list(\"pk\", flat=True))\n            queryset.delete()\n        collector = Collector(using=\"default\")\n        collector.collect(list(owned))\n        collector.collect(objects)\n        collector.collect(accounts)\n        collector.collect(list(cycles))\n        collector.collect(tags)\n\n        def deletions():\n            \"\"\"Resolve exact affected model PKs, including automatic relation tables.\"\"\"\n            result = {table: set(ids) for table, ids in manual.items()}\n            for model, rows in list(collector.data.items()) + [(qs.model, qs) for qs in collector.fast_deletes]:\n                result.setdefault(model._meta.db_table, set()).update(row.pk for row in rows)\n            return result\n\n        planned = deletions()\n        # Delete only attributes whose every FK link is already in the QA deletion set.\n        removable = []\n        with connection.cursor() as cursor:\n            refs = []\n            for table in connection.introspection.table_names(cursor):\n                constraints = connection.introspection.get_constraints(cursor, table)\n                pkcols = next((value[\"columns\"] for value in constraints.values() if value.get(\"primary_key\")), [])\n                for value in constraints.values():\n                    if value.get(\"foreign_key\") == (\"typeclasses_attribute\", \"id\"):\n                        assert len(pkcols) == 1\n                        refs.append((table, value[\"columns\"][0], pkcols[0]))\n            for identifier in attrids:\n                safe = True\n                for table, column, pkcol in refs:\n                    quote = connection.ops.quote_name\n                    cursor.execute(\"SELECT \" + quote(pkcol) + \" FROM \" + quote(table) + \" WHERE \" + quote(column) + \"=%s\", [identifier])\n                    if not {row[0] for row in cursor.fetchall()} <= planned.get(table, set()):\n                        safe = False\n                        break\n                if safe:\n                    removable.append(identifier)\n        collector.collect(list(Attribute.objects.filter(pk__in=removable)))\n        planned = deletions()\n        assert planned.get(\"objects_objectdb\", set()) <= privateids\n        assert planned.get(\"accounts_accountdb\", set()) <= accountids\n        assert planned.get(\"pokemon_ownedpokemon\", set()) <= ownedids\n\n        def protected(data):\n            \"\"\"Every row outside the exact deletion set must retain all its fields.\"\"\"\n            result = {}\n            for table, (pk, rows) in data.items():\n                excluded = {str(value) for value in planned.get(table, set())}\n                result[table] = [row for row in rows if str(row[pk]) not in excluded]\n            return hashlib.sha256(json.dumps(result, sort_keys=True, default=str).encode()).hexdigest()\n\n        before = protected(all_before)\n        collector.delete()\n        after = protected(snapshot())\n        assert after == before\n        assert not ObjectDB.objects.filter(pk__in=privateids).exists()\n        assert not AccountDB.objects.filter(pk__in=accountids).exists()\n        assert not OwnedPokemon.objects.filter(pk__in=ownedids).exists()\n        assert not ObjectDB.objects.filter(db_tags__db_key=tag).exists()\n        result = dict(removed_accounts=sorted(accountids), removed_objects=sorted(privateids),\n                      removed_pokemon=sorted(map(str, ownedids)), protected_digest_before=before,\n                      protected_digest_after=after, all_other_rows_unchanged=True,\n                      refunds=False, refill=False, public_sources_removed=False)\n    return result\n\n\nif __name__ == \"__main__\":\n    from atomic_upgrade import authorize, TASK, CANDIDATE\n\n    assert sys.argv[1:] == [\"--cleanup-approved\"]\n    authorize()\n    supplement = json.loads((TASK / \"logout-cleanup-approval.json\").read_text())\n    assert supplement[\"approved\"] is True and supplement[\"candidate\"] == CANDIDATE\n    assert supplement[\"scope\"] == \"exact logged-out tagged QA roster cleanup and one guarded maintenance cycle\"\n    from pathlib import Path\n    assert hashlib.sha256(Path(__file__).read_bytes()).hexdigest() == supplement[\"controller_sha256\"]\n    import evennia\n\n    evennia._init()\n    assert all(not port_open(port) for port in (4000, 4001, 4002, 4005, 4006))\n    plan = json.loads((TASK / \"reviewed-plan.json\").read_text())\n    players = json.loads((TASK / \"qa-player-prerequisites.json\").read_text())\n    world = json.loads((TASK / \"qa-world-receipt.json\").read_text())\n    result = remove_qa(plan, players, world)\n    result[\"candidate\"] = CANDIDATE\n    with (TASK / \"qa-cleanup-receipt.json\").open(\"x\", encoding=\"utf-8\") as stream:\n        stream.write(json.dumps(result, indent=2) + \"\\n\")\n    print(\"TAGGED_QA_REMOVED\", CANDIDATE, \"all other rows and public stock preserved\")\n",
+  "isolated_sql": {
+    "exit": false,
+    "cases": 8,
+    "controller_sha256": "1e495f7c7d0d5c73b3b8a7c4fb1acbb13b71286007cabef4f401676fdffee10a",
+    "observations": [
+      {
+        "case": "test_active_fusion_refuses_then_ordinary_unfuse_allows_exact_cleanup",
+        "active_refused": true,
+        "ordinary_unfuse": true,
+        "inactive_owned_form_removed": true,
+        "other_rows_unchanged": true
+      },
+      {
+        "case": "test_exact_cleanup_preserves_existing_people_and_public_stock",
+        "receipt": {
+          "removed_accounts": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "removed_objects": [
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "removed_pokemon": [
+            "0f48ef4b-d79c-4bba-957a-4c17c132cf92",
+            "19c63c7b-04eb-482d-abfb-d95ab4ea0e3a",
+            "a8af81b8-1c33-48bf-8e91-0955874c7090",
+            "bd5e5229-590a-4307-b059-83797fb49a56",
+            "c9c65b6a-dfef-45dd-95e6-c08d3d673b72",
+            "e23229b9-5911-4c1c-b7b8-6a308f332d34"
+          ],
+          "protected_digest_before": "13aa8db86a7ef88336421f4c070aea14b2028f80ba0e5c98f1c5fb7696707ce0",
+          "protected_digest_after": "13aa8db86a7ef88336421f4c070aea14b2028f80ba0e5c98f1c5fb7696707ce0",
+          "all_other_rows_unchanged": true,
+          "refunds": false,
+          "refill": false,
+          "public_sources_removed": false
+        },
+        "preexisting_source_and_actors_preserved": true
+      },
+      {
+        "case": "test_foreign_account_roster_reference_refuses_without_any_write",
+        "all_rows_unchanged": true
+      },
+      {
+        "case": "test_foreign_form_refuses_without_removing_any_rows",
+        "foreign_form_refused": true,
+        "all_objects_and_owned_rows_preserved": true
+      },
+      {
+        "case": "test_missing_persistent_roster_refuses_without_any_write",
+        "all_rows_unchanged": true
+      },
+      {
+        "case": "test_partial_delete_failure_rolls_back_all_rows",
+        "all_rows_unchanged": true
+      },
+      {
+        "case": "test_still_attached_account_refuses_without_any_write",
+        "all_rows_unchanged": true
+      },
+      {
+        "case": "test_unreviewed_occupant_refuses_before_any_cleanup",
+        "refused_before_write": true,
+        "subsequent_exact_cleanup": true
+      }
+    ],
+    "existing_game_changed": false,
+    "migrations_run": false
+  },
+  "isolated_log_sha256": "57ede71fca7310f2c6b9e02246ca46862c0bd408dca4c91336c467d44c6a7afc",
+  "retained_diagnosis": "Prior Fusion cleanup refused on the transient account FK after normal logout before any deletion. A post-logout read-only snapshot also refused its attached-account assumption. Recovery used the already approved second start. The first local replacement test exposed stale shared-identity FK caching; the corrected controller reads actual attachment/privilege/connection state directly from SQL. The failed first cohort is retained privately.",
+  "recovery": {
+    "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
+    "migration": "0059_owned_trained_stat_nature",
+    "python_sources": 1188,
+    "ports": [
+      4000,
+      4001,
+      4002,
+      4005,
+      4006
+    ],
+    "ordinary_greeting_received": true,
+    "protected": {
+      "tables": 43,
+      "all_original_columns_and_rows_unchanged": true,
+      "original_human_attributes_unchanged": true
+    },
+    "observed_utc": "2026-10-26T15:14:37.440869+00:00",
+    "cleanup_complete": false,
+    "qa_accounts_retained": 4,
+    "qa_owned_retained": 25,
+    "original_two_cycles_used": true
+  },
+  "original_six_controllers_unchanged": true,
+  "migrations": false,
+  "game_source_changes": false,
+  "public_stock_changes": false,
+  "additional_evennia_cycles": 1,
+  "approval_template": {
+    "approved": false,
+    "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
+    "controller_sha256": "1e495f7c7d0d5c73b3b8a7c4fb1acbb13b71286007cabef4f401676fdffee10a",
+    "scope": "exact logged-out tagged QA roster cleanup and one guarded maintenance cycle"
+  }
+}

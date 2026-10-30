@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "key": "nature-mint-counter-v1",
+  "room": "Nature Mint Counter",
+  "entrance": "mints",
+  "return_exit": "back",
+  "description": "Twenty-one finite Nature Mints. Use +store to buy and +use <full name>=<current target> outside battle. Mint stat preferences preserve genetic Nature, inheritance, nature evolution and berry preferences. Equivalent modifiers consume nothing. No refill or resale; back returns to the hub.",
+  "buy_only": true,
+  "refill": "none",
+  "offers": [
+    {"item": "Lonely Mint", "price": 20000, "quantity": 1},
+    {"item": "Adamant Mint", "price": 20000, "quantity": 1},
+    {"item": "Naughty Mint", "price": 20000, "quantity": 1},
+    {"item": "Brave Mint", "price": 20000, "quantity": 1},
+    {"item": "Serious Mint", "price": 20000, "quantity": 1},
+    {"item": "Bold Mint", "price": 20000, "quantity": 1},
+    {"item": "Impish Mint", "price": 20000, "quantity": 1},
+    {"item": "Lax Mint", "price": 20000, "quantity": 1},
+    {"item": "Relaxed Mint", "price": 20000, "quantity": 1},
+    {"item": "Modest Mint", "price": 20000, "quantity": 1},
+    {"item": "Mild Mint", "price": 20000, "quantity": 1},
+    {"item": "Rash Mint", "price": 20000, "quantity": 1},
+    {"item": "Quiet Mint", "price": 20000, "quantity": 1},
+    {"item": "Calm Mint", "price": 20000, "quantity": 1},
+    {"item": "Gentle Mint", "price": 20000, "quantity": 1},
+    {"item": "Careful Mint", "price": 20000, "quantity": 1},
+    {"item": "Sassy Mint", "price": 20000, "quantity": 1},
+    {"item": "Timid Mint", "price": 20000, "quantity": 1},
+    {"item": "Hasty Mint", "price": 20000, "quantity": 1},
+    {"item": "Jolly Mint", "price": 20000, "quantity": 1},
+    {"item": "Naive Mint", "price": 20000, "quantity": 1}
+  ]
+}

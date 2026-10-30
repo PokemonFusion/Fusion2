@@ -25,6 +25,7 @@ class FieldItemCases(unittest.TestCase):
         self.maximum = get_max_hp(self.owned)
         self.messages = []
         self.caller = SimpleNamespace(
+            character=self.character,
             pk=self.character.pk, trainer=self.trainer, storage=self.storage,
             db=self.character.db, ndb=SimpleNamespace(pending_pp_item=None),
             msg=self.messages.append,

@@ -35,9 +35,10 @@ class EvolutionCases(unittest.TestCase):
         for key, value in attrs.items():
             setattr(mon, key, value)
         mon.save()
-        caller = SimpleNamespace(
-            pk=self.user.pk, storage=self.storage, location=SimpleNamespace(db=SimpleNamespace(time_of_day="night"))
-        )
+        room = ObjectDB.objects.create(db_key="Evolution context fixture")
+        room.db.time_of_day = "night"
+        ObjectDB.objects.filter(pk=self.user.pk).update(db_location=room)
+        caller = SimpleNamespace(pk=self.user.pk, storage=self.storage, location=room)
         return mon, EvolutionService(caller)
 
     def quantity(self, key):

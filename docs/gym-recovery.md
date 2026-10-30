@@ -47,7 +47,7 @@ not apply deployment migrations or replace a fresh-install/upgrade rehearsal.
 From the `fusion2` directory:
 
 ```powershell
-..\evenv\Scripts\python.exe -m pytest tests/test_gym_leaders.py tests/test_gym_command.py tests/test_gym_battle_results.py tests/test_gym_rewards_orm.py tests/test_battle_rebuild.py tests/test_adventure_battle_results.py
+..\evenv\Scripts\python.exe -m pytest tests/world/test_gym_leaders.py tests/world/test_gym_command.py tests/world/test_gym_battle_results.py tests/world/test_gym_rewards_orm.py tests/battle/test_battle_rebuild.py tests/adventure/test_adventure_battle_results.py
 ```
 
 Coverage includes a real badge write followed by failure, claim-marker failure,

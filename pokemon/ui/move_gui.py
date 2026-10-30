@@ -6,7 +6,7 @@ import textwrap
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from evennia.utils.ansi import strip_ansi
+from utils.battle_display import strip_ansi
 
 from pokemon.data.text import MOVES_TEXT
 
@@ -112,13 +112,13 @@ def lookup_move(name: str) -> Optional[Dict[str, Any]]:
 	if not name:
 		return None
 	md = _ensure_movedex()
-	mv = md.get(name.lower()) if md else None
+	mv = (md.get(_normalize_key(name)) or md.get(name.lower())) if md else None
 	if not mv:
 		return None
 	entry = MOVES_TEXT.get(_normalize_key(name))
 	short_desc = entry.get("shortDesc") if entry else None
 	return {
-		"name": mv.name,
+		"name": entry.get("name", mv.name) if entry else mv.name,
 		"type": mv.type,
 		"category": mv.category,
 		"pp": mv.pp,
@@ -129,6 +129,49 @@ def lookup_move(name: str) -> Optional[Dict[str, Any]]:
 
 
 # ---------- Card builder ----------
+
+
+class BattleMoveView:
+    """Read-only move presentation with the battler's authoritative PP."""
+
+    def __init__(self, move, current_pp, max_pp):
+        self.move = move
+        self.current_pp = self.pp = current_pp
+        self.max_pp = max_pp
+
+    def __getattr__(self, name):
+        """Keep move metadata on its original runtime object."""
+        return getattr(self.move, name)
+
+
+def battle_move_views(pokemon, moves=None):
+    """Read saved owned PP without confusing dex capacity or copied move PP."""
+    from pokemon.battle.copied_moves import BattleCopyState
+
+    manager = getattr(pokemon, "activemoveslot_set", None)
+    rows = list(manager.all() if hasattr(manager, "all") else manager or [])
+    result = []
+    for move in list(pokemon.moves if moves is None else moves)[:4]:
+        if move is None:
+            result.append(None)
+            continue
+        current = getattr(move, "current_pp", None)
+        if current is None:
+            current = getattr(move, "pp", None)
+        capacity = getattr(move, "max_pp", None)
+        if BattleCopyState.temporary_index(pokemon, move) is None:
+            key = _normalize_key(getattr(move, "name", str(move)))
+            row = next((row for row in rows
+                        if _normalize_key(getattr(getattr(row, "move", None), "name", "")) == key), None)
+            if row is not None:
+                saved = getattr(row, "current_pp", None)
+                if saved is not None:
+                    current = saved
+                maximum = getattr(getattr(row, "pokemon", None), "get_max_pp", None)
+                if callable(maximum):
+                    capacity = maximum(row.move.name)
+        result.append(BattleMoveView(move, current, capacity))
+    return result
 
 
 def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None) -> Dict[str, Any]:
@@ -178,11 +221,15 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
 					if data.get(key) in (None, ""):
 						data[key] = extra.get(key)
 
-	name = data.get("name") or "Unknown"
+	name = data.get("name") or (move if isinstance(move, str) else "Unknown")
 	key = getattr(move, "key", _normalize_key(name))
+	text_entry = MOVES_TEXT.get(_normalize_key(name), {})
+	name = text_entry.get("name") or name
 	mtype = data.get("type")
 	cat = data.get("category") or "Status"
-	maxpp = data.get("pp") or 0
+	maxpp = (data.get("max_pp") if isinstance(move, dict) else getattr(move, "max_pp", None))
+	if maxpp is None:
+		maxpp = data.get("pp") or 0
 	curpp = current_pp if current_pp is not None else maxpp
 	acc = data.get("accuracy")
 	powr = data.get("power")
@@ -246,7 +293,7 @@ def _render_card(card: Dict[str, Any], box_w: int, rows: int) -> List[str]:
 # ---------- Public API ----------
 
 
-def render_move_gui(slots: List[Any], pp_overrides: Optional[Dict[int, int]] = None, total_width: int = 76) -> str:
+def render_move_cards(slots: List[Any], pp_overrides: Optional[Dict[int, int]] = None, total_width: int = 76) -> str:
 	"""Render a 2x2 grid of move cards.
 
 	Parameters
@@ -293,4 +340,84 @@ def render_move_gui(slots: List[Any], pp_overrides: Optional[Dict[int, int]] = N
 	return "\n".join(lines)
 
 
-__all__ = ["render_move_gui"]
+def render_compact_moves(slots, pp_overrides=None, total_width=76, *, unavailable=None,
+                         accessible=False, hints=True):
+    """Present stable move letters and actual PP without claiming unknown capacity."""
+    from pokemon.ui.compact_battle import BattleText
+
+    text = BattleText(total_width, accessible)
+    overrides = pp_overrides or {}
+    unavailable = unavailable or {}
+    wide = text.width >= 68
+    if wide:
+        text.add(rpad("|yCHOOSE A MOVE|n", 28) + "TYPE        CATEGORY    PP")
+    else:
+        text.add("|yCHOOSE A MOVE|n")
+    for index, move in enumerate(list(slots)[:4]):
+        if move is None:
+            continue
+        current = overrides.get(index)
+        if current is None and isinstance(move, dict):
+            current = move.get("current_pp", move.get("pp"))
+        elif current is None and not isinstance(move, str):
+            current = getattr(move, "current_pp", None)
+            if current is None:
+                current = getattr(move, "pp", None)
+        card = _move_to_model("ABCD"[index], move, current)
+        cur, maximum = card["pp"]
+        # Battle snapshots store remaining PP, not boosted maximum capacity.
+        # Only show a denominator when it is explicitly known.
+        capacity = (move.get("max_pp") if isinstance(move, dict)
+                    else maximum if isinstance(move, str) else getattr(move, "max_pp", None))
+        known = current is not None or isinstance(move, str)
+        pp = f"{cur}/{capacity}" if known and capacity is not None else str(cur) if known else "--"
+        struggle = _normalize_key(strip_ansi(card["name"])) == "struggle"
+        if struggle:
+            pp = "--"
+        reason = "NO PP" if known and cur == 0 and not struggle else unavailable.get(index, "")
+        name = card["name"]
+        label = f"|c[{card['label']}]|n {name}"
+        meta = f"{card['color']}{(card['type'] or 'Unknown').upper()}|n"
+        if reason:
+            label = f"|x[{card['label']}] {strip_ansi(name)}|n"
+            meta = f"|x{(card['type'] or 'Unknown').upper()}|n"
+        if wide and len(strip_ansi(label)) <= 27:
+            line = rpad(label, 28) + rpad(meta, 12) + rpad(card["cat"], 12) + pp
+        else:
+            text.add(label)
+            line = f"  {meta} / {card['cat']} / PP {pp}"
+        text.add(line + (f"  |y[{reason}]|n" if reason else ""))
+    if hints:
+        text.add("Choose A-D or a move name. Cancel: cancel.")
+    return text.render()
+
+
+def render_move_details(move, current_pp=None, total_width=76, *, accessible=False):
+    """Keep complete move information available from the compact selector."""
+    from pokemon.ui.compact_battle import BattleText
+
+    card = _move_to_model("", move, current_pp)
+    power, accuracy = (str(card[key]).replace("—", "--") for key in ("power", "acc"))
+    text = BattleText(total_width, accessible)
+    text.add(card["name"])
+    text.add(f"{card['type_disp']} / {card['cat']}")
+    text.add(f"Power: {power} / Accuracy: {accuracy} / PP: {card['pp'][0]}")
+    text.add(card["desc"])
+    return text.render()
+
+
+def render_move_gui(slots, pp_overrides=None, total_width=76, *, style=None, viewer=None,
+                    unavailable=None):
+    """Use the compact move list by default, retaining selectable classic cards."""
+    from pokemon.ui.battle_render import normalize_battle_ui_style
+    from pokemon.ui.compact_battle import screen_reader
+
+    if style is None:
+        style = getattr(getattr(viewer, "db", None), "battle_ui_style", None)
+    if normalize_battle_ui_style(style) != "compact" and not screen_reader(viewer):
+        return render_move_cards(slots, pp_overrides, total_width)
+    return render_compact_moves(slots, pp_overrides, total_width,
+                                unavailable=unavailable, accessible=screen_reader(viewer))
+
+
+__all__ = ["render_move_gui", "render_compact_moves", "render_move_details"]

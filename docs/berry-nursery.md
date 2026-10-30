@@ -1,4 +1,10 @@
-# Oran growing and flavor snacks
+# Reviewed berry growing and flavor snacks
+
+Growing also accepts **Chesto, Sitrus and Lum Berry** under the same four-hour
+cycle, one bag seed and water-based yield rules. The separately authored Chesto
+Nursery recipe offers Chesto for200 each, five finite copies. Sitrus and Lum use
+the existing Held Item Counter sources; those offers and sales are unchanged.
+The new recipe is opt-in authoring, not an installed source or automatic refill.
 
 At a configured **Berry Nursery**, follow its `nursery` exit from the selected
 public hub and use `back` to return. `+store` → **Buy items** offers Oran Berry
@@ -21,6 +27,16 @@ Only the owner can tend their bed. A held Oran Berry is not a seed. Battle locks
 the wrong room, changed cycles and invalid saved times reject safely. Repeated
 watering or harvest cannot add extra credit, and an old request cannot reset a
 newer crop. No tools, currency fee, plot unlock, farming level or process timer.
+
+The later seed batch also accepts **Cheri, Pecha, Rawst and Aspear Berry** under
+the same four-hour policy. Use `+berry plant Cheri Berry` (or the full selected
+name); status and harvest retain that cycle's actual berry. `+use <berry>=3`
+cures its existing useful major status. Held copies are not bag seeds.
+The original Oran/Razz source stays unchanged. A separate optional Seed Counter
+offers the four new names for100 each, five copies each, through `seeds`/`back`.
+It must be explicitly installed with its own marker and nursery flag. The
+[new seed checks](testing/nursery-seeds-2026-10-25.md) use controlled time;
+the four-real-hour released walkthrough remains #893, not completed by those tests.
 
 Independently, `+berry snack Razz Berry=3` feeds one selected bag berry to an eligible
 living, injured owned party member for up to **10 HP**. `fusion`, a unique name
@@ -61,3 +77,8 @@ For source authoring only, `BerryNursery.install(reviewed_hub)` in
 It validates the existing item names and links, serializes competing installers,
 and rejects drift/conflicts. Reinstalling preserves sold stock. It leaves the
 six-item Supply Corner and Adventure content independent.
+
+
+## Chesto, Sitrus and Lum actual elapsed acceptance — October 29
+
+All three added seeds passed a separate real four-hour private run: four stage waterings, reconnects, five harvested berries, useful normal +use effects leaving four, and replay conservation. [Elapsed evidence](testing/nursery-next-three-real-elapsed-2026-10-29.md) records exact times and complete private fixture cleanup. Its captured production-command/SQL transport is separate from socket acceptance and existing-world deployment. No source or stock was installed/refilled in a shared world.

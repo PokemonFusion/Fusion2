@@ -9,6 +9,13 @@ EXP, HP/PP restoration, friendship or evolution. Breeding uses its own explicitl
 started cycle, cost and cooldown; depositing alone never starts one.
 Depositing and retrieving have no cooldown.
 
+At an explicitly configured Daycare, [Mirror Herb teaching](../contextual-and-field-items.md#mirror-herb-teaching)
+is a separate free review/confirm route: `+daycare herb <recipient>=<donor>/<move>`.
+Keep both eligible owned Pokemon in the ordinary party rather than depositing
+them. The recipient needs a held Herb and empty move slot; exact native Gen 9
+egg data and the donor's active knowledge authorize the move. The reusable Herb,
+donor and existing PP are preserved. This does not change custody or breeding.
+
 ```text
 +daycare deposit 3
 +daycare

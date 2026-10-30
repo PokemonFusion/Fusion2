@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "issue": 948,
+  "status": "passed",
+  "source_base": "332113b746a677d72243b9ebcbf4a5dfc2a62580",
+  "transport": "captured ordinary production commands, not sockets",
+  "clock": "unpatched django.utils.timezone.now and real monotonic elapsed time",
+  "total_driver_elapsed_seconds": 14407.594000000041,
+  "nursery_runtime_sha256_lf": {
+    "pokemon/services/berry_growing.py": "62e66bb7cd12aedf624bf06cd9c38c185c1141ed8e117409a7933ed90855123b",
+    "commands/player/cmd_berry.py": "85a99cb9ba8dada7c716ebcbb4c70093d645aacb50269b828251649e0457f824"
+  },
+  "driver_sha256": "8711b13fd5b862ddf08ded74452bf1654c3dfe1f884e70e1331988106a00f59a",
+  "crops": [
+    {
+      "seed": "Chesto Berry",
+      "planted_utc": "2026-10-29T14:22:25.777794+00:00",
+      "watered_utc": [
+        "2026-10-29T14:22:25.794798+00:00",
+        "2026-10-29T15:22:28.440657+00:00",
+        "2026-10-29T16:22:28.508433+00:00",
+        "2026-10-29T17:22:28.391469+00:00"
+      ],
+      "harvested_utc": "2026-10-29T18:22:28.420224+00:00",
+      "elapsed_plant_command_to_harvest_seconds": 14402.64243,
+      "fresh_captured_transports_and_sql_reconnects": 4,
+      "driver_assertions": {
+        "seed_debit": 1,
+        "harvested": 5,
+        "replayed_harvest_extra": 0,
+        "after_use_bag_quantity": 4,
+        "useful_effect": "cure prepared SLP",
+        "replayed_no_effect_use_preserves_resources": true
+      }
+    },
+    {
+      "seed": "Sitrus Berry",
+      "planted_utc": "2026-10-29T14:22:26.044799+00:00",
+      "watered_utc": [
+        "2026-10-29T14:22:26.060798+00:00",
+        "2026-10-29T15:22:28.472654+00:00",
+        "2026-10-29T16:22:28.543432+00:00",
+        "2026-10-29T17:22:28.427486+00:00"
+      ],
+      "harvested_utc": "2026-10-29T18:22:28.664225+00:00",
+      "elapsed_plant_command_to_harvest_seconds": 14402.619426,
+      "fresh_captured_transports_and_sql_reconnects": 4,
+      "driver_assertions": {
+        "seed_debit": 1,
+        "harvested": 5,
+        "replayed_harvest_extra": 0,
+        "after_use_bag_quantity": 4,
+        "useful_effect": "heal one-HP deficit to actual calculated maximum",
+        "replayed_no_effect_use_preserves_resources": true
+      }
+    },
+    {
+      "seed": "Lum Berry",
+      "planted_utc": "2026-10-29T14:22:26.310798+00:00",
+      "watered_utc": [
+        "2026-10-29T14:22:26.325799+00:00",
+        "2026-10-29T15:22:28.505654+00:00",
+        "2026-10-29T16:22:28.579432+00:00",
+        "2026-10-29T17:22:28.462722+00:00"
+      ],
+      "harvested_utc": "2026-10-29T18:22:28.804223+00:00",
+      "elapsed_plant_command_to_harvest_seconds": 14402.493425,
+      "fresh_captured_transports_and_sql_reconnects": 4,
+      "driver_assertions": {
+        "seed_debit": 1,
+        "harvested": 5,
+        "replayed_harvest_extra": 0,
+        "after_use_bag_quantity": 4,
+        "useful_effect": "cure prepared TOX",
+        "replayed_no_effect_use_preserves_resources": true
+      }
+    }
+  ],
+  "cleanup": {
+    "status": "passed",
+    "actual_utc": "2026-10-29T18:23:03.332896+00:00",
+    "all_private_schemas_removed": true,
+    "private_socket_processes_stopped": true,
+    "task_owned_postgresql_stopped": true,
+    "shared_services_touched": false,
+    "logs_and_artifacts_retained": true,
+    "directory_and_pid_verified": true
+  },
+  "limits": [
+    "Three tagged task-owned ordinary trainers, native targets, finite seed sources and wallet were prepared prerequisites.",
+    "The private timing cohort used its existing test source price, not the separately authored Chesto 200x5 recipe. The 63 controlled SQL cases cover that exact authored offer.",
+    "Plant/water/status/harvest commands retain before/after evidence. Useful-use assertions run through the normal +use parser after separately labelled legal injury/status preparation; the final pass is after all those assertions.",
+    "No server clock, planted/ready timestamp, growth interval or watering stage was patched for the timed commands.",
+    "The two nursery runtime files were fingerprinted at planting and verified unchanged. Other item batches were implemented separately during the wait.",
+    "Captured production command/SQL transport is not a socket login or deployment; private socket item routes have a separate receipt.",
+    "All private schemas and socket processes are gone and only the verified task-owned PostgreSQL process was stopped. No shared service or human fixture was changed."
+  ]
+}

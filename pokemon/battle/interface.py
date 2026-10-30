@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import logging
 
-from pokemon.ui.battle_render import DEFAULT_BATTLE_UI_STYLE, normalize_battle_ui_style
+from pokemon.ui.battle_render import DEFAULT_BATTLE_UI_STYLE, normalize_battle_ui_style, _iter_viewer_sessions
 from utils.battle_display import render_battle_ui
+from pokemon.ui.compact_battle import BattleText, same_character, screen_reader
 
 logger = logging.getLogger(__name__)
+_DEFAULT_VIEWER = object()
 
 
 def get_battle_ui_style(target) -> str:
@@ -21,13 +23,19 @@ def get_battle_ui_width(target, default: int = 78) -> int:
 	"""Return a conservative battle UI width for ``target``."""
 
 	ndb = getattr(target, "ndb", None)
-	for candidate in (
+	candidates = [
 		getattr(ndb, "cols", None),
 		getattr(getattr(target, "db", None), "cols", None),
-	):
+	]
+	for client_session in _iter_viewer_sessions(target):
+		width = (getattr(client_session, "protocol_flags", None) or {}).get("SCREENWIDTH")
+		if isinstance(width, dict):
+			width = width.get(0, width.get("0"))
+		candidates.append(width)
+	for candidate in candidates:
 		try:
 			if candidate:
-				return max(60, min(int(candidate) - 2, 80))
+				return max(24, min(int(candidate) - 2, 80))
 		except (TypeError, ValueError):
 			continue
 	return default
@@ -111,6 +119,8 @@ def display_battle_interface(
 	waiting_on=None,
 	style: str | None = None,
 	total_width: int | None = None,
+	viewer=_DEFAULT_VIEWER,
+	session=None,
 	) -> str:
 	"""Return a formatted battle interface string using the new renderer.
 	
@@ -135,13 +145,17 @@ def display_battle_interface(
 		selected an action.  When provided a footer line is displayed showing
 		which Pokémon the system is waiting on.
 	style:
-		Optional renderer style, currently ``legacy``, ``classic_modern`` or
-		``pf1``.
+		Optional renderer style: ``compact``, ``legacy``, ``classic_modern`` or ``pf1``.
 		When omitted, the viewer's ``db.battle_ui_style`` preference is used
-		and falls back to ``classic_modern``.
+		and falls back to ``compact``.
 	total_width:
 		Optional target width.  When omitted, ``target.ndb.cols`` is used if
 		available, capped for ordinary MUD clients.
+	viewer:
+		Actual recipient, when available. Ownership and preferences are resolved
+		for this character rather than borrowing the selected captain's identity.
+	session:
+		Optional live session supplying every physical cell and its controller.
 	"""
 
 	if viewer_team not in ("A", "B", None):
@@ -149,6 +163,15 @@ def display_battle_interface(
 			"Invalid viewer_team %r; defaulting to observer view", viewer_team
 		)
 		viewer_team = None
+	if session is None:
+		session = getattr(getattr(captain_a, "ndb", None), "battle_instance", None)
+	if viewer is _DEFAULT_VIEWER:
+		viewer = captain_a if viewer_team == "A" else captain_b if viewer_team == "B" else None
+	else:
+		members_a = getattr(session, "teamA", None) or [captain_a]
+		members_b = getattr(session, "teamB", None) or [captain_b]
+		viewer_team = ("A" if any(same_character(viewer, member) for member in members_a)
+				   else "B" if any(same_character(viewer, member) for member in members_b) else None)
 
 	class _StateAdapter:
 		"""Light adapter exposing the API expected by the renderer."""
@@ -156,30 +179,33 @@ def display_battle_interface(
 		def __init__(self, captain_a, captain_b, state):
 			self._captains = {"A": captain_a, "B": captain_b}
 			self._state = state
+			self.session = session
 
 		def get_side(self, viewer):
-			if viewer is self._captains["A"]:
-				return "A"
-			if viewer is self._captains["B"]:
-				return "B"
-			return None
+			return viewer_team
 
 		def get_trainer(self, side):
 			return self._captains.get(side)
 
 		@property
 		def weather(self):
+			field = getattr(getattr(self.session, "battle", None), "field", None)
+			if field is not None and hasattr(field, "weather"):
+				return field.weather or "clear"
 			return getattr(self._state, "weather", getattr(self._state, "roomweather", "-"))
 
 		@property
 		def field(self):
-			session = getattr(getattr(captain_a, "ndb", None), "battle_instance", None)
-			field = getattr(getattr(session, "battle", None), "field", None)
+			field = getattr(getattr(self.session, "battle", None), "field", None)
+			conditions = []
+			terrain = getattr(field, "terrain", None)
+			if terrain:
+				conditions.append(str(terrain))
 			room = getattr(field, "pseudo_weather", {}).get("trickroom")
 			if room:
 				remaining = room.get("duration") if isinstance(room, dict) else None
-				return f"Trick Room ({remaining})" if remaining is not None else "Trick Room"
-			return getattr(self._state, "field", "-")
+				conditions.append(f"Trick Room ({remaining})" if remaining is not None else "Trick Room")
+			return " / ".join(conditions) or getattr(self._state, "field", "-")
 
 		@property
 		def round_no(self):
@@ -188,9 +214,6 @@ def display_battle_interface(
 		# Optional, used by UI title and _battle_tag for wild encounters
 		encounter_kind = property(lambda self: getattr(self._state, "encounter_kind", ""))
 
-	viewer = (
-		captain_a if viewer_team == "A" else captain_b if viewer_team == "B" else None
-	)
 	if style is None:
 		style = get_battle_ui_style(viewer) if viewer is not None else DEFAULT_BATTLE_UI_STYLE
 	else:
@@ -205,11 +228,11 @@ def display_battle_interface(
 		waiting_on=waiting_on,
 		style=style,
 	)
-	# Include every active slot, including a doubles partner. The ordinary HUD
-	# currently displays one lead per trainer; Tera must remain visible at A2/B2.
-	session = getattr(getattr(captain_a, "ndb", None), "battle_instance", None)
+	# Older styles still need explicit form labels for their second active slot.
+	# Retain an explicitly supplied session, including an observer's redraw.
 	positions = getattr(getattr(getattr(session, "data", None), "turndata", None), "positions", {})
-	for label, position in positions.items():
+	compact = style == "compact" or screen_reader(viewer)
+	for label, position in (() if compact else positions.items()):
 		mon = getattr(position, "pokemon", None)
 		tera = getattr(mon, "terastallized", None)
 		if tera:
@@ -226,6 +249,10 @@ def display_battle_interface(
 			output += f"\n{side}: Z-Move queued from {request.get('source')} toward {request.get('target')}."
 	for side in sorted(getattr(getattr(session, "battle", None), "z_used", set())):
 		output += f"\n{side}: Z-Move use spent."
+	if compact:
+		text = BattleText(total_width, screen_reader(viewer))
+		text.add(output)
+		return text.render()
 	return output
 
 
@@ -290,51 +317,12 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None, style: st
 
 def broadcast_interfaces(session, *, waiting_on=None) -> None:
         """Render and send interfaces for ``session`` to all participants."""
-        if getattr(getattr(session, 'state', None), 'multi', None):
-                from .multi_battle import field_text
-                for target in [*session.trainers, *getattr(session, 'observers', [])]:
-                        session._msg_to(target, field_text(session))
-                return
-
         for t in getattr(session, "teamA", []):
-                session._msg_to(
-                        t,
-                        display_battle_interface(
-                                session.captainA,
-                                session.captainB,
-                                session.state,
-                                viewer_team="A",
-                                waiting_on=waiting_on,
-                                style=get_battle_ui_style(t),
-                                total_width=get_battle_ui_width(t),
-                        ),
-                )
+                send_interface_to(session, t, waiting_on=waiting_on)
         for t in getattr(session, "teamB", []):
-                session._msg_to(
-                        t,
-                        display_battle_interface(
-                                session.captainA,
-                                session.captainB,
-                                session.state,
-                                viewer_team="B",
-                                waiting_on=waiting_on,
-                                style=get_battle_ui_style(t),
-                                total_width=get_battle_ui_width(t),
-                        ),
-                )
+                send_interface_to(session, t, waiting_on=waiting_on)
         for w in getattr(session, "observers", []):
-                session._msg_to(
-                        w,
-                        display_battle_interface(
-                                session.captainA,
-                                session.captainB,
-                                session.state,
-                                viewer_team=None,
-                                waiting_on=waiting_on,
-                                style=get_battle_ui_style(w),
-                                total_width=get_battle_ui_width(w),
-                        ),
-                )
+                send_interface_to(session, w, waiting_on=waiting_on)
 
 
 def send_interface_to(session, target, *, waiting_on=None) -> None:
@@ -342,7 +330,8 @@ def send_interface_to(session, target, *, waiting_on=None) -> None:
 
         if not target:
                 return
-        if getattr(getattr(session, 'state', None), 'multi', None):
+        if (getattr(getattr(session, 'state', None), 'multi', None)
+                and get_battle_ui_style(target) != "compact" and not screen_reader(target)):
                 from .multi_battle import field_text
                 session._msg_to(target, field_text(session))
                 return
@@ -365,5 +354,25 @@ def send_interface_to(session, target, *, waiting_on=None) -> None:
                         waiting_on=waiting_on,
                         style=get_battle_ui_style(target),
                         total_width=get_battle_ui_width(target),
+                        viewer=target,
+                        session=session,
                 ),
         )
+
+
+def publish_compact_events(session) -> None:
+    """Deliver the final turn's committed events when no further HUD will follow."""
+    from pokemon.ui.compact_battle import BattleEventPresentation, uses_compact
+
+    events = getattr(session, "_battle_ui_last_events", [])
+    if not events:
+        return
+    targets = [*getattr(session, "teamA", []), *getattr(session, "teamB", []),
+               *getattr(session, "observers", [])]
+    for target in targets:
+        if uses_compact(target):
+            text = BattleText(get_battle_ui_width(target), screen_reader(target))
+            text.add("|WLAST TURN|n")
+            for message in events:
+                text.add(BattleEventPresentation.format(message))
+            session._msg_to(target, text.render())

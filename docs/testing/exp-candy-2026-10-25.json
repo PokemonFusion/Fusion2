@@ -1,0 +1,5879 @@
+{
+  "issues": [
+    894,
+    895,
+    896
+  ],
+  "date": "2026-10-25",
+  "status": "local_automated_command_sql_qualified_source_release_acceptance_separate",
+  "evidence_kind": "production commands/menu, private disposable PostgreSQL, captured transport, fresh connection/context and real later battle; no socket login",
+  "items": {
+    "Exp. Candy XS": 100,
+    "Exp. Candy S": 800,
+    "Exp. Candy M": 3000,
+    "Exp. Candy L": 10000,
+    "Exp. Candy XL": 30000
+  },
+  "sql": [
+    {
+      "suite": "exp_candy",
+      "exit": 0,
+      "seconds": 36.86,
+      "cases": [
+        "47"
+      ],
+      "sha256": "35d38e09dff640f864ee5799123fbffe47dcd21a34cc32e3336aec37d50f49f8"
+    },
+    {
+      "suite": "exp_candy_native",
+      "exit": 0,
+      "seconds": 92.74,
+      "cases": [
+        "17"
+      ],
+      "sha256": "daef8671ea3d23d2cc44bc98ab05ca0bdbda39bdbcef7ace88ba3bcf0fae9918"
+    },
+    {
+      "suite": "rare_candy",
+      "exit": 0,
+      "seconds": 14.34,
+      "cases": [
+        "25"
+      ],
+      "sha256": "331b40ea8edd878b1e572d5e562b2cd5fa0bc73405ce451b7514e509b98601a2"
+    },
+    {
+      "suite": "field_training",
+      "exit": 0,
+      "seconds": 32.0,
+      "cases": [
+        "30"
+      ],
+      "sha256": "6bed2b4e8ba1f7d30480e48f96b8c00a7966ae4907fd673d675f421a2e662bf2"
+    }
+  ],
+  "sql_cases": 119,
+  "focused": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "addopts=",
+      "tests/test_exp_candy.py",
+      "tests/test_item_availability.py"
+    ],
+    "exit": 0,
+    "seconds": 6.32,
+    "passed": [
+      "50"
+    ],
+    "failed": [],
+    "skipped": [],
+    "sha256": "207cbd0f4556a562bb1594a1b05183d52ce55d0dd1a952a0f8799de847557d5f"
+  },
+  "mandatory": {
+    "exit_code": 0,
+    "seconds": 2039.45,
+    "passed": [
+      "6429",
+      "6429",
+      "6429"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "deb5bbd7725d36244725933c0ecd9a370ee3effd4a1d1050486c2eac0c802137"
+  },
+  "qualification": {
+    "python_source_count": 1165,
+    "python_source_manifest_sha256": "ed9273866129a6114725449be2869b6e2426968b3e14ca87e75b1772ff1096e5",
+    "baseline_commit": "72acaad868c4e9ff763b8f51daf94abb1783f823",
+    "unrelated_shared_dirty_paths_preserved": 25
+  },
+  "controls": [
+    "five exact sizes; same-level where possible, multi-level, final partial cap, fainted/living deficit",
+    "fresh current owned/party/Fusion, cached former Fusion refusal, eggs/foreign/boxes/gaps/battle/selectors",
+    "five separate-connection last-copy races and competing active-choice replies",
+    "post-debit, post-stat, post-knowledge/queue and containing EXP/choice rollback; success after commit only",
+    "actual crossed knowledge; free/full/gapped slots preserve other boosted/current PP; cancel/replay/stale tokens",
+    "busy menu and disconnected durable choices; fresh SQL connection and rebuilt transport; later real battle stats and explicit Ivysaur evolution",
+    "both genuinely captured/combined native hosts, frozen companions, base knowledge only, deferred active choices, source/displaced PP preserved",
+    "actual optional finite recipe travel/purchase/use/back, outer installer rollback/retry, no-funds/quantity/resale/exhaustion/drift; no implicit refill"
+  ],
+  "observations": [
+    {
+      "case": "__main__.ExpCandyCases.test_L_cap",
+      "command": "+use Exp. Candy L=3",
+      "before": {
+        "level": 99,
+        "total_exp": 999999,
+        "current_hp": 191,
+        "status": "psn"
+      },
+      "after": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 1 EXP and is level 100."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_L_fainted",
+      "command": "+use Exp. Candy L=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 0,
+        "status": "psn"
+      },
+      "after": {
+        "level": 21,
+        "total_exp": 10125,
+        "current_hp": 0,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 10000 EXP and is level 21.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_L_normal",
+      "command": "+use Exp. Candy L=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 21,
+        "total_exp": 10125,
+        "current_hp": 42,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 10000 EXP and is level 21.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_L_same",
+      "command": "+use Exp. Candy L=3",
+      "before": {
+        "level": 90,
+        "total_exp": 729000,
+        "current_hp": 174,
+        "status": "psn"
+      },
+      "after": {
+        "level": 90,
+        "total_exp": 739000,
+        "current_hp": 174,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 10000 EXP and is level 90."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_M_cap",
+      "command": "+use Exp. Candy M=3",
+      "before": {
+        "level": 99,
+        "total_exp": 999999,
+        "current_hp": 191,
+        "status": "psn"
+      },
+      "after": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 1 EXP and is level 100."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_M_fainted",
+      "command": "+use Exp. Candy M=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 0,
+        "status": "psn"
+      },
+      "after": {
+        "level": 14,
+        "total_exp": 3125,
+        "current_hp": 0,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 3000 EXP and is level 14.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_M_normal",
+      "command": "+use Exp. Candy M=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 14,
+        "total_exp": 3125,
+        "current_hp": 29,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 3000 EXP and is level 14.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_M_same",
+      "command": "+use Exp. Candy M=3",
+      "before": {
+        "level": 90,
+        "total_exp": 729000,
+        "current_hp": 174,
+        "status": "psn"
+      },
+      "after": {
+        "level": 90,
+        "total_exp": 732000,
+        "current_hp": 174,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 3000 EXP and is level 90."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_S_cap",
+      "command": "+use Exp. Candy S=3",
+      "before": {
+        "level": 99,
+        "total_exp": 999999,
+        "current_hp": 191,
+        "status": "psn"
+      },
+      "after": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 1 EXP and is level 100."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_S_fainted",
+      "command": "+use Exp. Candy S=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 0,
+        "status": "psn"
+      },
+      "after": {
+        "level": 9,
+        "total_exp": 925,
+        "current_hp": 0,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 800 EXP and is level 9.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_S_normal",
+      "command": "+use Exp. Candy S=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 9,
+        "total_exp": 925,
+        "current_hp": 20,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 800 EXP and is level 9.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_S_same",
+      "command": "+use Exp. Candy S=3",
+      "before": {
+        "level": 90,
+        "total_exp": 729000,
+        "current_hp": 174,
+        "status": "psn"
+      },
+      "after": {
+        "level": 90,
+        "total_exp": 729800,
+        "current_hp": 174,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 800 EXP and is level 90."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_XL_cap",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 99,
+        "total_exp": 999999,
+        "current_hp": 191,
+        "status": "psn"
+      },
+      "after": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 1 EXP and is level 100."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_XL_fainted",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 0,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 0,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_XL_normal",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_XL_same",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 90,
+        "total_exp": 729000,
+        "current_hp": 174,
+        "status": "psn"
+      },
+      "after": {
+        "level": 91,
+        "total_exp": 759000,
+        "current_hp": 175,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 91."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_XS_cap",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 99,
+        "total_exp": 999999,
+        "current_hp": 191,
+        "status": "psn"
+      },
+      "after": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 1 EXP and is level 100."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_XS_fainted",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 0,
+        "status": "psn"
+      },
+      "after": {
+        "level": 6,
+        "total_exp": 225,
+        "current_hp": 0,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 100 EXP and is level 6.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_XS_normal",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 6,
+        "total_exp": 225,
+        "current_hp": 14,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 100 EXP and is level 6.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_XS_same",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 90,
+        "total_exp": 729000,
+        "current_hp": 174,
+        "status": "psn"
+      },
+      "after": {
+        "level": 90,
+        "total_exp": 729100,
+        "current_hp": 174,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 100 EXP and is level 90."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "after": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That Pokemon is already level 100. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 5,
+        "total_exp": 124,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 124,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Invalid saved level/EXP; no EXP Candy was consumed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XS=1",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XS=99",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XS=party",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XS=3/1",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That item does not accept a move selector."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy S=3",
+      "before": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "after": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That Pokemon is already level 100. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy S=3",
+      "before": {
+        "level": 5,
+        "total_exp": 124,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 124,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Invalid saved level/EXP; no EXP Candy was consumed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy S=1",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy S=99",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy S=party",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy S=3/1",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That item does not accept a move selector."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy M=3",
+      "before": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "after": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That Pokemon is already level 100. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy M=3",
+      "before": {
+        "level": 5,
+        "total_exp": 124,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 124,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Invalid saved level/EXP; no EXP Candy was consumed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy M=1",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy M=99",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy M=party",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy M=3/1",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That item does not accept a move selector."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy L=3",
+      "before": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "after": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That Pokemon is already level 100. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy L=3",
+      "before": {
+        "level": 5,
+        "total_exp": 124,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 124,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Invalid saved level/EXP; no EXP Candy was consumed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy L=1",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy L=99",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy L=party",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy L=3/1",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That item does not accept a move selector."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "after": {
+        "level": 100,
+        "total_exp": 1000000,
+        "current_hp": 193,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That Pokemon is already level 100. No item was consumed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 124,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 124,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Invalid saved level/EXP; no EXP Candy was consumed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XL=1",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XL=99",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XL=party",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_all_candies_reject_invalid_or_capped_targets_without_debit",
+      "command": "+use Exp. Candy XL=3/1",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That item does not accept a move selector."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_busy_menu_and_disconnected_transport_keep_pending_choices",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_cancel_replay_and_stale_delivery_do_not_repeat_paid_exp",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_competing_choice_replies_apply_at_most_one",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_field_and_pending_guards_revalidate_current_fusion_and_battle",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Field items require an eligible owned party Pokemon; eggs cannot use them."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_field_and_pending_guards_revalidate_current_fusion_and_battle",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "That Pokemon is no longer an eligible owned party member."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_field_and_pending_guards_revalidate_current_fusion_and_battle",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "You cannot do that during battle."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_field_and_pending_guards_revalidate_current_fusion_and_battle",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Finish your battle before transferring or reserving Pokemon."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_field_and_pending_guards_revalidate_current_fusion_and_battle",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Finish your battle before transferring or reserving Pokemon."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_field_and_pending_guards_revalidate_current_fusion_and_battle",
+      "command": "+use Exp. Candy XS=fusion",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_field_and_pending_guards_revalidate_current_fusion_and_battle",
+      "command": "+use Exp. Candy XS=fusion",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 6,
+        "total_exp": 225,
+        "current_hp": 14,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 100 EXP and is level 6.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_field_and_pending_guards_revalidate_current_fusion_and_battle",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 6,
+        "total_exp": 225,
+        "current_hp": 14,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30225,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_free_and_full_slot_choices_preserve_other_current_pp",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_gapped_active_slots_use_explicit_slot_and_preserve_boosted_pp",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_learning_partial_and_outer_rollback_are_quiet_and_retryable",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_post_debit_and_post_stat_failures_roll_back_each_size",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "EXP Candy could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_post_debit_and_post_stat_failures_roll_back_each_size",
+      "command": "+use Exp. Candy S=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "EXP Candy could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_post_debit_and_post_stat_failures_roll_back_each_size",
+      "command": "+use Exp. Candy M=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "EXP Candy could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_post_debit_and_post_stat_failures_roll_back_each_size",
+      "command": "+use Exp. Candy L=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "EXP Candy could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_post_debit_and_post_stat_failures_roll_back_each_size",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        },
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "EXP Candy could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_post_knowledge_failure_and_outer_rollback_preserve_every_resource",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": []
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_reconnect_resumes_knowledge_and_later_battle_evolution",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_reconnect_resumes_knowledge_and_later_battle_evolution",
+      "kind": "rebuilt-context-later-battle-evolution",
+      "learned": "Growth",
+      "level": 31,
+      "battle_stats": {
+        "hp": 68,
+        "attack": 35,
+        "defense": 35,
+        "special_attack": 45,
+        "special_defense": 45,
+        "speed": 32
+      },
+      "evolved": "Ivysaur",
+      "socket": false
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_stale_fusion_attribute_cache_cannot_spend_a_candy_or_activate",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_stale_fusion_attribute_cache_cannot_spend_a_candy_or_activate",
+      "command": "+use Exp. Candy XS=fusion",
+      "before": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandyCases.test_stale_pp_or_current_target_refuses_a_learning_write",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandySourceCases.test_authored_L",
+      "command": "+use Exp. Candy L=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 21,
+        "total_exp": 10125,
+        "current_hp": 42,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 10000 EXP and is level 21.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandySourceCases.test_authored_M",
+      "command": "+use Exp. Candy M=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 14,
+        "total_exp": 3125,
+        "current_hp": 29,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandym",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 3000 EXP and is level 14.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandySourceCases.test_authored_S",
+      "command": "+use Exp. Candy S=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 9,
+        "total_exp": 925,
+        "current_hp": 20,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandys",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 800 EXP and is level 9.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandySourceCases.test_authored_XL",
+      "command": "+use Exp. Candy XL=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 31,
+        "total_exp": 30125,
+        "current_hp": 61,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth",
+        "Leechseed",
+        "Razorleaf",
+        "Poisonpowder",
+        "Sleeppowder",
+        "Seedbomb",
+        "Takedown",
+        "Sweetscent",
+        "Synthesis",
+        "Worryseed"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxl",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 30000 EXP and is level 31.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    },
+    {
+      "case": "__main__.ExpCandySourceCases.test_authored_XS",
+      "command": "+use Exp. Candy XS=3",
+      "before": {
+        "level": 5,
+        "total_exp": 125,
+        "current_hp": 12,
+        "status": "psn"
+      },
+      "after": {
+        "level": 6,
+        "total_exp": 225,
+        "current_hp": 14,
+        "status": "psn"
+      },
+      "knowledge_before": [
+        "Tackle",
+        "Growl",
+        "Vinewhip"
+      ],
+      "knowledge_after": [
+        "Tackle",
+        "Growl",
+        "Vinewhip",
+        "Growth"
+      ],
+      "bag_before": [
+        {
+          "item_name": "expcandyxs",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Growl",
+          "current_pp": 40
+        }
+      ],
+      "messages": [
+        "Bulbasaur gained 100 EXP and is level 6.",
+        "New moves are stored. Use +learn pending to choose active slots later."
+      ]
+    }
+  ],
+  "index": {
+    "definitions": 612,
+    "scoped": 464,
+    "old_definitions_preserved": 459,
+    "all_world_availability": "unverified"
+  },
+  "limits": [
+    "#896 stays open for exact installation/release plan and deliberately released acceptance; no public source installed",
+    "project records currently use the missing-field medium_fast default; explicit erratic/unknown curves reject",
+    "the XL high-level boundary can cross a level; same-level claims apply only when the actual threshold permits",
+    "automated captured transport/fresh connection is not a socket reconnect, PF2-Dev release or hosted CI proof",
+    "no Rare Candy semantics, existing human data or plot-only content changed"
+  ],
+  "retained_diagnostics": [
+    "keyword-only Attribute-read default fixed",
+    "counter fixture ContentType and per-case tagged cleanup fixed",
+    "native move name assertion normalized by actual identity"
+  ]
+}

@@ -62,29 +62,24 @@ class Abilityshield:
 
 class Abomasite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		"""Mega Stones cannot be removed from their matching Pokémon."""
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Absolite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Absorbbulb:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if move and move.type == "Water" and target:
-			if hasattr(target, "boosts"):
-				target.boosts["spa"] = target.boosts.get("spa", 0) + 1
-			_remove_battle_item(target, source=source, effect=move, used=True)
+		"""Use a surviving holder's matching actual hit, once."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		if move and move.type == "Water" and target and damage > 0:
+			HeldItemBoosts.use(target, {"spa": 1}, source=source, effect=move)
 
 
 class Adamantcrystal:
@@ -124,20 +119,16 @@ class Adrenalineorb:
 
 class Aerodactylite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Aggronite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Aguavberry:
@@ -175,40 +166,33 @@ class Airballoon:
 
 class Alakazite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Altarianite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Ampharosite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Apicotberry:
 	def onEat(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spd"] = pokemon.boosts.get("spd", 0) + 1
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"spd": 1})
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Aspearberry:
@@ -242,11 +226,9 @@ class Assaultvest:
 
 class Audinite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Babiriberry:
@@ -261,20 +243,16 @@ class Babiriberry:
 
 class Banettite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Beedrillite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Berry:
@@ -303,13 +281,12 @@ class Berryjuice:
 
 class Berserkgene:
 	def onUpdate(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["atk"] = pokemon.boosts.get("atk", 0) + 2
-			pokemon.boosts["spe"] = pokemon.boosts.get("spe", 0) + 2
-			if hasattr(pokemon, "volatiles"):
-				pokemon.volatiles["confusion"] = True
-			if hasattr(pokemon, "item"):
-				pokemon.item = None
+		"""Apply the legacy Attack-only item with current PF2 ability guards."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		from pokemon.battle.effect_context import EffectContext
+		item = EffectContext.item(pokemon)
+		if HeldItemBoosts.use(pokemon, {"atk": 2}, source=pokemon):
+			pokemon.addVolatile("confusion", source=pokemon, effect=item)
 
 
 class Bigroot:
@@ -344,30 +321,28 @@ class Blackglasses:
 
 class Blacksludge:
 	def onResidual(self, pokemon=None):
-		if not pokemon:
+		"""Apply the residual through current HP eligibility and battle events."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		if not pokemon or pokemon.hp <= 0:
 			return
 		if "Poison" in set(getattr(pokemon, "types", []) or []):
-			pokemon.hp = min(pokemon.hp + pokemon.max_hp // 16, pokemon.max_hp)
+			HeldItemEffects.heal(pokemon, 16)
 		else:
-			pokemon.hp = max(pokemon.hp - pokemon.max_hp // 8, 0)
+			HeldItemEffects.damage(pokemon, pokemon, 8)
 
 
 class Blastoisinite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Blazikenite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Blueorb:
@@ -453,19 +428,17 @@ class Burntberry:
 
 class Cameruptite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Cellbattery:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if move and move.type == "Electric" and target:
-			if hasattr(target, "boosts"):
-				target.boosts["atk"] = target.boosts.get("atk", 0) + 1
-			_remove_battle_item(target, source=source, effect=move, used=True)
+		"""Use a surviving holder's matching actual hit, once."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		if move and move.type == "Electric" and target and damage > 0:
+			HeldItemBoosts.use(target, {"atk": 1}, source=source, effect=move)
 
 
 class Charcoal:
@@ -477,20 +450,16 @@ class Charcoal:
 
 class Charizarditex:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Charizarditey:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Chartiberry:
@@ -732,11 +701,9 @@ class Destinyknot:
 
 class Diancite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Dousedrive:
@@ -848,10 +815,9 @@ class Electricmemory:
 
 
 class Electricseed:
-	def _activate(self, pokemon):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["def"] = pokemon.boosts.get("def", 0) + 1
-		_remove_battle_item(pokemon, used=True)
+	def _activate(self, pokemon=None):
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.use(pokemon, {"def": 1}, source=pokemon)
 
 	def onStart(self, pokemon=None):
 		terrain = _current_field_terrain(pokemon)
@@ -1052,49 +1018,40 @@ class Focussash:
 
 class Galladite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Ganlonberry:
 	def onEat(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["def"] = pokemon.boosts.get("def", 0) + 1
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"def": 1})
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Garchompite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Gardevoirite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Gengarite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Ghostgem:
@@ -1115,11 +1072,9 @@ class Ghostmemory:
 
 class Glalitite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Goldberry:
@@ -1157,9 +1112,8 @@ class Grassmemory:
 
 class Grassyseed:
 	def _activate(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["def"] = pokemon.boosts.get("def", 0) + 1
-		_remove_battle_item(pokemon, used=True)
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.use(pokemon, {"def": 1}, source=pokemon)
 
 	def onStart(self, pokemon=None):
 		terrain = _current_field_terrain(pokemon)
@@ -1214,11 +1168,9 @@ class Groundmemory:
 
 class Gyaradosite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Habanberry:
@@ -1256,20 +1208,16 @@ class Hearthflamemask:
 
 class Heracronite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Houndoominite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Iapapaberry:
@@ -1367,11 +1315,9 @@ class Ironplate:
 
 class Jabocaberry:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if source and move and move.category == "Physical":
-			if hasattr(source, "hp") and hasattr(source, "max_hp"):
-				source.hp = max(source.hp - source.max_hp // 8, 0)
-			if target and hasattr(target, "item"):
-				target.item = None
+		"""Retain the berry if Magic Guard prevents its retaliation."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		HeldItemEffects.retaliate(damage, target, source, move, "Physical")
 
 	def onEat(self, pokemon=None):
 		return
@@ -1379,11 +1325,9 @@ class Jabocaberry:
 
 class Kangaskhanite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Kasibberry:
@@ -1408,14 +1352,16 @@ class Kebiaberry:
 
 class Keeberry:
 	def onAfterMoveSecondary(self, target=None, source=None, move=None):
-		if target and source and target is not source and move and move.category == "Physical":
-			if hasattr(target, "boosts"):
-				target.boosts["def"] = target.boosts.get("def", 0) + 1
-			if hasattr(target, "item"):
-				target.item = None
+		"""Eat after an actual physical hit; the eating hook owns the effect."""
+		from pokemon.battle.item_consumption import ReactiveItemConsumption
+		if (target and source and target is not source and move and move.category == "Physical"
+				and getattr(move, "total_damage", 0) > 0):
+			ReactiveItemConsumption.eat(target, source=source, effect=move)
 
 	def onEat(self, pokemon=None):
-		return
+		"""Apply the eaten berry through normal stage and ability events."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"def": 1})
 
 
 class Kingsrock:
@@ -1438,20 +1384,16 @@ class Lansatberry:
 
 class Latiasite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Latiosite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Laxincense:
@@ -1471,9 +1413,9 @@ class Leek:
 
 class Leftovers:
 	def onResidual(self, pokemon=None):
-		if pokemon:
-			heal = pokemon.max_hp // 16
-			pokemon.hp = min(pokemon.hp + heal, pokemon.max_hp)
+		"""Apply the residual through current HP eligibility and battle events."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		HeldItemEffects.heal(pokemon, 16)
 
 
 class Leppaberry:
@@ -1491,13 +1433,12 @@ class Leppaberry:
 
 class Liechiberry:
 	def onEat(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["atk"] = pokemon.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"atk": 1})
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Lifeorb:
@@ -1531,20 +1472,16 @@ class Loadeddice:
 
 class Lopunnite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Lucarionite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Luckypunch:
@@ -1586,10 +1523,10 @@ class Lumberry:
 
 class Luminousmoss:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if move and move.type == "Water" and target:
-			if hasattr(target, "boosts"):
-				target.boosts["spd"] = target.boosts.get("spd", 0) + 1
-			_remove_battle_item(target, source=source, effect=move, used=True)
+		"""Use a surviving holder's matching actual hit, once."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		if move and move.type == "Water" and target and damage > 0:
+			HeldItemBoosts.use(target, {"spd": 1}, source=source, effect=move)
 
 
 class Lustrousglobe:
@@ -1659,32 +1596,30 @@ class Mail:
 
 class Manectite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Marangaberry:
 	def onAfterMoveSecondary(self, target=None, source=None, move=None):
-		if target and source and target is not source and move and move.category == "Special":
-			if hasattr(target, "boosts"):
-				target.boosts["spd"] = target.boosts.get("spd", 0) + 1
-			if hasattr(target, "item"):
-				target.item = None
+		"""Eat after an actual special hit; the eating hook owns the effect."""
+		from pokemon.battle.item_consumption import ReactiveItemConsumption
+		if (target and source and target is not source and move and move.category == "Special"
+				and getattr(move, "total_damage", 0) > 0):
+			ReactiveItemConsumption.eat(target, source=source, effect=move)
 
 	def onEat(self, pokemon=None):
-		return
+		"""Apply the eaten berry through normal stage and ability events."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"spd": 1})
 
 
 class Mawilite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Meadowplate:
@@ -1704,11 +1639,9 @@ class Meadowplate:
 
 class Medichamite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Mentalherb:
@@ -1733,11 +1666,9 @@ class Mentalherb:
 
 class Metagrossite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Metalcoat:
@@ -1775,20 +1706,16 @@ class Metronome:
 
 class Mewtwonitex:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Mewtwonitey:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Micleberry:
@@ -1874,9 +1801,8 @@ class Mirrorherb:
 
 class Mistyseed:
 	def _activate(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spd"] = pokemon.boosts.get("spd", 0) + 1
-		_remove_battle_item(pokemon, used=True)
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.use(pokemon, {"spd": 1}, source=pokemon)
 
 	def onStart(self, pokemon=None):
 		terrain = _current_field_terrain(pokemon)
@@ -2005,22 +1931,19 @@ class Persimberry:
 
 class Petayaberry:
 	def onEat(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spa"] = pokemon.boosts.get("spa", 0) + 1
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"spa": 1})
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Pidgeotite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Pinkbow:
@@ -2032,11 +1955,9 @@ class Pinkbow:
 
 class Pinsirite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Pixieplate:
@@ -2825,9 +2746,8 @@ class Psychicmemory:
 
 class Psychicseed:
 	def _activate(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spd"] = pokemon.boosts.get("spd", 0) + 1
-		_remove_battle_item(pokemon, used=True)
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.use(pokemon, {"spd": 1}, source=pokemon)
 
 	def onStart(self, pokemon=None):
 		terrain = _current_field_terrain(pokemon)
@@ -2949,12 +2869,10 @@ class Rockmemory:
 
 class Rockyhelmet:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if source and move and move.flags.get("contact"):
-			from pokemon.battle.effect_context import EffectContext
-			if EffectContext.key(EffectContext.item(source)) == "protectivepads":
-				return
-			if hasattr(source, "hp") and hasattr(source, "max_hp"):
-				source.hp = max(source.hp - source.max_hp // 6, 0)
+		"""Contact retaliation remains indirect item damage, including a KO hit."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		if damage > 0 and HeldItemEffects.contact(source, target, move):
+			HeldItemEffects.damage(source, target, 6)
 
 
 class Roomservice:
@@ -2993,11 +2911,9 @@ class Roseliberry:
 
 class Rowapberry:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if source and move and move.category == "Special":
-			if hasattr(source, "hp") and hasattr(source, "max_hp"):
-				source.hp = max(source.hp - source.max_hp // 8, 0)
-			if target and hasattr(target, "item"):
-				target.item = None
+		"""Retain the berry if Magic Guard prevents its retaliation."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		HeldItemEffects.retaliate(damage, target, source, move, "Special")
 
 	def onEat(self, pokemon=None):
 		return
@@ -3025,11 +2941,9 @@ class Rustedsword:
 
 class Sablenite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Safetygoggles:
@@ -3048,40 +2962,33 @@ class Safetygoggles:
 
 class Salacberry:
 	def onEat(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spe"] = pokemon.boosts.get("spe", 0) + 1
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.berry(pokemon, {"spe": 1})
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Salamencite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Sceptilite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Scizorite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Scopelens:
@@ -3105,11 +3012,9 @@ class Sharpbeak:
 
 class Sharpedonite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Shedshell:
@@ -3199,19 +3104,17 @@ class Skyplate:
 
 class Slowbronite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Snowball:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if move and move.type == "Ice" and target:
-			if hasattr(target, "boosts"):
-				target.boosts["atk"] = target.boosts.get("atk", 0) + 1
-			_remove_battle_item(target, source=source, effect=move, used=True)
+		"""Use a surviving holder's matching actual hit, once."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		if move and move.type == "Ice" and target and damage > 0:
+			HeldItemBoosts.use(target, {"atk": 1}, source=source, effect=move)
 
 
 class Softsand:
@@ -3269,16 +3172,12 @@ class Spookyplate:
 
 class Starfberry:
 	def onEat(self, pokemon=None):
-		if not pokemon or not hasattr(pokemon, "boosts"):
-			return
-		stats = ["atk", "def", "spa", "spd", "spe"]
-		stat = stats[int(random() * len(stats))]
-		pokemon.boosts[stat] = min(pokemon.boosts.get(stat, 0) + 2, 6)
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.starf(pokemon)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		HeldItemBoosts.pinch(pokemon)
 
 
 class Steelgem:
@@ -3289,11 +3188,9 @@ class Steelgem:
 
 class Steelixite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Steelmemory:
@@ -3316,13 +3213,19 @@ class Stick:
 
 class Stickybarb:
 	def onHit(self, target=None, source=None, move=None):
-		if move and move.flags.get("contact") and target and source and not getattr(source, "item", None):
-			source.item = target.item
-			target.item = None
+		"""Transfer the physical copy through the ordinary TakeItem boundary."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		if (HeldItemEffects.contact(source, target, move) and source.hp > 0
+				and not (getattr(source, "item", None) or getattr(source, "held_item", None))):
+			battle = getattr(target, "battle", None)
+			if battle:
+				battle.move_item(target, source, effect=move, source=target)
 
 	def onResidual(self, pokemon=None):
-		if pokemon:
-			pokemon.hp = max(pokemon.hp - pokemon.max_hp // 8, 0)
+		"""Magic Guard can prevent HP loss while the barb stays physically held."""
+		from pokemon.battle.held_item_effects import HeldItemEffects
+		if pokemon and pokemon.hp > 0:
+			HeldItemEffects.damage(pokemon, pokemon, 8)
 
 
 class Stoneplate:
@@ -3342,11 +3245,9 @@ class Stoneplate:
 
 class Swampertite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Tangaberry:
@@ -3369,10 +3270,11 @@ class Thickclub:
 
 class Throatspray:
 	def onAfterMoveSecondarySelf(self, source=None, target=None, move=None):
-		if move and move.flags.get("sound") and source and hasattr(source, "item"):
-			if hasattr(source, "boosts"):
-				source.boosts["spa"] = source.boosts.get("spa", 0) + 1
-			source.item = None
+		"""A permitted sound use consumes through UseItem/removal bookkeeping."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		if (move and move.flags.get("sound") and source
+				and (move.category == "Status" or getattr(move, "total_damage", 0) > 0)):
+			HeldItemBoosts.use(source, {"spa": 1}, source=source, effect=move)
 
 
 class Toxicorb:
@@ -3405,11 +3307,9 @@ class Twistedspoon:
 
 class Tyranitarite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Utilityumbrella:
@@ -3428,11 +3328,9 @@ class Utilityumbrella:
 
 class Venusaurite:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and item and getattr(item, "mega_evolves", None) == getattr(pokemon, "name", None):
-			return False
-		if source and item and getattr(item, "mega_evolves", None) == getattr(source, "name", None):
-			return False
-		return True
+		"""Protect only the stone holder's matching native species."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return HeldItemIdentity.can_take_mega_stone(item, pokemon)
 
 
 class Vilevial:
@@ -3484,12 +3382,12 @@ class Waveincense:
 
 class Weaknesspolicy:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if target and move and getattr(target, "hp", 0) > 0 and type_effectiveness(target, move) > 1:
-			if hasattr(target, "boosts"):
-				target.boosts["atk"] = min(target.boosts.get("atk", 0) + 2, 6)
-				target.boosts["spa"] = min(target.boosts.get("spa", 0) + 2, 6)
-			if hasattr(target, "item"):
-				target.item = None
+		"""Consume only after a surviving, ordinary super-effective damaging hit."""
+		from pokemon.battle.item_boosts import HeldItemBoosts
+		if (target and move and damage > 0 and getattr(target, "hp", 0) > 0
+				and not (move.raw.get("damage") or move.raw.get("damageCallback"))
+				and type_effectiveness(target, move) > 1):
+			HeldItemBoosts.use(target, {"atk": 2, "spa": 2}, source=source, effect=move)
 
 
 class Wellspringmask:
