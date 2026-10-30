@@ -224,6 +224,35 @@ def test_post_puppet_skips_notification_for_nonparticipants():
                 restore_evennia(orig)
 
 
+def test_post_puppet_defers_adventure_movement_until_battle_cleanup(monkeypatch):
+        """The real reconnect hook attaches movement only after its gate opens."""
+        from pokemon.adventures import cmdsets, sessions
+        from pokemon.adventures.constants import STATE_ACTIVE
+
+        orig, char_mod = _make_character_module()
+        try:
+                char = char_mod.Character()
+                char.ndb = types.SimpleNamespace(battle_instance=None)
+                char.db = types.SimpleNamespace(battle_id=81)
+                char.location = None
+                char.msg = lambda text: None
+                char._restore_battle_instance = lambda: None
+                session = types.SimpleNamespace(
+                        pk=1, state=STATE_ACTIVE, metadata={}, instance_room=None,
+                )
+                monkeypatch.setattr(sessions, "sync_player_to_active_session", lambda player: session)
+                attached = []
+                monkeypatch.setattr(cmdsets, "attach_movement_cmdset", attached.append)
+
+                char.at_post_puppet()
+                assert not attached
+                char.db.battle_id = None
+                char.at_post_puppet()
+                assert attached == [char]
+        finally:
+                restore_evennia(orig)
+
+
 def test_at_pre_move_blocks_when_battle_lock_present():
         orig, char_mod = _make_character_module()
         try:

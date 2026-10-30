@@ -8,14 +8,15 @@ or a lost handler registry is not evidence that the battle has ended.
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-_BATTLE_PARTS = {"data", "state", "logic", "encounter", "battle_result"}
 _BATTLE_KEY = re.compile(r"^battle_([0-9]+)_(data|state|logic|encounter|battle_result)$")
 
 
 def _db_value(obj: Any, key: str, default: Any = None) -> Any:
+    """Read an Evennia attribute or the equivalent lightweight test value."""
     db = getattr(obj, "db", None)
     if db is None:
         return default
@@ -27,6 +28,7 @@ def _db_value(obj: Any, key: str, default: Any = None) -> Any:
 
 
 def _battle_id(raw: Any) -> int | None:
+    """Normalize a stored battle identity without treating absence as zero."""
     if raw is None or raw is False or raw == "":
         return None
     try:
@@ -36,6 +38,7 @@ def _battle_id(raw: Any) -> int | None:
 
 
 def _room_index_ids(room: Any) -> set[int]:
+    """Read battle identities from the room's persistent index."""
     raw = _db_value(room, "battles", []) or []
     if isinstance(raw, (str, int)):
         raw = [raw]
@@ -56,7 +59,7 @@ def _room_storage_ids(room: Any) -> set[int]:
         except Exception:
             pass
     db = getattr(room, "db", None)
-    names.update(str(key) for key in getattr(db, "__dict__", {}))
+    names.update(str(key) for key in (getattr(db, "__dict__", None) or {}))
     ids = set()
     for key in names:
         match = _BATTLE_KEY.fullmatch(key)
@@ -74,6 +77,7 @@ def room_battle_ids(room: Any) -> set[int]:
 
 
 def _runtime_battle(player: Any) -> Any | None:
+    """Find an unfinished battle without relying on one volatile cache."""
     ndb = getattr(player, "ndb", None)
     cached = getattr(ndb, "battle_instance", None)
     if cached is not None and not getattr(cached, "_ended", False):
@@ -144,7 +148,7 @@ def inspect_adventure_battle(player: Any, session: Any | None = None) -> Adventu
     # A saved result may be the only remaining evidence after battle cleanup.
     receipts = _db_value(player, "pending_adventure_results", {}) or {}
     session_id = getattr(session, "pk", getattr(session, "id", None))
-    if isinstance(receipts, dict):
+    if isinstance(receipts, Mapping):
         pending_result = (str(session_id) in receipts) if session is not None else bool(receipts)
     else:
         # Corrupt receipts must be repaired, not silently bypassed.
@@ -153,13 +157,13 @@ def inspect_adventure_battle(player: Any, session: Any | None = None) -> Adventu
     for bid in room_ids:
         result = _db_value(room, f"battle_{bid}_battle_result", {}) or {}
         encounter = _db_value(room, f"battle_{bid}_encounter", {}) or {}
-        if (isinstance(encounter, dict) and encounter.get("source_type") == "adventure"
+        if (isinstance(encounter, Mapping) and encounter.get("source_type") == "adventure"
                 and str(encounter.get("adventure_session_id")) == str(session_id)
-                and isinstance(result, dict) and result.get("handled") is False):
+                and isinstance(result, Mapping) and result.get("handled") is False):
             pending_result = True
 
     metadata = getattr(session, "metadata", None) or {}
-    awaiting = isinstance(metadata, dict) and metadata.get("encounter_state") == "pending"
+    awaiting = isinstance(metadata, Mapping) and metadata.get("encounter_state") == "pending"
 
     # A character's persisted battle lock is sufficient on its own. Room
     # battle evidence belongs to the session even when character refs vanish.

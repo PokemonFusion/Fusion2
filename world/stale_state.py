@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
@@ -19,6 +20,8 @@ BATTLE_STORAGE_PARTS = (
 	"active",
 	"last_action",
 	"debug",
+	"encounter",
+	"battle_result",
 )
 ADVENTURE_SESSION_ATTR = "adventure_session_id"
 ACTIVE_ADVENTURE_STATE = "active"
@@ -114,7 +117,7 @@ def resolve_adventure_session(session_id: Any) -> Any | None:
 	return get_session_by_id(session_id)
 
 
-def expire_adventure_session(session: Any) -> None:
+def expire_adventure_session(session: Any) -> bool:
 	"""Expire an AdventureSession using the adventure service when available."""
 
 	try:
@@ -159,11 +162,27 @@ def _session_active(session: Any, now: datetime) -> bool:
 
 def _protected_adventure_battle_ids(objects: list[Any]) -> set[int]:
 	"""Retain durable Adventure battle IDs during registry loss."""
-	from pokemon.adventures.sessions import inspect_adventure_battle
+	from pokemon.adventures.interlocks import inspect_adventure_battle, room_battle_ids
+
 	protected: set[int] = set()
+	seen_sessions: set[int] = set()
 	for obj in objects:
-		session = resolve_adventure_session(_get_db(obj, ADVENTURE_SESSION_ATTR))
-		if session is not None:
+		session_ids = {_int_or_none(_get_db(obj, ADVENTURE_SESSION_ATTR))}
+		# Battle metadata outlives missing character and room session markers.
+		# Only use a receipt attached to the session's actual instance room.
+		for battle_id in room_battle_ids(obj):
+			encounter = _get_db(obj, f"battle_{battle_id}_encounter", {})
+			if not isinstance(encounter, Mapping) or encounter.get("source_type") != "adventure":
+				continue
+			session_id = _int_or_none(encounter.get("adventure_session_id"))
+			session = resolve_adventure_session(session_id)
+			if session is not None and _object_id(getattr(session, "instance_room", None)) == _object_id(obj):
+				session_ids.add(session_id)
+		for session_id in session_ids - {None} - seen_sessions:
+			seen_sessions.add(session_id)
+			session = resolve_adventure_session(session_id)
+			if session is None:
+				continue
 			gate = inspect_adventure_battle(getattr(session, "leader", None), session)
 			if gate.blocked:
 				protected.update(gate.battle_ids)
@@ -282,6 +301,11 @@ def _cleanup_adventure_attr(obj: Any, now: datetime, counts: dict[str, int]) -> 
 	if session_id in (None, "", False):
 		return
 	session = resolve_adventure_session(session_id)
+	if session is not None:
+		from pokemon.adventures.interlocks import inspect_adventure_battle
+
+		if inspect_adventure_battle(getattr(session, "leader", None), session).blocked:
+			return
 	if not _session_active(session, now):
 		if _del_db(obj, ADVENTURE_SESSION_ATTR):
 			counts["adventure_attrs"] += 1

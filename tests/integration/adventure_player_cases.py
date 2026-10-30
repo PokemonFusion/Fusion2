@@ -240,12 +240,176 @@ class AdventurePlayerCases(unittest.TestCase):
         queue_encounter_result(session.pk, self.player, 'loss')
         self.command('+adventure/retry')
         session.refresh_from_db()
-        self.assertEqual(session.state, 'completed')
+        self.assertEqual(session.state, 'active')
         self.assertEqual(session.metadata['encounter_result'], 'loss')
+        self.survey(from_fork=True)
+        session.refresh_from_db()
+        self.assertEqual(session.state, 'completed')
         self.command('+adventure/retry')
         self.command('+adventure/claim')
         self.assertFalse(self.player.db.pending_adventure_results)
         self.assertEqual(self.trainer.get_item_quantity('Potion'), 1)
+
+    def assert_encounter_blocks_commands(self, route):
+        """Run real player actions during an authored wild or NPC battle."""
+        session = self.start()
+        self.command('north')
+        self.command('+adventure/choose ' + route)
+        battle = self.player.ndb.battle_instance
+        self.assertIsNotNone(battle, self.messages[-5:])
+        before = self.snapshot()
+        for command in ('north', '+adventure/search', '+adventure/choose ' + route,
+                        '+adventure/start alpha_meadow', '+adventure/leave'):
+            self.command(command)
+            self.assertEqual(self.snapshot(), before, command)
+        detach_movement_cmdset(self.player)
+        self.command('+adventure/look')
+        self.command('+adventure/objectives')
+        self.assertFalse(self.player.cmdset.has_cmdset(AdventureMovementCmdSet, must_be_default=False))
+        self.assertEqual(self.player.location.pk, self.room.pk)
+        self.assertEqual(AdventureSession.objects.filter(leader=self.player).count(), 1)
+
+    def test_wild_battle_blocks_production_adventure_commands(self):
+        """An ordinary player's active wild battle blocks each lifecycle action."""
+        self.assert_encounter_blocks_commands('wild')
+
+    def test_trainer_battle_blocks_production_adventure_commands(self):
+        """An ordinary player's active NPC battle has the same action gates."""
+        self.assert_encounter_blocks_commands('trainer')
+
+    def test_registry_and_marker_loss_preserves_storage_then_reconnect(self):
+        """Persistent room parts protect the run through cleanup and reconnect."""
+        from pokemon.battle.handler import battle_handler
+        from world.stale_state import cleanup_stale_state
+
+        session = self.start()
+        self.command('north')
+        self.command('+adventure/choose wild')
+        battle = self.player.ndb.battle_instance
+        self.assertIsNotNone(battle)
+        original_data = battle.storage.get('data')
+        AdventureSession.objects.filter(pk=session.pk).update(
+            expires_at=timezone.now() - timedelta(seconds=1))
+        self.player.ndb.battle_instance = None
+        self.player.db.adventure_session_id = None
+        self.room.db.adventure_session_id = None
+        self.room.db.battles = []
+        outside = ObjectDB.objects.create(db_key='Reconnect ' + uuid4().hex[:8])
+        # Simulate a persisted reconnect location without invoking movement.
+        self.player.db_location = outside
+        try:
+            with patch.dict(battle_handler.instances, {}, clear=True):
+                counts = cleanup_stale_state(objects=[self.player, self.room], active_battle_ids=set())
+                self.assertFalse(any(counts.values()), counts)
+                self.assertEqual(battle.storage.get('data'), original_data)
+                self.assertEqual(self.player.db.battle_lock, battle.battle_id)
+                restored = sync_player_to_active_session(ObjectDB.objects.get(pk=self.player.pk))
+                self.assertEqual(restored.pk, session.pk)
+                self.assertEqual(self.player.location.pk, outside.pk)
+                self.command('north')
+                self.command('+adventure/leave')
+                session.refresh_from_db()
+                self.assertEqual(session.state, 'active')
+                self.assertEqual(self.player.db.adventure_session_id, session.pk)
+                self.assertEqual(self.room.db.adventure_session_id, session.pk)
+        finally:
+            self.player.ndb.battle_instance = battle
+            self.player.db_location = self.room
+            self.room.db.battles = [battle.battle_id]
+
+    def test_expired_pending_outcome_retries_once_without_replacement(self):
+        """Terminal cleanup preserves an expired run's original outcome receipt."""
+        from pokemon.adventures.sessions import AdventureActionResult, expire_session
+        from pokemon.battle.handler import battle_handler
+        from world.stale_state import cleanup_stale_state
+
+        session = self.start()
+        self.command('north')
+        self.command('+adventure/choose wild')
+        battle = self.player.ndb.battle_instance
+        command = CmdBattleConcede()
+        command.caller = self.player
+        with patch('pokemon.adventures.sessions.resolve_encounter_result',
+                   return_value=AdventureActionResult(False, 'controlled result outage')):
+            command._finalize_concession(battle, battle_handler)
+        self.assertIsNone(self.player.ndb.battle_instance)
+        self.assertEqual(dict(self.player.db.pending_adventure_results), {str(session.pk): 'loss'})
+        AdventureSession.objects.filter(pk=session.pk).update(
+            expires_at=timezone.now() - timedelta(seconds=1))
+        cleanup_stale_state(objects=[self.player, self.room], active_battle_ids=set())
+        before = self.snapshot()
+        for text in ('north', '+adventure/search', '+adventure/choose wild',
+                     '+adventure/start alpha_meadow', '+adventure/leave'):
+            self.command(text)
+            self.assertEqual(self.snapshot(), before, text)
+        self.command('+adventure/retry')
+        once = self.snapshot()
+        self.command('+adventure/retry')
+        self.assertEqual(self.snapshot(), once)
+        session.refresh_from_db()
+        self.assertEqual(session.metadata['encounter_result'], 'loss')
+        self.assertEqual(AdventureParticipation.objects.get(session=session).encounter_result, 'loss')
+        self.assertFalse(self.player.db.pending_adventure_results)
+        self.assertTrue(expire_session(session))
+        self.assertFalse(self.player.db.adventure_session_id)
+        self.assertFalse(self.room.db.adventure_session_id)
+        self.assertEqual(AdventureSession.objects.filter(leader=self.player).count(), 1)
+
+    def test_administrative_return_and_abort_preserve_active_battle(self):
+        """Staff cleanup respects battle evidence; ordinary players lack access."""
+        self.start()
+        self.command('north')
+        self.command('+adventure/choose wild')
+        staff = ObjectDB.objects.create(db_key='Adventure Staff ' + uuid4().hex[:8],
+                                        db_typeclass_path='pokemon.user.User')
+        staff.permissions.add('Wizards')
+        command = CmdAdventureAdmin()
+        command.caller = staff
+        self.assertFalse(command.access(self.player, 'cmd'))
+        self.assertTrue(command.access(staff, 'cmd'))
+        output = []
+        before = self.snapshot()
+        with patch.object(staff, 'msg', side_effect=output.append), \
+                patch.object(staff, 'search', return_value=self.player):
+            command._abort(str(self.player.db.adventure_session_id))
+            command._return_player(self.player.key)
+        self.assertEqual(len(output), 2)
+        self.assertTrue(all('must finish' in str(message) for message in output))
+        self.assertEqual(self.snapshot(), before)
+
+    def test_rejected_return_keeps_session_and_movement_until_success(self):
+        """A failed physical return cannot strand an abandoned, unowned player."""
+        session = self.start()
+        before = self.snapshot()
+        with patch.object(self.player, 'move_to', return_value=False):
+            self.command('+adventure/leave')
+        self.assertEqual(self.snapshot(), before)
+        self.assertEqual(self.player.location.pk, self.room.pk)
+        self.assertTrue(self.player.cmdset.has_cmdset(AdventureMovementCmdSet, must_be_default=False))
+        self.command('+adventure/leave')
+        session.refresh_from_db()
+        self.assertEqual(session.state, 'abandoned')
+        self.assertEqual(self.player.location.pk, self.hall.pk)
+
+    def test_old_expiry_keeps_newer_persisted_session_markers(self):
+        """An old terminal operation never releases the replacement run."""
+        from pokemon.adventures.sessions import expire_session
+
+        old = self.start()
+        old.state = 'abandoned'
+        old.save(update_fields=['state'])
+        replacement = AdventureSession.objects.create(
+            leader=self.player, instance_room=self.room, return_location=self.hall,
+            template_key='alpha_meadow', current_node='entrance')
+        self.player.db.adventure_session_id = self.room.db.adventure_session_id = replacement.pk
+
+        self.assertTrue(expire_session(old))
+
+        self.assertEqual(self.player.db.adventure_session_id, replacement.pk)
+        self.assertEqual(self.room.db.adventure_session_id, replacement.pk)
+        self.command('+adventure/look')
+        replacement.refresh_from_db()
+        self.assertEqual(replacement.state, 'active')
 
 
 if __name__ == '__main__':
@@ -264,7 +428,9 @@ if __name__ == '__main__':
         ContentType.objects.get_for_models(*apps.get_models(), for_concrete_models=False)
         evennia.search_object = search_object
         with patch.object(evennia, 'Command', Command), patch.object(evennia, 'CmdSet', CmdSet):
+            from commands.admin.cmd_adventureadmin import CmdAdventureAdmin
             from commands.player.cmd_battle_attack import CmdBattleAttack
+            from commands.player.cmd_battle_concede import CmdBattleConcede
             from pokemon.adventures.cmdsets import (
                 AdventureMovementCmdSet,
                 CmdAdventureNorth,

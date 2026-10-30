@@ -246,6 +246,30 @@ def test_adventure_admin_cleanup_uses_stale_state(monkeypatch):
     assert caller.messages[-1] == "Adventure cleanup ran: cleared adventure_attrs=2"
 
 
+@pytest.mark.parametrize("switch", ["abort", "return"])
+@pytest.mark.parametrize("evidence", ["battle", "receipt", "route"])
+def test_adventure_admin_cannot_discard_recoverable_encounter(switch, evidence):
+    """Staff commands preserve the same battle/result ownership as player leave."""
+    hall, instance, player = _world()
+    session = _make_session(player, instance, hall)
+    if evidence == "battle":
+        instance.db.battle_81_data = {"retained": True}
+    elif evidence == "receipt":
+        player.db.pending_adventure_results = {str(session.pk): "capture"}
+    else:
+        session.metadata = {"route_key": "wild", "encounter_state": "pending"}
+    caller = DummyCaller(registry={"Player": player})
+
+    _run_admin({switch}, str(session.pk) if switch == "abort" else "Player", caller=caller)
+
+    assert "must finish" in caller.messages[-1]
+    assert session.state == STATE_ACTIVE
+    assert player.db.adventure_session_id == instance.db.adventure_session_id == session.pk
+    assert player.location is instance
+    assert not player.moves
+    assert not player.cmdset.deleted
+
+
 def test_adventure_admin_validate_all_reports_ok():
     caller = _run_admin({"validate"}, "all")
 

@@ -97,10 +97,31 @@ class AdventureLifecycleCases(unittest.TestCase):
         self.adventure.save()
         sessions.queue_encounter_result(self.adventure.pk, self.player, "capture")
         self.assertFalse(sessions.leave_session(self.player, session=self.adventure).ok)
-        self.assertTrue(sessions.retry_encounter_results(self.player))
+        self.assertIn("capture", sessions.retry_encounter_results(self.player.character))
         self.adventure.refresh_from_db()
         self.assertEqual(self.adventure.metadata["encounter_result"], "capture")
         self.assertEqual(dict(self.player.db.pending_adventure_results), {})
+
+    def test_completed_run_retains_ownership_through_terminal_cleanup(self):
+        """Completed SQL state cannot lose its retained battle during stale cleanup."""
+        from django.utils import timezone
+        from world.stale_state import cleanup_stale_state
+
+        room = self.player.location
+        self.adventure.instance_room = room
+        self.adventure.state = 'completed'
+        self.adventure.completed_at = timezone.now()
+        self.adventure.save()
+        self.player.db.adventure_session_id = room.db.adventure_session_id = self.adventure.pk
+        room.db.battles = [81]
+        room.db.battle_81_data = {'terminal_cleanup_pending': True}
+
+        counts = cleanup_stale_state(objects=[self.player.character, room], active_battle_ids=set())
+
+        self.assertFalse(any(counts.values()), counts)
+        self.assertEqual(self.player.db.adventure_session_id, self.adventure.pk)
+        self.assertEqual(room.db.adventure_session_id, self.adventure.pk)
+        self.assertEqual(dict(room.db.battle_81_data), {'terminal_cleanup_pending': True})
 
     def test_generation_failure_releases_lock_and_same_route_can_retry(self):
         """A constructor-registered session must not block the advertised retry."""
