@@ -58,7 +58,9 @@ acceptance.
 ## Finding and documenting a feature
 
 Start with the [code map](docs/code-map.md) for commands, services, models, and
-representative tests. The [documentation home](docs/index.md) links feature
+representative tests. The [test source index](tests/README.md) describes feature
+folders and shared support; the [tools index](tools/README.md) separates QA,
+audits, and data generation. The [documentation home](docs/index.md) links feature
 guides, design contracts, operational notes, and dated verification reports.
 
 When adding a document, link it from the appropriate index. Keep a guide about

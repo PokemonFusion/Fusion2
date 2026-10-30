@@ -1,0 +1,256 @@
+import os
+import sys
+import types
+
+import pytest
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, ROOT)
+
+# Provide a minimal evennia stub if the real module isn't available
+if "evennia" not in sys.modules:
+	evennia = types.ModuleType("evennia")
+	evennia.DefaultRoom = type("DefaultRoom", (), {})
+	evennia.objects = types.SimpleNamespace(objects=types.SimpleNamespace(DefaultRoom=evennia.DefaultRoom))
+	evennia.create_object = lambda *a, **k: None
+	evennia.search_object = lambda *a, **k: []
+	sys.modules["evennia"] = evennia
+
+# Provide a lightweight battle system stub so ``world.hunt_system`` can import
+# its dependencies without requiring the real game engine.
+orig_pokemon_pkg = sys.modules.get("pokemon")
+if orig_pokemon_pkg is None:
+	import pokemon as orig_pokemon_pkg  # type: ignore
+if "pokemon.battle.battleinstance" not in sys.modules:
+	battle_mod = types.ModuleType("pokemon.battle.battleinstance")
+
+	class BattleType:
+		WILD = "wild"
+		TRAINER = "trainer"
+
+	class BattleSession:
+		def __init__(self, player, opponent=None):
+			self.captainA = player
+
+		def start(self):
+			pass
+
+	def create_battle_pokemon(name, level, is_wild=False):
+		return types.SimpleNamespace(name=name, level=level)
+
+	def generate_trainer_pokemon():
+		return types.SimpleNamespace(name="Rattata", level=5)
+
+	battle_mod.BattleType = BattleType
+	battle_mod.BattleSession = BattleSession
+	battle_mod.create_battle_pokemon = create_battle_pokemon
+	battle_mod.generate_trainer_pokemon = generate_trainer_pokemon
+
+	# Ensure the parent packages exist in ``sys.modules``
+	if "pokemon.battle" not in sys.modules:
+		sys.modules["pokemon.battle"] = types.ModuleType("pokemon.battle")
+	sys.modules["pokemon.battle.battleinstance"] = battle_mod
+
+from utils.pokemon_config import RARITY_WEIGHTS
+from world.hunt_system import HuntSystem
+
+
+class DummyDB(types.SimpleNamespace):
+	def get(self, key, default=None):
+		return getattr(self, key, default)
+
+
+class DummyRoom:
+	def __init__(self):
+		# use a 0 encounter rate to ensure fixed hunts ignore it
+		self.db = DummyDB(allow_hunting=True, encounter_rate=0)
+		self.ndb = DummyDB()
+
+
+class DummyAttr(types.SimpleNamespace):
+	def get(self, key, default=None):
+		return getattr(self, key, default)
+
+
+class DummyStorage:
+	def get_party(self):
+		return [types.SimpleNamespace(ability=None, current_hp=10)]
+
+
+class DummyHunter:
+	def __init__(self):
+		self.key = "hunter"
+		self.db = DummyAttr(training_points=10)
+		self.ndb = DummyAttr()
+		self.storage = DummyStorage()
+		self.location = DummyRoom()
+
+
+def test_perform_fixed_hunt():
+	room = DummyRoom()
+	captured = {}
+
+	def cb(hunter, data):
+		captured.update(data)
+
+	hs = HuntSystem(room, spawn_callback=cb)
+	hunter = DummyHunter()
+	hunter.location = room
+	msg = hs.perform_fixed_hunt(hunter, "Pikachu", 7)
+	assert msg == "A wild Pikachu (Lv 7) appeared!"
+	assert captured["name"] == "Pikachu"
+	assert captured["level"] == 7
+
+
+def teardown_module(module):
+	if orig_pokemon_pkg is not None:
+		sys.modules["pokemon"] = orig_pokemon_pkg
+	else:
+		sys.modules.pop("pokemon", None)
+
+
+def test_allow_hunting_string_value():
+	room = DummyRoom()
+	room.db.allow_hunting = "true"
+	hs = HuntSystem(room)
+	hunter = DummyHunter()
+	hunter.location = room
+	msg = hs.perform_fixed_hunt(hunter, "Pidgey", 5)
+	assert msg.startswith("A wild Pidgey")
+
+
+def test_hunt_not_allowed():
+	room = DummyRoom()
+	room.db.allow_hunting = False
+	hs = HuntSystem(room)
+	hunter = DummyHunter()
+	msg = hs.perform_fixed_hunt(hunter, "Rattata", 3)
+	assert msg == "You can't hunt here."
+
+
+@pytest.mark.parametrize("team_size", [1, 2, 6])
+def test_perform_hunt_npc_trainer_uses_generated_encounter(monkeypatch, team_size):
+	room = DummyRoom()
+	room.db.npc_chance = 100
+	room.db.tp_cost = 3
+	hunter = DummyHunter()
+	hunter.location = room
+	hunter.db.training_points = 10
+	mon = types.SimpleNamespace(name="Pidgey", level=5)
+	encounter = types.SimpleNamespace(
+		display_name="Bug Catcher Ren",
+		intro_text="Bug Catcher Ren challenges you with Pidgey!",
+		team=[mon] + [types.SimpleNamespace(name=f"Reserve {i}", level=5) for i in range(1, team_size)],
+		ai_profile="trainer_skilled",
+	)
+	captured = {}
+
+	def fake_generate_random_trainer_encounter(passed_room):
+		captured["room"] = passed_room
+		return encounter
+
+	class RecordingBattleSession:
+		def __init__(self, player, opponent=None):
+			self.captainA = player
+			self.temp_pokemon_ids = []
+			captured["session"] = self
+
+		def start_trainer_encounter(self, resolved_encounter):
+			captured["encounter"] = resolved_encounter
+
+	monkeypatch.setattr("world.hunt_system.generate_random_trainer_encounter", fake_generate_random_trainer_encounter)
+	monkeypatch.setattr("world.hunt_system.BattleSession", RecordingBattleSession)
+	monkeypatch.setattr(HuntSystem, "_apply_walk_steps", lambda self, hunter: None)
+	monkeypatch.setattr(HuntSystem, "_check_itemfinder", lambda self, hunter: None)
+
+	msg = HuntSystem(room).perform_hunt(hunter)
+
+	assert msg == encounter.intro_text
+	assert captured["room"] is room
+	assert captured["encounter"] is encounter
+	assert len(captured["encounter"].team) == team_size
+	assert hunter.db.training_points == 7
+	assert captured["encounter"].ai_profile == "trainer_skilled"
+
+
+def test_failed_trainer_hunt_does_not_spend_training_points(monkeypatch):
+	"""Only charge for an encounter after the full-team startup succeeds."""
+	hunter = DummyHunter()
+	encounter = types.SimpleNamespace(team=[object(), object()])
+
+	class FailingBattleSession:
+		"""Model a failure while starting the resolved trainer encounter."""
+
+		def __init__(self, player):
+			self.player = player
+
+		def start_trainer_encounter(self, resolved_encounter):
+			assert resolved_encounter is encounter
+			raise RuntimeError("battle startup failed")
+
+	monkeypatch.setattr("world.hunt_system.generate_random_trainer_encounter", lambda room: encounter)
+	monkeypatch.setattr("world.hunt_system.BattleSession", FailingBattleSession)
+	with pytest.raises(RuntimeError, match="battle startup failed"):
+		HuntSystem(hunter.location)._resolve_npc_encounter(hunter, 3)
+	assert hunter.db.training_points == 10
+
+
+def test_hunt_requires_conscious_pokemon():
+	room = DummyRoom()
+	hs = HuntSystem(room)
+	hunter = DummyHunter()
+	hunter.location = room
+
+	class FaintedStorage(DummyStorage):
+		def get_party(self):
+			return [types.SimpleNamespace(ability=None, current_hp=0)]
+
+	hunter.storage = FaintedStorage()
+	msg = hs.perform_hunt(hunter)
+	assert msg == "You don't have any Pokémon able to battle."
+
+
+def test_hunt_chart_accepts_rarity_weights(monkeypatch):
+	room = DummyRoom()
+	room.db.encounter_rate = 100
+	room.db.hunt_chart = [
+		{"name": "Rattata", "rarity": "rare", "min_level": 5, "max_level": 5},
+		{"name": "Pidgey", "weight": 7, "min_level": 5, "max_level": 5},
+	]
+	hs = HuntSystem(room)
+	hunter = DummyHunter()
+	hunter.location = room
+	captured = {}
+
+	def fake_choices(entries, weights, k):
+		captured["weights"] = weights
+		return [entries[0]]
+
+	monkeypatch.setattr("world.hunt_system.random.choices", fake_choices)
+	monkeypatch.setattr("world.hunt_system.random.randint", lambda low, high: low)
+
+	msg = hs._resolve_wild_encounter(hunter, 0)
+
+	assert msg == "A wild Rattata (Lv 5) appeared!"
+	assert captured["weights"] == [RARITY_WEIGHTS["rare"], 7]
+
+
+def test_hunt_falls_back_to_spawn_table(monkeypatch):
+	room = DummyRoom()
+	room.db.encounter_rate = 100
+	room.db.hunt_chart = []
+	room.db.spawn_table = [{"species": "Pidgey", "rarity": "uncommon", "tiers": ["T2"]}]
+	captured = {}
+	hs = HuntSystem(room, spawn_callback=lambda hunter, data: captured.update(data))
+	hunter = DummyHunter()
+	hunter.location = room
+
+	monkeypatch.setattr("world.hunt_system.random.choices", lambda entries, weights, k: [entries[0]])
+	monkeypatch.setattr("world.hunt_system.random.randint", lambda low, high: low)
+
+	msg = hs._resolve_wild_encounter(hunter, 0)
+
+	assert msg == "A wild Pidgey (Lv 10) appeared!"
+	assert captured["data"]["weight"] == RARITY_WEIGHTS["uncommon"]
+	assert captured["data"]["min_level"] == 10
+	assert captured["data"]["max_level"] == 25

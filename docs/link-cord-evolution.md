@@ -75,7 +75,7 @@ consume an extra copy. Ability slots and types follow the target; nickname,
 held item, HP/status, EXP, IVs/EVs, moves/PP and placement retain the existing
 evolution policy. No schema change, migration or automatic trade hook is added.
 
-- `tests/test_link_cord_evolution.py` covers the complete dex allowlist, exact
+- `tests/evolution/test_link_cord_evolution.py` covers the complete dex allowlist, exact
   form/size selection, independent paired-species equivalents and rule guards.
 - `tests/integration/link_cord_cases.py` uses an explicit disposable PostgreSQL
   DSN for ordinary commands, all 14 mappings, bag consumption, persisted state,

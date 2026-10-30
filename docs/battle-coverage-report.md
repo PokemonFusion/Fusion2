@@ -141,7 +141,7 @@ calculated attack and defense values.
 ## Commands
 
 ```powershell
-$env:PYTHONPATH = "fusion2"; .\evenv\Scripts\python.exe -m tests.battle_contract_coverage
+$env:PYTHONPATH = "fusion2"; .\evenv\Scripts\python.exe -m tests.battle.battle_contract_coverage
 .\evenv\Scripts\python.exe -m pytest fusion2\tests\test_battle_semantic_contracts.py -q
 .\evenv\Scripts\python.exe -m pytest fusion2\pokemon\battle\tests\test_generated_move_callbacks.py --run-callback-tests -q
 ```

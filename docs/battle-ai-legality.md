@@ -49,7 +49,7 @@ Old checkpoints without these additional fields retain their previous defaults.
 
 ## Verification
 
-`tests/test_legal_ai_actions.py` exercises legality, target classes, invalid
+`tests/battle/test_legal_ai_actions.py` exercises legality, target classes, invalid
 actors, reserved and trapped slots, deterministic forced replacement, bounded
 switching, stale preferences, late invalidation and safe move snapshots.
 Existing AI scorer, PP, trainer reserve, move-control and trapping regressions

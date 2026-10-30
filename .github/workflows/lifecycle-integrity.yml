@@ -59,7 +59,8 @@ on:
       - 'pytest.ini'
       - 'Makefile'
       - 'tools/run_mandatory_tests.py'
-      - 'tools/audit_item_availability.py'
+      - 'tools/audits/**'
+      - 'tools/qa/**'
       - 'docs/testing/item-stat-type-plan-2026-10-22.json'
       - 'docs/offline-battle-testing.md'
       - 'tests/**'
@@ -144,7 +145,7 @@ jobs:
       - name: NPC challenge constructor failure and persistent cleanup retries
         run: python tests/integration/trainer_challenge_cases.py
       - name: Evolution conditions and commands
-        run: pytest -q tests/test_evolution.py tests/test_evolution_conditions.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py tests/test_trade_held_evolution.py tests/test_trade_safety.py
+        run: pytest -q tests/evolution/test_evolution.py tests/evolution/test_evolution_conditions.py tests/evolution/test_evolve_command_safety.py tests/items/test_hold_command_safety.py tests/evolution/test_trade_held_evolution.py tests/ownership/test_trade_safety.py
       - name: Adventure and gym recovery with concurrent PostgreSQL claims
         run: python tests/integration/recovery_cases.py
       - name: Battle EXP, HP, PP and post-win healing on PostgreSQL

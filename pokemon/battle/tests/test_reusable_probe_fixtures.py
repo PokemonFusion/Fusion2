@@ -11,10 +11,10 @@ import pytest
 from .helpers import load_modules
 from .test_diagnosed_item_effects import native_battle
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
-from live_dex_ability_probes import TRIGGERS, fixtures
-from live_dex_cases import move_cases
-from live_smoke_effects_cases import probes
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools" / "qa"))
+from tools.qa.live_dex_ability_probes import TRIGGERS, fixtures
+from tools.qa.live_dex_cases import move_cases
+from tools.qa.live_smoke_effects_cases import probes
 
 
 def run_case(case):

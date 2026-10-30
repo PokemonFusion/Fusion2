@@ -16,7 +16,7 @@ tracked tests, authored world data, and documentation keep their existing paths.
 For a focused run that needs an explicit pytest temporary directory:
 
 ```powershell
-..\evenv\Scripts\python.exe -B -m pytest tests/test_trade_safety.py --basetemp .codex-artifacts/test-work/trade-safety
+..\evenv\Scripts\python.exe -B -m pytest tests/ownership/test_trade_safety.py --basetemp .codex-artifacts/test-work/trade-safety
 ```
 
 Pytest clears the selected `--basetemp` directory. Choose a dedicated scratch
@@ -24,6 +24,11 @@ directory, never the retained evidence directory or the `.codex-artifacts` root.
 Use a distinct task directory for concurrent runs. The canonical mandatory
 command remains in [offline battle testing](offline-battle-testing.md); it
 manages its own temporary directories.
+
+Tests that assert a path lies outside `.codex-artifacts` need a temporary
+directory outside that root, such as `.pytest-basetemp-<task>`. The mandatory
+runner already uses this layout. Review and remove or archive any retained
+task-specific temporary directory after the run.
 
 ## Reviewing old folders
 

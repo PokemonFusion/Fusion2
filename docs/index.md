@@ -9,6 +9,8 @@ history. Existing feature documents and dated reports retain their paths.
 | --- | --- |
 | Install dependencies and choose a test command | [Contributing](../CONTRIBUTING.md), [original Evennia setup notes](../README.instructions.md) |
 | Find a feature's commands, logic, models, and tests | [Code map](code-map.md) |
+| Find application tests by feature or guarded integration runners | [Test source index](../tests/README.md) |
+| Find QA runners, audit tools, and data generators | [Tools index](../tools/README.md) |
 | Learn a player or builder workflow | [Feature guides](guides.md) |
 | Understand a design contract or planned scope | [Design index](design/README.md) |
 | Check persistence, permissions, and operator procedures | [Operations index](operations/README.md) |
