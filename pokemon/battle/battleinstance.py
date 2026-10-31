@@ -696,8 +696,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Return the active battle instance for ``player`` if possible.
 
         This checks ``player.ndb.battle_instance`` first, then tries to
-        rebuild it from persistent data on the player's room. It returns
-        the instance if found, otherwise ``None``.
+        rebuild it from persistent data on the player's room. An Adventure
+        may also recover from its validated session room without moving the
+        player. It returns the instance if found, otherwise ``None``.
         """
 
         log_info(f"ensure_for_player called for {getattr(player, 'key', player)}")
@@ -710,12 +711,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         room = getattr(player, "location", None)
         if not room:
             log_info(f"Player {getattr(player, 'key', player)} has no location")
-            return None
+            return BattleSession._restore_adventure_for_player(player)
 
         bid = getattr(player.db, "battle_id", None)
         if bid is None:
             log_info(f"Player {getattr(player, 'key', player)} has no battle_id")
-            return None
+            return BattleSession._restore_adventure_for_player(player)
 
         bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
         if bmap and hasattr(bmap, "get"):
@@ -730,7 +731,16 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if inst:
             log_info(f"Restored instance {bid} from room data")
             player.ndb.battle_instance = inst
+        else:
+            return BattleSession._restore_adventure_for_player(player)
         return inst
+
+    @staticmethod
+    def _restore_adventure_for_player(player) -> "BattleSession | None":
+        """Use validated session custody when reconnect location lost the battle."""
+        from pokemon.adventures.sessions import restore_session_battle
+
+        return restore_session_battle(player)
 
     @classmethod
     def restore(cls, room, battle_id: int) -> "BattleSession | None":

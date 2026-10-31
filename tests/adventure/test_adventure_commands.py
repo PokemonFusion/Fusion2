@@ -99,6 +99,18 @@ def test_adventure_leave_command_detaches_movement_cmdset(monkeypatch):
     assert caller.cmdset.deleted[-1] is AdventureMovementCmdSet
 
 
+def test_leave_without_a_session_removes_stale_movement_commands(monkeypatch):
+    """Expired-run cardinal overrides must not trap ordinary room navigation."""
+    monkeypatch.setattr(
+        commands, "leave_session",
+        lambda caller: AdventureActionResult(False, "You are not in an adventure."),
+    )
+
+    caller = _run_cmd({"leave"})
+
+    assert caller.cmdset.deleted == [AdventureMovementCmdSet]
+
+
 def test_adventure_choose_starts_authored_encounter(monkeypatch):
     from pokemon.battle import battleinstance
 

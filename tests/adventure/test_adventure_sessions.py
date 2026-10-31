@@ -236,15 +236,18 @@ def test_chosen_encounter_still_blocks_survey_completion_until_result(adventure_
     session = sessions.start_session(player, "alpha_meadow").session
     sessions.move_session(player, "north")
     sessions.choose_session_route(player, "trainer")
+    # A chosen encounter cannot be bypassed with virtual movement or search.
+    assert not sessions.move_session(player, "north").ok
+    assert not sessions.search_session(player).ok
+    assert session.state != STATE_COMPLETED
+    assert session.completed_at is None
+    result = sessions.resolve_encounter_result(session.pk, player, "loss")
+    assert result.ok
     sessions.move_session(player, "north")
     sessions.search_session(player)
     sessions.move_session(player, "south")
     sessions.move_session(player, "south")
-
-    assert session.state != STATE_COMPLETED
-    assert session.completed_at is None
-    result = sessions.resolve_encounter_result(session.pk, player, "loss")
-    assert result.ok and session.state == STATE_COMPLETED
+    assert session.state == STATE_COMPLETED
     assert session.metadata["encounter_result"] == "loss"
 
 

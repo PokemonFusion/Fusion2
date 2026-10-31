@@ -56,6 +56,73 @@ class AdventureLifecycleCases(unittest.TestCase):
         command.caller = self.player
         command._finalize_concession(instance, battle_handler)
 
+    def test_live_adventure_battle_interlocks_and_expiry(self):
+        """Database-backed session and room battle evidence prevent mutation."""
+        from pokemon.adventures import sessions
+        from pokemon.adventures.constants import ADVENTURE_SESSION_ATTR
+        from django.utils import timezone
+        from datetime import timedelta
+
+        room = self.player.location
+        self.adventure.instance_room = room
+        self.adventure.state = "active"
+        self.adventure.metadata = {"route_key": "wild", "encounter_state": "pending"}
+        self.adventure.expires_at = timezone.now() - timedelta(minutes=1)
+        self.adventure.save()
+        room.db.adventure_session_id = self.adventure.pk
+        self.player.db.adventure_session_id = self.adventure.pk
+
+        instance = self.start()
+        try:
+            self.assertFalse(sessions.move_session(self.player, "north").ok)
+            self.assertFalse(sessions.search_session(self.player).ok)
+            self.assertFalse(sessions.choose_session_route(self.player, "wild").ok)
+            self.assertFalse(sessions.leave_session(self.player).ok)
+            self.assertFalse(sessions.expire_session(self.adventure))
+            self.player.ndb.battle_instance = None
+            self.assertFalse(sessions.leave_session(self.player).ok)
+            self.assertEqual(self.adventure.state, "active")
+            self.assertEqual(room.db.adventure_session_id, self.adventure.pk)
+        finally:
+            self.player.ndb.battle_instance = instance
+            instance.encounter_metadata = {}
+            instance._adventure_result = None
+            instance.end()
+
+    def test_database_pending_receipt_is_not_replaced(self):
+        """A stored outcome protects the original route through retry."""
+        from pokemon.adventures import sessions
+        self.adventure.state = "active"
+        self.adventure.metadata = {"route_key": "wild", "encounter_state": "pending"}
+        self.adventure.save()
+        sessions.queue_encounter_result(self.adventure.pk, self.player, "capture")
+        self.assertFalse(sessions.leave_session(self.player, session=self.adventure).ok)
+        self.assertIn("capture", sessions.retry_encounter_results(self.player.character))
+        self.adventure.refresh_from_db()
+        self.assertEqual(self.adventure.metadata["encounter_result"], "capture")
+        self.assertEqual(dict(self.player.db.pending_adventure_results), {})
+
+    def test_completed_run_retains_ownership_through_terminal_cleanup(self):
+        """Completed SQL state cannot lose its retained battle during stale cleanup."""
+        from django.utils import timezone
+        from world.stale_state import cleanup_stale_state
+
+        room = self.player.location
+        self.adventure.instance_room = room
+        self.adventure.state = 'completed'
+        self.adventure.completed_at = timezone.now()
+        self.adventure.save()
+        self.player.db.adventure_session_id = room.db.adventure_session_id = self.adventure.pk
+        room.db.battles = [81]
+        room.db.battle_81_data = {'terminal_cleanup_pending': True}
+
+        counts = cleanup_stale_state(objects=[self.player.character, room], active_battle_ids=set())
+
+        self.assertFalse(any(counts.values()), counts)
+        self.assertEqual(self.player.db.adventure_session_id, self.adventure.pk)
+        self.assertEqual(room.db.adventure_session_id, self.adventure.pk)
+        self.assertEqual(dict(room.db.battle_81_data), {'terminal_cleanup_pending': True})
+
     def test_generation_failure_releases_lock_and_same_route_can_retry(self):
         """A constructor-registered session must not block the advertised retry."""
         with patch("pokemon.battle.battleinstance.create_battle_pokemon", side_effect=RuntimeError("generation failed")):

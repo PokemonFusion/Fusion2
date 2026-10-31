@@ -128,7 +128,9 @@ class CmdAdventureAdmin(Command):
             self.caller.msg("That Adventure session is not active or completed-not-left.")
             return
         completed = getattr(session, "state", None) == STATE_COMPLETED
-        _end_session(session)
+        if not _end_session(session):
+            self.caller.msg("Adventure combat or encounter recovery must finish before cleanup.")
+            return
         outcome = "completed session cleaned up" if completed else "session abandoned"
         self.caller.msg(f"Adventure session #{_session_id(session)} aborted: {outcome}.")
 
@@ -144,7 +146,9 @@ class CmdAdventureAdmin(Command):
         if session is None:
             self.caller.msg(f"{_object_name(target)} has no current Adventure session.")
             return
-        _end_session(session)
+        if not _end_session(session):
+            self.caller.msg("Adventure combat or encounter recovery must finish before return.")
+            return
         self.caller.msg(f"Returned {_object_name(target)} from Adventure session #{_session_id(session)}.")
 
     def _cleanup(self) -> None:
@@ -291,7 +295,11 @@ def _render_session_info(session: Any) -> str:
     )
 
 
-def _end_session(session: Any) -> None:
+def _end_session(session: Any) -> bool:
+    """Reject administrative return while original combat is still recoverable."""
+
+    if sessions.inspect_adventure_battle(getattr(session, "leader", None), session).blocked:
+        return False
     completed = getattr(session, "state", None) == STATE_COMPLETED
     if not completed:
         session.state = STATE_ABANDONED
@@ -304,6 +312,7 @@ def _end_session(session: Any) -> None:
         move_to = getattr(leader, "move_to", None)
         if callable(move_to) and destination is not None and getattr(leader, "location", None) is not destination:
             move_to(destination, quiet=True)
+    return True
 
 
 def _clear_matching_attrs(session: Any) -> None:

@@ -245,7 +245,8 @@ class CmdAdventure(Command):
 
     def _leave(self) -> None:
         result = leave_session(self.caller)
-        detach_movement_cmdset(self.caller)
+        if result.ok or result.session is None:
+            detach_movement_cmdset(self.caller)
         self.caller.msg(result.message)
 
 
