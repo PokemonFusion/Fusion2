@@ -1035,6 +1035,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     log_info(f"Could not find watcher {wid}")
                     continue
                 watcher = targets[0]
+            from pokemon.adventures.privacy import AdventurePrivacy
+
+            if not AdventurePrivacy.battle_access(obj, watcher):
+                continue
             obj.add_watcher(watcher)
             if wid in teamA:
                 if obj.captainA is None:

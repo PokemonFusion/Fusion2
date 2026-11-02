@@ -1,6 +1,16 @@
+import contextlib
 import types
 
+import pytest
+
 from pokemon.adventures import renderer, sessions
+
+
+@pytest.fixture(autouse=True)
+def isolated_reservation_locks(monkeypatch):
+    """These render doubles have no database or database row locks."""
+    monkeypatch.setattr(sessions.transaction, "atomic", contextlib.nullcontext)
+    monkeypatch.setattr(sessions, "_lock_object", lambda _obj: None)
 
 
 class DummyDB(types.SimpleNamespace):

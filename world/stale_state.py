@@ -306,6 +306,9 @@ def _cleanup_adventure_attr(obj: Any, now: datetime, counts: dict[str, int]) -> 
 
 		if inspect_adventure_battle(getattr(session, "leader", None), session).blocked:
 			return
+		if (getattr(session, "state", None) == "completed"
+				and getattr(session, "holds_instance", False)):
+			return
 	if not _session_active(session, now):
 		if _del_db(obj, ADVENTURE_SESSION_ATTR):
 			counts["adventure_attrs"] += 1

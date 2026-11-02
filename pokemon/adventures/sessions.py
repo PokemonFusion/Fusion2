@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from datetime import timezone as dt_timezone
 from typing import Any, Iterable
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from .constants import (
@@ -45,6 +45,13 @@ def _session_model():
     from pokemon.models.adventures import AdventureSession
 
     return AdventureSession
+
+
+def _lock_object(obj: Any) -> None:
+    """Serialize writers in battle order: room, character, then session."""
+    from evennia.objects.models import ObjectDB
+
+    ObjectDB.objects.select_for_update().get(pk=_object_id(obj))
 
 
 def _now():
@@ -174,6 +181,8 @@ def _is_expired(session: Any) -> bool:
 def _is_active_session(session: Any) -> bool:
     if session is None:
         return False
+    if not getattr(session, "holds_instance", True):
+        return False
     if getattr(session, "state", None) != STATE_ACTIVE:
         return False
     if getattr(session, "completed_at", None) is not None:
@@ -185,6 +194,8 @@ def _is_active_session(session: Any) -> bool:
 
 
 def _is_current_session(session: Any, *, allow_completed: bool = False) -> bool:
+    if session is None or not getattr(session, "holds_instance", True):
+        return False
     if _is_active_session(session):
         return True
     return allow_completed and getattr(session, "state", None) == STATE_COMPLETED
@@ -228,10 +239,10 @@ def _player_pointer_session(player: Any, *, allow_completed: bool = False) -> tu
 def _restore_active_session_for_player(player: Any) -> Any | None:
     model = _session_model()
     try:
-        session = _query_first(model.objects.filter(leader=player, state=STATE_ACTIVE))
+        session = _query_first(model.objects.filter(leader=player, holds_instance=True))
     except Exception:
         return None
-    if not _is_active_session(session) or not _session_belongs_to_player(session, player):
+    if not _is_current_session(session, allow_completed=True) or not _session_belongs_to_player(session, player):
         return None
 
     session_id = _session_id(session)
@@ -252,7 +263,8 @@ def get_active_session_for_player(player: Any) -> Any | None:
         return session
     if had_pointer and completed_pointer:
         return None
-    return _restore_active_session_for_player(player)
+    restored = _restore_active_session_for_player(player)
+    return restored if _is_active_session(restored) else None
 
 
 def get_current_session_for_player(player: Any) -> Any | None:
@@ -346,6 +358,11 @@ def room_is_available(room: Any) -> bool:
     if not _as_bool(_db_attr(room, ADVENTURE_INSTANCE_ATTR, False)):
         return False
     if _room_has_active_battle(room) or room_battle_ids(room):
+        return False
+    contents_get = getattr(room, "contents_get", None)
+    if callable(contents_get) and contents_get(content_type="character"):
+        return False
+    if _query_first(_session_model().objects.filter(instance_room=room, holds_instance=True)):
         return False
     session_id = _db_attr(room, ADVENTURE_SESSION_ATTR)
     if not session_id:
@@ -458,13 +475,30 @@ def start_session(player: Any, template_key: str) -> AdventureActionResult:
     if not hall or not _as_bool(_db_attr(hall, ADVENTURE_HALL_ATTR, False)):
         return AdventureActionResult(False, "You need to start adventures from the Adventure Hall.")
 
-    instance_room = find_available_instance_room(hall)
-    if instance_room is None:
-        return AdventureActionResult(False, "No adventure instance rooms are available right now.")
+    for room in sorted(find_instance_rooms(hall), key=lambda candidate: _object_id(candidate)):
+        try:
+            with transaction.atomic():
+                _lock_object(room)
+                _lock_object(player)
+                if get_current_session_for_player(player):
+                    return AdventureActionResult(False, "You are already in an adventure.")
+                gate = inspect_adventure_battle(player)
+                if gate.active_battle or gate.pending_result:
+                    return AdventureActionResult(False, gate.message)
+                if not _ids_match(_object_id(getattr(player, "location", None)), _object_id(hall)):
+                    return AdventureActionResult(False, "You need to start adventures from the Adventure Hall.")
+                if room_is_available(room):
+                    return _create_reserved_session(player, hall, room, template)
+        except IntegrityError:
+            return AdventureActionResult(False, "An adventure reservation changed. Please try again.")
+    return AdventureActionResult(False, "No adventure instance rooms are available right now. Please try again shortly.")
 
-    model = _session_model()
+
+def _create_reserved_session(player: Any, hall: Any, instance_room: Any,
+                             template: AdventureTemplate) -> AdventureActionResult:
+    """Create and enter the run while its character and room locks are held."""
     now = _now()
-    session = model.objects.create(
+    session = _session_model().objects.create(
         template_key=template.key,
         state=STATE_ACTIVE,
         leader=player,
@@ -476,6 +510,7 @@ def start_session(player: Any, template_key: str) -> AdventureActionResult:
         started_at=now,
         expires_at=now + timedelta(minutes=DEFAULT_SESSION_MINUTES),
         metadata={},
+        holds_instance=True,
     )
 
     from .progress import safe_ensure_participation
@@ -605,6 +640,13 @@ def resolve_encounter_result(session_id: Any, player: Any, result: str) -> Adven
     from .progress import record_encounter_result
 
     with transaction.atomic():
+        candidate = get_session_by_id(session_id)
+        if candidate is None or not _session_belongs_to_player(candidate, player):
+            return AdventureActionResult(False, "Adventure session could not be matched.")
+        room = getattr(candidate, "instance_room", None)
+        if room is not None:
+            _lock_object(room)
+        _lock_object(player)
         session = get_session_by_id(session_id, for_update=True)
         if session is None or not _session_belongs_to_player(session, player):
             return AdventureActionResult(False, "Adventure session could not be matched.")
@@ -730,6 +772,22 @@ def leave_session(
     if session is None:
         return AdventureActionResult(False, "You are not in an adventure.")
 
+    if not _session_belongs_to_player(session, player):
+        return AdventureActionResult(False, "This adventure belongs to another character.")
+    with transaction.atomic():
+        room = getattr(session, "instance_room", None)
+        if room is not None:
+            _lock_object(room)
+        _lock_object(player)
+        current = get_session_by_id(_session_id(session), for_update=True)
+        if current is None or not getattr(current, "holds_instance", True):
+            return AdventureActionResult(False, "This adventure has already been released.")
+        return _leave_reserved_session(player, current, reason=reason, move_player=move_player)
+
+
+def _leave_reserved_session(player: Any, session: Any, *, reason: str,
+                            move_player: bool) -> AdventureActionResult:
+    """Return the owner before releasing only this locked run's occupancy."""
     gate = inspect_adventure_battle(player, session)
     if gate.blocked:
         return AdventureActionResult(False, gate.message, session=session)
@@ -745,7 +803,11 @@ def leave_session(
             if move_to(return_location, quiet=True) is False:
                 return AdventureActionResult(False, "The adventure return movement was blocked.", session=session)
 
-    _del_db_attr(player, ADVENTURE_SESSION_ATTR)
+    if not move_player and _ids_match(_object_id(getattr(player, "location", None)), _object_id(instance_room)):
+        return AdventureActionResult(False, "The adventure room is still occupied.", session=session)
+    if move_player and _ids_match(_object_id(getattr(player, "location", None)), _object_id(instance_room)):
+        return AdventureActionResult(False, "The adventure return location is unavailable.", session=session)
+    _del_db_attr_if_points_to(player, ADVENTURE_SESSION_ATTR, _session_id(session))
     if instance_room is not None and _ids_match(
         _db_attr(instance_room, ADVENTURE_SESSION_ATTR),
         _session_id(session),
@@ -755,7 +817,8 @@ def leave_session(
     completed = getattr(session, "state", None) == STATE_COMPLETED
     if not completed:
         session.state = reason
-    _save_session(session, fields=("state", "updated_at"))
+    session.holds_instance = False
+    _save_session(session, fields=("state", "holds_instance", "updated_at"))
 
     if completed:
         return AdventureActionResult(True, f"You complete {session_name} and return.", session=session)
@@ -765,18 +828,16 @@ def leave_session(
 def expire_session(session: Any) -> bool:
     """Expire only after combat, route and result recovery have finished."""
 
-    if inspect_adventure_battle(getattr(session, "leader", None), session).blocked:
-        return False
     leader = getattr(session, "leader", None)
-    instance_room = getattr(session, "instance_room", None)
-    session_id = _session_id(session)
-    if leader is not None:
-        _del_db_attr_if_points_to(leader, ADVENTURE_SESSION_ATTR, session_id)
-    if instance_room is not None:
-        _del_db_attr_if_points_to(instance_room, ADVENTURE_SESSION_ATTR, session_id)
-    session.state = STATE_EXPIRED
-    _save_session(session, fields=("state", "updated_at"))
-    return True
+    if leader is None:
+        return False
+    inside = _ids_match(_object_id(getattr(leader, "location", None)),
+                        _object_id(getattr(session, "instance_room", None)))
+    result = leave_session(leader, session=session, reason=STATE_EXPIRED, move_player=inside)
+    if result.ok:
+        session.state = result.session.state
+        session.holds_instance = result.session.holds_instance
+    return result.ok
 
 
 def restore_session_battle(player: Any) -> Any | None:

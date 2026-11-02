@@ -90,6 +90,7 @@ class FakeAdventureSession:
         for key, value in kwargs.items():
             setattr(self, key, value)
         self.completed_at = kwargs.get("completed_at")
+        self.holds_instance = kwargs.get("holds_instance", True)
         self.saved_fields = []
 
     @property
@@ -116,6 +117,7 @@ def fake_session_model(monkeypatch):
     FakeAdventureSession.objects = FakeSessionManager()
     FakeAdventureSession._next_id = 1
     monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
+    monkeypatch.setattr(sessions, "_lock_object", lambda _obj: None)
     monkeypatch.setattr(sessions.transaction, "atomic", contextlib.nullcontext)
     monkeypatch.setattr(progress, "record_encounter_result", lambda *_args: None)
     monkeypatch.setattr(progress, "safe_finalize_completion", lambda _session: "")

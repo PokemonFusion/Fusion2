@@ -47,7 +47,22 @@ class Room(ObjectParent, DefaultRoom):
 	properties and methods available on all Objects.
 	"""
 
-	pass
+	def at_pre_object_receive(self, arriving_object, source_location, **kwargs):
+		"""Enforce solo-instance admission for exits and direct movement alike."""
+		from pokemon.adventures.privacy import PRIVATE_MESSAGE, AdventurePrivacy
+
+		if not AdventurePrivacy.room_access(self, arriving_object):
+			arriving_object.msg(PRIVATE_MESSAGE)
+			return False
+		return super().at_pre_object_receive(arriving_object, source_location, **kwargs)
+
+	def return_appearance(self, looker, **kwargs):
+		"""Never expose private room contents through the ordinary room fallback."""
+		from pokemon.adventures.privacy import PRIVATE_MESSAGE, AdventurePrivacy
+
+		if not AdventurePrivacy.room_access(self, looker):
+			return PRIVATE_MESSAGE
+		return super().return_appearance(looker, **kwargs)
 
 
 class FusionRoom(Room):
