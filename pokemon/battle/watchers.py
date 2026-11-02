@@ -64,6 +64,10 @@ def notify_watchers(state: Union[BattleState, dict], message: str, room=None, *,
                 if not objs:
                         continue
                 watcher = objs[0]
+                from pokemon.adventures.privacy import AdventurePrivacy
+
+                if room is not None and not AdventurePrivacy.room_access(room, watcher):
+                        continue
                 if room and watcher.location != room:
                         continue
                 if watcher.attributes.get("battle_ignore_notify"):
@@ -111,6 +115,11 @@ class WatcherManager:
         room: Optional[object]
 
         def add_watcher(self, watcher) -> None:
+                """Register an authorized participant or observer."""
+                from pokemon.adventures.privacy import AdventurePrivacy
+
+                if not AdventurePrivacy.battle_access(self, watcher):
+                        return
                 if not getattr(self, "state", None):
                         return
                 add_watcher(self.state, watcher)
@@ -163,6 +172,11 @@ class WatcherManager:
 
         def add_observer(self, watcher) -> None:
                 """Register ``watcher`` as an observer of this battle."""
+                from pokemon.adventures.privacy import PRIVATE_MESSAGE, AdventurePrivacy
+
+                if not AdventurePrivacy.battle_access(self, watcher):
+                        watcher.msg(PRIVATE_MESSAGE)
+                        return
 
                 if watcher not in getattr(self, "observers", set()):
                         self.observers.add(watcher)

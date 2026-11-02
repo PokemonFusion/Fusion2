@@ -58,9 +58,20 @@ class AdventureSession(models.Model):
     expires_at = models.DateTimeField(null=True, blank=True, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     metadata = models.JSONField(default=dict, blank=True)
+    holds_instance = models.BooleanField(default=False)
 
     class Meta:
         ordering = ("-started_at", "id")
+        constraints = (
+            models.UniqueConstraint(fields=("leader",), condition=models.Q(holds_instance=True),
+                                    name="adventure_occupied_leader_uniq"),
+            models.UniqueConstraint(fields=("instance_room",), condition=models.Q(holds_instance=True),
+                                    name="adventure_occupied_room_uniq"),
+            models.CheckConstraint(
+                condition=models.Q(holds_instance=False) | (
+                    models.Q(leader__isnull=False) & models.Q(instance_room__isnull=False)),
+                name="adventure_occupied_identity"),
+        )
         indexes = (
             models.Index(fields=("state", "template_key"), name="advsession_state_template_idx"),
             models.Index(fields=("leader", "state"), name="advsession_leader_state_idx"),

@@ -11,6 +11,10 @@ from .templates import AdventureTemplate, get_template
 def render_for_room(room: Any, looker: Any) -> str | None:
     """Return Adventure room text for ``looker`` or ``None`` for normal room look."""
 
+    from .privacy import PRIVATE_MESSAGE, AdventurePrivacy
+
+    if not AdventurePrivacy.room_access(room, looker):
+        return PRIVATE_MESSAGE
     try:
         from .sessions import get_active_session_for_room
 

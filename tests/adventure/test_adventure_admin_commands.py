@@ -1,3 +1,4 @@
+import contextlib
 import types
 from datetime import timedelta
 
@@ -82,6 +83,9 @@ class FakeSessionManager:
             items = [item for item in items if getattr(item, attr) == value]
         return FakeQuerySet(items)
 
+    def select_for_update(self):
+        return self
+
 
 class FakeAdventureSession:
     objects = FakeSessionManager()
@@ -94,6 +98,7 @@ class FakeAdventureSession:
         for key, value in kwargs.items():
             setattr(self, key, value)
         self.completed_at = kwargs.get("completed_at")
+        self.holds_instance = kwargs.get("holds_instance", True)
         self.saved_fields = []
 
     @property
@@ -116,6 +121,8 @@ def fake_session_model(monkeypatch):
     DummyRoom._next_id = 1
     DummyPlayer._next_id = 100
     monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
+    monkeypatch.setattr(sessions, "_lock_object", lambda _obj: None)
+    monkeypatch.setattr(sessions.transaction, "atomic", contextlib.nullcontext)
     return FakeAdventureSession.objects
 
 
@@ -141,6 +148,7 @@ def _make_session(player, instance, hall, state=STATE_ACTIVE, with_pointers=True
         started_at=now - timedelta(minutes=5),
         expires_at=now + timedelta(minutes=55),
         metadata={},
+        holds_instance=state == STATE_ACTIVE or with_pointers,
     )
     if with_pointers:
         player.db.adventure_session_id = session.pk
@@ -204,6 +212,7 @@ def test_adventure_admin_abort_active_session_abandons_and_clears():
 
     assert "session abandoned" in caller.messages[-1]
     assert session.state == STATE_ABANDONED
+    assert not session.holds_instance
     assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
     assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
     assert player.location is hall
@@ -218,6 +227,7 @@ def test_adventure_admin_abort_completed_session_does_not_abandon():
 
     assert "completed session cleaned up" in caller.messages[-1]
     assert session.state == STATE_COMPLETED
+    assert not session.holds_instance
     assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
     assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
     assert player.location is hall
@@ -232,9 +242,77 @@ def test_adventure_admin_return_player_uses_current_session():
 
     assert f"Returned Player #100 from Adventure session #{session.pk}." in caller.messages[-1]
     assert session.state == STATE_ABANDONED
+    assert not session.holds_instance
     assert player.location is hall
     assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
     assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
+
+
+@pytest.mark.parametrize("switch", ["abort", "return"])
+def test_admin_rejected_movement_retains_claim_and_commands(monkeypatch, switch):
+    """A failed staff return cannot release occupancy or detach player recovery."""
+    hall, instance, player = _world()
+    session = _make_session(player, instance, hall)
+    caller = DummyCaller(registry={"Player": player})
+    monkeypatch.setattr(player, "move_to", lambda *_args, **_kwargs: False)
+
+    _run_admin({switch}, str(session.pk) if switch == "abort" else "Player", caller=caller)
+
+    assert "blocked" in caller.messages[-1]
+    assert session.state == STATE_ACTIVE and session.holds_instance
+    assert player.location is instance
+    assert player.db.adventure_session_id == instance.db.adventure_session_id == session.pk
+    assert not player.cmdset.deleted
+
+
+@pytest.mark.parametrize("switch", ["abort", "return"])
+def test_admin_fallback_hall_uses_reserved_return(monkeypatch, switch):
+    """Missing return pointers retain the existing validated-Hall staff fallback."""
+    hall, instance, player = _world()
+    session = _make_session(player, instance, hall)
+    session.return_location = None
+    monkeypatch.setattr(admin, "_find_adventure_hall", lambda: hall)
+    caller = DummyCaller(registry={"Player": player})
+
+    _run_admin({switch}, str(session.pk) if switch == "abort" else "Player", caller=caller)
+
+    assert player.location is hall
+    assert not session.holds_instance
+    assert session.return_location is None
+    assert player.cmdset.deleted
+
+
+@pytest.mark.parametrize("switch", ["abort", "return"])
+def test_admin_completed_claim_survives_missing_markers(switch):
+    """Staff can discover and release completed occupancy after marker loss."""
+    hall, instance, player = _world()
+    session = _make_session(player, instance, hall, STATE_COMPLETED)
+    del player.db.adventure_session_id
+    del instance.db.adventure_session_id
+    assert f"#{session.pk}" in _run_admin({"list"}).messages[-1]
+    caller = DummyCaller(registry={"Player": player})
+
+    _run_admin({switch}, str(session.pk) if switch == "abort" else "Player", caller=caller)
+
+    assert session.state == STATE_COMPLETED and not session.holds_instance
+    assert player.location is hall
+
+
+def test_old_admin_abort_preserves_replacement_claim():
+    """A delayed staff abort by old ID cannot move or release a newer run."""
+    hall, instance, player = _world()
+    old = _make_session(player, instance, hall)
+    _run_admin({"abort"}, str(old.pk))
+    player.location = instance
+    newer = _make_session(player, instance, hall)
+    before = len(player.cmdset.deleted)
+
+    _run_admin({"abort"}, str(old.pk))
+
+    assert newer.holds_instance
+    assert player.location is instance
+    assert player.db.adventure_session_id == instance.db.adventure_session_id == newer.pk
+    assert len(player.cmdset.deleted) == before
 
 
 def test_adventure_admin_cleanup_uses_stale_state(monkeypatch):

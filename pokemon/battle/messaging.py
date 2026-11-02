@@ -20,6 +20,10 @@ class MessagingMixin:
 		if collecting:
 			self._battle_ui_pending_events.append(text)
 		for obj in trainers + list(getattr(self, "observers", set())):
+			from pokemon.adventures.privacy import AdventurePrivacy
+
+			if not AdventurePrivacy.battle_access(self, obj):
+				continue
 			if hasattr(obj, "msg"):
 				if collecting:
 					from pokemon.ui.compact_battle import uses_compact
@@ -30,5 +34,9 @@ class MessagingMixin:
 
 	def _msg_to(self, obj, text: str) -> None:
 		"""Send ``text`` to ``obj``."""
+		from pokemon.adventures.privacy import AdventurePrivacy
+
+		if not AdventurePrivacy.battle_access(self, obj):
+			return
 		if hasattr(obj, "msg"):
 			obj.msg(text)
