@@ -60,6 +60,10 @@ class ItemUseHistory:
             raise ValueError("Invalid item-use history requires battle recovery.")
         item = resolve_dex_entry(ITEMDEX, value)
         if item is None:
+            from pokemon.items import runtime_field_held_item
+
+            item = runtime_field_held_item(value)
+        if item is None:
             raise ValueError("Unknown item-use history requires battle recovery.")
         return item
 
