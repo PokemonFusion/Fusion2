@@ -136,6 +136,28 @@ H:\PokemonFusionProject\evenv\Scripts\python.exe -B H:\PokemonFusionProject\.cod
 2. Separately approve any game migration/activation. Follow the preflight in
    [Adventure operations](../adventure-operations.md#schema-preflight-and-activation).
 
+## PR #956 review follow-up
+
+Review found that the old staff recovery helper could abandon a session and
+return its owner without releasing `holds_instance`. Staff abort/return now
+use the canonical leave transaction, retain claims and movement commands on
+failed return, preserve completed results and unpaid rewards, and safely expose
+completed occupancy even after session markers are lost. The validated Hall
+fallback remains available without rewriting return history.
+
+The correction passed 121 Adventure unit tests and 52 disposable PostgreSQL
+checks: 23 reservation/privacy/staff recovery, 17 player-command and 12 lifecycle.
+Its full local combined gate passed 8,253 tests with 4,032 skipped; subsequent
+repeat/battle-first, hosted CI and fresh-review results are tracked on the PR.
+New cases cover both recovery commands, same-character restart and room reuse,
+completed/unpaid histories, failed movement, Hall fallback, lost markers, and
+stale aborts against a replacement claim. Staff fixtures remain separate from
+ordinary-player socket acceptance. The migration/schema is unchanged.
+
+Final full-candidate gates and the fresh review are recorded on
+[PR #956](https://github.com/PokemonFusion/Fusion2/pull/956); the original local
+qualification counts above belong to the candidate before this review fix.
+
 Keep issue status distinct from local evidence. The acceptance above is for
 the combined local candidate, not an assertion that staging, main or a running
 shared game has loaded #833. General terminal-return recovery remains #837;

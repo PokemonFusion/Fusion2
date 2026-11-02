@@ -184,6 +184,111 @@ class AdventurePrivacyCases(unittest.TestCase):
         self.assertTrue(session.holds_instance)
         self.assertFalse(sessions.room_is_available(self.rooms[0]))
 
+    def staff_command(self, action, session):
+        """Dispatch a permission-checked recovery command, separate from Player play."""
+        command = CmdAdventureAdmin()
+        command.caller = self.players[2]
+        command.caller.permissions.add("Wizards")
+        self.assertTrue(command.access(command.caller, "cmd"))
+        self.assertFalse(command.access(self.players[0], "cmd"))
+        command.switches = [action]
+        command.args = str(session.pk) if action == "abort" else session.leader.key
+        with patch.object(command.caller, "search", return_value=session.leader):
+            command.func()
+
+    def test_staff_recovery_releases_both_claims_and_allows_restart(self):
+        """Abort and return free the room and the same character's unique run slot."""
+        for action in ("abort", "return"):
+            with self.subTest(action=action):
+                session = self.start()
+                self.staff_command(action, session)
+                session.refresh_from_db()
+                self.assertFalse(session.holds_instance)
+                self.assertEqual(session.state, "abandoned")
+                self.assertEqual(self.players[0].location.pk, self.hall.pk)
+                self.assertFalse(self.players[0].db.adventure_session_id)
+                self.assertFalse(self.rooms[0].db.adventure_session_id)
+                self.assertFalse(self.players[0].cmdset.has_cmdset(AdventureMovementCmdSet, must_be_default=False))
+                self.start()
+                self.assertTrue(sessions.leave_session(self.players[0]).ok)
+                self.start(self.players[1])
+                self.assertTrue(sessions.leave_session(self.players[1]).ok)
+
+    def test_staff_completed_recovery_preserves_unpaid_results(self):
+        """Releasing completed occupancy changes no result or unpaid reward record."""
+        from django.utils import timezone
+
+        for action in ("abort", "return"):
+            with self.subTest(action=action):
+                session = self.start()
+                AdventureSession.objects.filter(pk=session.pk).update(state="completed", completed_at=timezone.now())
+                AdventureParticipation.objects.filter(session=session).update(
+                    completed_at=timezone.now(), encounter_result="capture", reward_item="Potion", reward_amount=1)
+                before = list(AdventureParticipation.objects.filter(session=session).values())
+                self.staff_command(action, session)
+                session.refresh_from_db()
+                self.assertEqual(session.state, "completed")
+                self.assertFalse(session.holds_instance)
+                self.assertEqual(list(AdventureParticipation.objects.filter(session=session).values()), before)
+                self.assertEqual(self.players[0].trainer.get_item_quantity("Potion"), 0)
+
+    def test_staff_rejected_return_retains_claim_and_movement(self):
+        """Staff movement failures keep the persisted run, markers and cardinal commands."""
+        for action in ("abort", "return"):
+            with self.subTest(action=action):
+                session = self.start()
+                before = list(AdventureSession.objects.filter(pk=session.pk).values())
+                with patch.object(self.players[0], "move_to", return_value=False):
+                    self.staff_command(action, session)
+                self.assertEqual(list(AdventureSession.objects.filter(pk=session.pk).values()), before)
+                self.assertEqual(self.players[0].location.pk, self.rooms[0].pk)
+                self.assertEqual(self.players[0].db.adventure_session_id, session.pk)
+                self.assertEqual(self.rooms[0].db.adventure_session_id, session.pk)
+                self.assertTrue(self.players[0].cmdset.has_cmdset(AdventureMovementCmdSet, must_be_default=False))
+                self.assertIn("blocked", self.messages[-1][1])
+                self.staff_command(action, session)
+
+    def test_staff_completed_recovery_survives_marker_loss(self):
+        """The database occupancy claim remains visible and recoverable without pointers."""
+        for action in ("abort", "return"):
+            with self.subTest(action=action):
+                session = self.start()
+                AdventureSession.objects.filter(pk=session.pk).update(state="completed")
+                self.players[0].attributes.remove("adventure_session_id")
+                self.rooms[0].attributes.remove("adventure_session_id")
+                self.staff_command(action, session)
+                session.refresh_from_db()
+                self.assertFalse(session.holds_instance)
+                self.assertEqual(session.state, "completed")
+                self.assertEqual(self.players[0].location.pk, self.hall.pk)
+
+    def test_staff_hall_fallback_releases_claim_without_rewriting_history(self):
+        """The validated fallback destination shares the same atomic release path."""
+        from commands.admin import cmd_adventureadmin
+
+        for action in ("abort", "return"):
+            with self.subTest(action=action):
+                session = self.start()
+                AdventureSession.objects.filter(pk=session.pk).update(return_location=None)
+                with patch.object(cmd_adventureadmin, "_find_adventure_hall", return_value=self.hall):
+                    self.staff_command(action, session)
+                session.refresh_from_db()
+                self.assertFalse(session.holds_instance)
+                self.assertIsNone(session.return_location_id)
+                self.assertEqual(self.players[0].location.pk, self.hall.pk)
+
+    def test_stale_staff_abort_preserves_new_room_owner(self):
+        """A delayed abort of a released ID cannot clear its replacement reservation."""
+        old = self.start()
+        self.staff_command("abort", old)
+        newer = self.start()
+        before = list(AdventureSession.objects.filter(pk=newer.pk).values())
+        self.staff_command("abort", old)
+        self.assertEqual(list(AdventureSession.objects.filter(pk=newer.pk).values()), before)
+        self.assertEqual(self.players[0].location.pk, self.rooms[0].pk)
+        self.assertEqual(self.players[0].db.adventure_session_id, newer.pk)
+        self.assertEqual(self.rooms[0].db.adventure_session_id, newer.pk)
+
     def test_old_cleanup_cannot_release_new_run(self):
         """Old leave/expiry calls cannot move or unreserve the replacement owner."""
         old = self.start()
@@ -298,14 +403,16 @@ if __name__ == "__main__":
         ContentType.objects.get_for_models(*apps.get_models(), for_concrete_models=False)
         evennia.search_object = search_object
         with patch.object(evennia, "Command", Command), patch.object(evennia, "CmdSet", CmdSet):
+            from commands.admin.cmd_adventureadmin import CmdAdventureAdmin
             from commands.player.cmd_effects import CmdEffects
             from commands.player.cmd_watch import CmdWatch
+            from pokemon.adventures.cmdsets import AdventureMovementCmdSet
             from pokemon.adventures.commands import CmdAdventure
         from pokemon.adventures import sessions
         from pokemon.adventures.privacy import PRIVATE_MESSAGE, AdventurePrivacy
         from pokemon.battle.battleinstance import BattleSession
         from pokemon.battle.registry import REGISTRY
-        from pokemon.models.adventures import AdventureSession
+        from pokemon.models.adventures import AdventureParticipation, AdventureSession
         from pokemon.models.trainer import Trainer
 
         result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(AdventurePrivacyCases))

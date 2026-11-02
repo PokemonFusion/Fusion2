@@ -118,6 +118,12 @@ character still physically inside is not offered as free capacity.
 
 The existing fixed room pool remains in use. A full pool produces a retryable
 message. Do not clear ownership attributes or rerun the Hall batch to bypass it.
+Staff `+adventureadmin/abort` and `/return` use the same reservation-aware leave
+transaction. They release occupancy only after successful return movement and
+detach cardinal commands only after success. Completed claims remain visible
+to staff after marker loss, and the existing validated-Hall fallback does not
+rewrite the stored return history. Failed returns retain the original claim,
+markers and recovery commands and report the actual movement failure.
 Privacy checks apply at room admission, appearance, observation registration,
 restoration and central battle output, including stale observer registrations.
 Ordinary battles outside Adventure instances retain their existing policy.

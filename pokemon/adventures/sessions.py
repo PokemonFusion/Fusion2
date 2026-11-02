@@ -765,6 +765,7 @@ def leave_session(
     session: Any | None = None,
     reason: str = STATE_ABANDONED,
     move_player: bool = True,
+    return_location: Any | None = None,
 ) -> AdventureActionResult:
     """Leave and clean up the player's active Adventure session."""
 
@@ -782,11 +783,12 @@ def leave_session(
         current = get_session_by_id(_session_id(session), for_update=True)
         if current is None or not getattr(current, "holds_instance", True):
             return AdventureActionResult(False, "This adventure has already been released.")
-        return _leave_reserved_session(player, current, reason=reason, move_player=move_player)
+        return _leave_reserved_session(player, current, reason=reason, move_player=move_player,
+                                       return_location=return_location)
 
 
 def _leave_reserved_session(player: Any, session: Any, *, reason: str,
-                            move_player: bool) -> AdventureActionResult:
+                            move_player: bool, return_location: Any | None = None) -> AdventureActionResult:
     """Return the owner before releasing only this locked run's occupancy."""
     gate = inspect_adventure_battle(player, session)
     if gate.blocked:
@@ -795,7 +797,7 @@ def _leave_reserved_session(player: Any, session: Any, *, reason: str,
     template = get_template(getattr(session, "template_key", ""))
     session_name = template.name if template else getattr(session, "template_key", "Adventure")
     instance_room = getattr(session, "instance_room", None)
-    return_location = getattr(session, "return_location", None)
+    return_location = return_location or getattr(session, "return_location", None)
 
     if move_player and return_location is not None:
         move_to = getattr(player, "move_to", None)
