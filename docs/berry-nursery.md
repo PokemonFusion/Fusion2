@@ -1,5 +1,11 @@
 # Reviewed berry growing and flavor snacks
 
+Growing also accepts **Chesto, Sitrus and Lum Berry** under the same four-hour
+cycle, one bag seed and water-based yield rules. The separately authored Chesto
+Nursery recipe offers Chesto for200 each, five finite copies. Sitrus and Lum use
+the existing Held Item Counter sources; those offers and sales are unchanged.
+The new recipe is opt-in authoring, not an installed source or automatic refill.
+
 At a configured **Berry Nursery**, follow its `nursery` exit from the selected
 public hub and use `back` to return. `+store` → **Buy items** offers Oran Berry
 and Razz Berry for 100 each, initially five of each. Stock is finite, with no
@@ -71,3 +77,8 @@ For source authoring only, `BerryNursery.install(reviewed_hub)` in
 It validates the existing item names and links, serializes competing installers,
 and rejects drift/conflicts. Reinstalling preserves sold stock. It leaves the
 six-item Supply Corner and Adventure content independent.
+
+
+## Chesto, Sitrus and Lum actual elapsed acceptance — October 29
+
+All three added seeds passed a separate real four-hour private run: four stage waterings, reconnects, five harvested berries, useful normal +use effects leaving four, and replay conservation. [Elapsed evidence](testing/nursery-next-three-real-elapsed-2026-10-29.md) records exact times and complete private fixture cleanup. Its captured production-command/SQL transport is separate from socket acceptance and existing-world deployment. No source or stock was installed/refilled in a shared world.

@@ -1,0 +1,454 @@
+import contextlib
+import types
+from collections import UserList
+from datetime import timedelta
+
+import pytest
+
+from pokemon.adventures import sessions
+from pokemon.adventures.constants import (
+    ADVENTURE_SESSION_ATTR,
+    STATE_ABANDONED,
+    STATE_COMPLETED,
+    STATE_EXPIRED,
+)
+
+
+class DummyDB(types.SimpleNamespace):
+    pass
+
+
+class DummyRoom:
+    _next_id = 1
+
+    def __init__(self, key, **attrs):
+        self.id = DummyRoom._next_id
+        DummyRoom._next_id += 1
+        self.key = key
+        self.db = DummyDB(**attrs)
+        self.ndb = DummyDB()
+        self.exits = []
+
+    def contents_get(self, content_type=None):
+        return self.exits if content_type == "exit" else []
+
+
+class DummyPlayer:
+    _next_id = 100
+
+    def __init__(self, key="Player"):
+        self.id = DummyPlayer._next_id
+        DummyPlayer._next_id += 1
+        self.key = key
+        self.db = DummyDB()
+        self.ndb = DummyDB()
+        self.location = None
+        self.moves = []
+
+    def move_to(self, destination, quiet=False):
+        self.moves.append((destination, quiet))
+        self.location = destination
+        return True
+
+
+class FakeQuerySet:
+    def __init__(self, items):
+        self.items = list(items)
+
+    def first(self):
+        return self.items[0] if self.items else None
+
+
+class FakeSessionManager:
+    def __init__(self):
+        self.store = {}
+
+    def create(self, **kwargs):
+        session = FakeAdventureSession(**kwargs)
+        self.store[session.pk] = session
+        return session
+
+    def select_for_update(self):
+        return self
+
+    def filter(self, **kwargs):
+        items = list(self.store.values())
+        for key, value in kwargs.items():
+            attr = "pk" if key == "pk" else key
+            items = [item for item in items if getattr(item, attr) == value]
+        return FakeQuerySet(items)
+
+
+class FakeAdventureSession:
+    objects = FakeSessionManager()
+    _next_id = 1
+
+    def __init__(self, **kwargs):
+        self.pk = FakeAdventureSession._next_id
+        self.id = self.pk
+        FakeAdventureSession._next_id += 1
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        self.completed_at = kwargs.get("completed_at")
+        self.holds_instance = kwargs.get("holds_instance", True)
+        self.saved_fields = []
+
+    @property
+    def leader_id(self):
+        return getattr(self.leader, "id", None)
+
+    @property
+    def instance_room_id(self):
+        return getattr(self.instance_room, "id", None)
+
+    @property
+    def return_location_id(self):
+        return getattr(self.return_location, "id", None)
+
+    def save(self, update_fields=None):
+        self.saved_fields.append(update_fields)
+        self.__class__.objects.store[self.pk] = self
+
+
+@pytest.fixture(autouse=True)
+def fake_session_model(monkeypatch):
+    from pokemon.adventures import progress
+
+    FakeAdventureSession.objects = FakeSessionManager()
+    FakeAdventureSession._next_id = 1
+    monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
+    monkeypatch.setattr(sessions, "_lock_object", lambda _obj: None)
+    monkeypatch.setattr(sessions.transaction, "atomic", contextlib.nullcontext)
+    monkeypatch.setattr(progress, "record_encounter_result", lambda *_args: None)
+    monkeypatch.setattr(progress, "safe_finalize_completion", lambda _session: "")
+    return FakeAdventureSession.objects
+
+
+@pytest.fixture
+def adventure_world():
+    hall = DummyRoom("Adventure Hall", adventure_hall=True)
+    instance = DummyRoom("Adventure Instance Room #1", adventure_instance=True)
+    hall.exits = [types.SimpleNamespace(destination=instance)]
+    player = DummyPlayer()
+    player.location = hall
+    return hall, instance, player
+
+
+def _complete_alpha_meadow(player):
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+    sessions.choose_session_route(player, "wild")
+    sessions.resolve_encounter_result(session.pk, player, "capture")
+    sessions.move_session(player, "north")
+    sessions.search_session(player)
+    sessions.move_session(player, "south")
+    sessions.move_session(player, "south")
+    return session
+
+
+def test_start_session_reserves_instance_room_and_moves_player(adventure_world):
+    hall, instance, player = adventure_world
+
+    result = sessions.start_session(player, "alpha_meadow")
+
+    assert result.ok
+    assert result.session.template_key == "alpha_meadow"
+    assert player.location is instance
+    assert getattr(player.db, ADVENTURE_SESSION_ATTR) == result.session.pk
+    assert getattr(instance.db, ADVENTURE_SESSION_ATTR) == result.session.pk
+    assert result.session.return_location is hall
+    assert result.session.current_node == "entrance"
+
+
+def test_start_requires_adventure_hall(adventure_world):
+    _hall, _instance, player = adventure_world
+    player.location = DummyRoom("Normal Room")
+
+    result = sessions.start_session(player, "alpha_meadow")
+
+    assert not result.ok
+    assert result.message == "You need to start adventures from the Adventure Hall."
+
+
+def test_instance_pool_accepts_persisted_mutable_sequences(adventure_world):
+    """Evennia saved lists implement the sequence protocol rather than list."""
+    hall, instance, player = adventure_world
+    hall.exits = []
+    hall.db.adventure_instance_rooms = UserList([instance])
+
+    result = sessions.start_session(player, "alpha_meadow")
+
+    assert result.ok
+    assert player.location is instance
+
+
+def test_movement_search_and_return_complete_objectives(adventure_world):
+    _hall, _instance, player = adventure_world
+    start = sessions.start_session(player, "alpha_meadow")
+    session = start.session
+
+    assert sessions.move_session(player, "north").ok
+    choice = sessions.choose_session_route(player, "trainer")
+    assert choice.ok
+    assert choice.data.encounter_kind == "trainer"
+    encounter = sessions.resolve_encounter_result(session.pk, player, "loss")
+    assert encounter.ok
+    assert session.objective_progress["resolve_encounter"] == 1
+    result = sessions.move_session(player, "north")
+    assert result.ok
+    assert session.current_node == "old_tree"
+    assert session.objective_progress["reach_old_tree"] == 1
+
+    result = sessions.search_session(player)
+    assert result.ok
+    assert "fresh tracks" in result.message
+    assert session.objective_progress["search_old_tree"] == 1
+
+    sessions.move_session(player, "south")
+    result = sessions.move_session(player, "south")
+
+    assert result.ok
+    assert session.current_node == "entrance"
+    assert session.objective_progress["return_entrance"] == 1
+    assert session.state == STATE_COMPLETED
+    assert "Adventure complete" in result.message
+
+
+def test_noncombat_survey_completes_without_fabricating_an_encounter(adventure_world):
+    """The original September survey remains playable without choosing battle."""
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+    sessions.move_session(player, "north")
+    sessions.search_session(player)
+    sessions.move_session(player, "south")
+    result = sessions.move_session(player, "south")
+
+    assert result.ok and session.state == STATE_COMPLETED
+    assert session.objective_progress["resolve_encounter"] == 0
+    assert session.metadata == {}
+    assert all(session.objective_progress[key] == 1 for key in (
+        "reach_old_tree", "search_old_tree", "return_entrance",
+    ))
+
+
+def test_chosen_encounter_still_blocks_survey_completion_until_result(adventure_world):
+    """Optional selection cannot turn a pending/failed battle result into a clear."""
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+    sessions.choose_session_route(player, "trainer")
+    # A chosen encounter cannot be bypassed with virtual movement or search.
+    assert not sessions.move_session(player, "north").ok
+    assert not sessions.search_session(player).ok
+    assert session.state != STATE_COMPLETED
+    assert session.completed_at is None
+    result = sessions.resolve_encounter_result(session.pk, player, "loss")
+    assert result.ok
+    sessions.move_session(player, "north")
+    sessions.search_session(player)
+    sessions.move_session(player, "south")
+    sessions.move_session(player, "south")
+    assert session.state == STATE_COMPLETED
+    assert session.metadata["encounter_result"] == "loss"
+
+
+def test_route_choice_is_locked_and_encounter_result_is_idempotent(adventure_world):
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+
+    choice = sessions.choose_session_route(player, "wild")
+    duplicate_pending = sessions.choose_session_route(player, "wild")
+    wrong_route = sessions.choose_session_route(player, "trainer")
+    first = sessions.resolve_encounter_result(session.pk, player, "capture")
+    duplicate = sessions.resolve_encounter_result(session.pk, player, "win")
+
+    assert choice.ok and choice.data.species == "Rattata"
+    assert duplicate_pending.ok
+    assert not wrong_route.ok
+    assert first.ok and duplicate.ok
+    assert session.metadata["route_key"] == "wild"
+    assert session.metadata["encounter_result"] == "capture"
+
+
+def test_retry_uses_saved_outcome_and_blocks_another_encounter(adventure_world, monkeypatch):
+    """A persistence failure retains the capture outcome through a later retry."""
+
+    from pokemon.adventures import progress
+
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+    sessions.choose_session_route(player, "wild")
+    sessions.queue_encounter_result(session.pk, player, "capture")
+    sessions.queue_encounter_result(session.pk, player, "loss")
+
+    def fail_result(*_args):
+        raise RuntimeError("temporary participation save failure")
+
+    monkeypatch.setattr(progress, "record_encounter_result", fail_result)
+    assert "still pending" in sessions.retry_encounter_results(player)
+    assert session.metadata["encounter_state"] == "pending"
+    assert not sessions.choose_session_route(player, "wild").ok
+    assert player.db.pending_adventure_results == {str(session.pk): "capture"}
+
+    monkeypatch.setattr(progress, "record_encounter_result", lambda *_args: None)
+    assert "capture" in sessions.retry_encounter_results(player)
+    assert session.objective_progress["resolve_encounter"] == 1
+    assert player.db.pending_adventure_results == {}
+
+
+def test_retry_cannot_apply_another_characters_result(adventure_world):
+    """A stale or mismatched receipt cannot change a different player's run."""
+
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    stranger = DummyPlayer("Other player")
+    sessions.queue_encounter_result(session.pk, stranger, "win")
+
+    assert "could not be matched" in sessions.retry_encounter_results(stranger)
+    assert session.objective_progress["resolve_encounter"] == 0
+
+
+def test_completion_is_saved_before_reward_delivery(adventure_world, monkeypatch):
+    """Claim recovery can find a completed session even when delivery fails."""
+
+    from pokemon.adventures import progress
+
+    _hall, _instance, player = adventure_world
+    observed = []
+
+    def reward_attempt(session):
+        observed.append((session.state, session.saved_fields[-1]))
+        return "Use +adventure/claim to retry."
+
+    monkeypatch.setattr(progress, "safe_finalize_completion", reward_attempt)
+    session = _complete_alpha_meadow(player)
+    assert observed[0][0] == STATE_COMPLETED
+    assert "state" in observed[0][1]
+    assert session.state == STATE_COMPLETED
+
+
+def test_completed_session_remains_current_until_leave(adventure_world):
+    _hall, _instance, player = adventure_world
+    session = _complete_alpha_meadow(player)
+
+    assert sessions.get_active_session_for_player(player) is None
+    assert sessions.get_current_session_for_player(player) is session
+    assert getattr(player.db, ADVENTURE_SESSION_ATTR) == session.pk
+
+
+def test_invalid_virtual_movement_does_not_change_node(adventure_world):
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+
+    result = sessions.move_session(player, "west")
+
+    assert not result.ok
+    assert result.message == "You can't go that way."
+    assert session.current_node == "entrance"
+
+
+def test_leave_completed_session_cleans_attrs_and_returns_player(adventure_world):
+    hall, instance, player = adventure_world
+    session = _complete_alpha_meadow(player)
+
+    result = sessions.leave_session(player)
+
+    assert result.ok
+    assert "complete Alpha Meadow Survey" in result.message
+    assert player.location is hall
+    assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
+    assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
+    assert session.state == STATE_COMPLETED
+    assert session.state != STATE_ABANDONED
+
+
+def test_leave_unfinished_session_marks_abandoned(adventure_world):
+    hall, instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+
+    result = sessions.leave_session(player)
+
+    assert result.ok
+    assert player.location is hall
+    assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
+    assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
+    assert session.state == STATE_ABANDONED
+
+
+def test_expired_session_clears_player_and_room_attrs(adventure_world):
+    _hall, instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    session.expires_at = sessions._now() - timedelta(minutes=1)
+
+    recovered = sessions.get_current_session_for_player(player)
+
+    assert recovered is None
+    assert session.state == STATE_EXPIRED
+    assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
+    assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
+
+
+def test_missing_player_pointer_recovers_from_active_session(adventure_world):
+    _hall, instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    delattr(player.db, ADVENTURE_SESSION_ATTR)
+
+    recovered = sessions.get_current_session_for_player(player)
+
+    assert recovered is session
+    assert getattr(player.db, ADVENTURE_SESSION_ATTR) == session.pk
+    assert getattr(instance.db, ADVENTURE_SESSION_ATTR) == session.pk
+
+
+def test_stale_player_attr_is_not_treated_as_truth(adventure_world):
+    _hall, _instance, player = adventure_world
+    player.db.adventure_session_id = 999
+
+    recovered = sessions.get_current_session_for_player(player)
+
+    assert recovered is None
+    assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
+
+
+def test_stale_room_attr_does_not_reserve_instance_room(adventure_world):
+    _hall, instance, _player = adventure_world
+    instance.db.adventure_session_id = 999
+
+    assert sessions.room_is_available(instance)
+    assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
+
+
+def test_room_lookup_recovers_active_session(adventure_world):
+    _hall, instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+
+    recovered = sessions.get_active_session_for_room(instance, player)
+
+    assert recovered is session
+
+
+def test_sync_player_to_active_session_moves_missing_location(adventure_world):
+    _hall, instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    player.location = None
+
+    recovered = sessions.sync_player_to_active_session(player)
+
+    assert recovered is session
+    assert player.location is instance
+
+
+def test_sync_player_to_active_session_restores_marker_and_wrong_location(adventure_world):
+    _hall, instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    delattr(instance.db, ADVENTURE_SESSION_ATTR)
+    player.location = DummyRoom("Elsewhere")
+
+    recovered = sessions.sync_player_to_active_session(player)
+
+    assert recovered is session
+    assert getattr(instance.db, ADVENTURE_SESSION_ATTR) == session.pk
+    assert player.location is instance

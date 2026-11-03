@@ -275,6 +275,36 @@ def test_malformed_explicit_item_history_refuses_without_partial_restore(corrupt
     assert name(holder.item) == "Kee Berry"
 
 
+@pytest.mark.parametrize("item", ("Amulet Coin", "Luck Incense", "Soothe Bell", "Leftovers"))
+def test_supplemental_knock_off_history_restores_without_granting_items(item):
+    """Native Knock Off checkpoints preserve removed identities without a held copy."""
+    from pokemon.battle.battledata import Pokemon
+    from pokemon.battle.item_consumption import ItemUseHistory
+    from pokemon.dex import ITEMDEX
+    from pokemon.items import runtime_field_held_item
+    from pokemon.names import resolve_dex_entry
+
+    battle, holder, foe = scenario("")
+    held = resolve_dex_entry(ITEMDEX, item) or runtime_field_held_item(item)
+    assert held is not None and battle.set_item(holder, held)
+    assert name(Pokemon.from_dict(holder.to_dict()).item) == item
+    damage, _ = attack(battle, foe, holder, "Knock Off")
+    assert damage > 0 and holder.hp > 0
+    assert not holder.item and name(holder.last_used_item) == item
+    assert holder.last_removed_item == item
+    assert ItemUseHistory.freeze_sides(battle) == {"A": [], "B": []}
+    payload = holder.to_dict()
+    for _ in range(2):
+        payload["item_use_history"] = json.loads(json.dumps(payload["item_use_history"]))
+        restored = Pokemon.from_dict(payload)
+        assert not restored.item
+        assert name(restored.last_used_item) == item
+        assert restored.last_removed_item == item
+        assert restored.hp == holder.hp
+        payload = restored.to_dict()
+    assert not getattr(battle, "_callback_failures", [])
+
+
 def test_legacy_absent_history_grants_no_copy():
     "Legacy absent history never invents a recoverable copy."
     from pokemon.battle.battledata import Pokemon

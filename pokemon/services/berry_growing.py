@@ -19,11 +19,12 @@ class BerryGrowing:
 
     stage_seconds = 3600
     growing_seconds = 14400
-    seeds = ("Oran Berry", "Cheri Berry", "Pecha Berry", "Rawst Berry", "Aspear Berry")
+    seeds = ("Oran Berry", "Cheri Berry", "Pecha Berry", "Rawst Berry", "Aspear Berry",
+             "Chesto Berry", "Sitrus Berry", "Lum Berry")
 
     @classmethod
     def canonical_seed(cls, name):
-        """Bind only the five explicitly reviewed names before mutation locks."""
+        """Bind only the eight explicitly reviewed names before mutation locks."""
         from pokemon.names import normalize_name
 
         if not isinstance(name, str):

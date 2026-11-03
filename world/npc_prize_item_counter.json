@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "key": "npc-prize-item-counter-v1",
+  "room": "NPC Prize Item Counter",
+  "entrance": "prizeitems",
+  "return_exit": "back",
+  "refill": "none",
+  "buy_only": true,
+  "description": "Finite reusable Amulet Coin and Luck Incense offers. Either item can earn one nonstacking double standard NPC trainer prize through eligible participation while held. No wild, PvP, Multi, gym, Adventure, scripted reward or Pay Day bonus. Back returns to the hub.",
+  "offers": [
+    {"item": "Amulet Coin", "price": 10000, "quantity": 1},
+    {"item": "Luck Incense", "price": 10000, "quantity": 1}
+  ]
+}

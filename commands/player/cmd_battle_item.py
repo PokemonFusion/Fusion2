@@ -42,6 +42,8 @@ class CmdBattleItem(Command):
       Sacred Ash and other unsupported items are rejected before queuing.
       A supported medicine that has no effect still spends its queued action,
       but consumes no item. Smoke Ball uses +hold before battle, then +flee.
+      Embargo prevents medicine on the affected active target. Unaffected
+      reserves remain eligible; Magic Room and Klutz do not block bag medicine.
       X Attack/Defense/Sp. Atk/Sp. Def/Speed/Accuracy add two matching stages
       through ordinary ability rules. Use +item A1 X Attack=1, targeting the
       actor's own current party slot. Two-participant singles/doubles only;

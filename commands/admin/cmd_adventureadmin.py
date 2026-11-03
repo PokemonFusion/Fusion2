@@ -127,8 +127,11 @@ class CmdAdventureAdmin(Command):
         if not _is_admin_current_session(session):
             self.caller.msg("That Adventure session is not active or completed-not-left.")
             return
-        completed = getattr(session, "state", None) == STATE_COMPLETED
-        _end_session(session)
+        result = _end_session(session)
+        if not result.ok:
+            self.caller.msg(result.message)
+            return
+        completed = getattr(result.session, "state", None) == STATE_COMPLETED
         outcome = "completed session cleaned up" if completed else "session abandoned"
         self.caller.msg(f"Adventure session #{_session_id(session)} aborted: {outcome}.")
 
@@ -144,7 +147,10 @@ class CmdAdventureAdmin(Command):
         if session is None:
             self.caller.msg(f"{_object_name(target)} has no current Adventure session.")
             return
-        _end_session(session)
+        result = _end_session(session)
+        if not result.ok:
+            self.caller.msg(result.message)
+            return
         self.caller.msg(f"Returned {_object_name(target)} from Adventure session #{_session_id(session)}.")
 
     def _cleanup(self) -> None:
@@ -224,25 +230,13 @@ def _current_sessions() -> list[Any]:
         if sessions._is_active_session(session):
             current.append(session)
     for session in _query_sessions_by_state(STATE_COMPLETED):
-        if _session_has_pointer(session):
+        if sessions._is_current_session(session, allow_completed=True):
             current.append(session)
     return sorted(current, key=lambda session: str(_session_id(session)))
 
 
 def _is_admin_current_session(session: Any) -> bool:
-    if sessions._is_active_session(session):
-        return True
-    return getattr(session, "state", None) == STATE_COMPLETED and _session_has_pointer(session)
-
-
-def _session_has_pointer(session: Any) -> bool:
-    session_id = _session_id(session)
-    leader = getattr(session, "leader", None)
-    room = getattr(session, "instance_room", None)
-    return sessions._ids_match(sessions._db_attr(leader, ADVENTURE_SESSION_ATTR), session_id) or sessions._ids_match(
-        sessions._db_attr(room, ADVENTURE_SESSION_ATTR),
-        session_id,
-    )
+    return sessions._is_current_session(session, allow_completed=True)
 
 
 def _session_id(session: Any) -> Any:
@@ -291,29 +285,20 @@ def _render_session_info(session: Any) -> str:
     )
 
 
-def _end_session(session: Any) -> None:
-    completed = getattr(session, "state", None) == STATE_COMPLETED
-    if not completed:
-        session.state = STATE_ABANDONED
-        sessions._save_session(session, fields=("state", "updated_at"))
-    _clear_matching_attrs(session)
+def _end_session(session: Any) -> sessions.AdventureActionResult:
+    """Use the canonical return transaction before releasing administrative claims."""
+
+    if sessions.inspect_adventure_battle(getattr(session, "leader", None), session).blocked:
+        return sessions.AdventureActionResult(
+            False, "Adventure combat or encounter recovery must finish before cleanup or return.", session=session)
     leader = getattr(session, "leader", None)
-    destination = getattr(session, "return_location", None) or _find_adventure_hall()
-    if leader is not None:
+    if leader is None:
+        return sessions.AdventureActionResult(False, "The Adventure owner is unavailable.", session=session)
+    fallback = _find_adventure_hall() if getattr(session, "return_location", None) is None else None
+    result = sessions.leave_session(leader, session=session, reason=STATE_ABANDONED, return_location=fallback)
+    if result.ok:
         detach_movement_cmdset(leader)
-        move_to = getattr(leader, "move_to", None)
-        if callable(move_to) and destination is not None and getattr(leader, "location", None) is not destination:
-            move_to(destination, quiet=True)
-
-
-def _clear_matching_attrs(session: Any) -> None:
-    session_id = _session_id(session)
-    leader = getattr(session, "leader", None)
-    room = getattr(session, "instance_room", None)
-    if leader is not None:
-        sessions._del_db_attr_if_points_to(leader, ADVENTURE_SESSION_ATTR, session_id)
-    if room is not None:
-        sessions._del_db_attr_if_points_to(room, ADVENTURE_SESSION_ATTR, session_id)
+    return result
 
 
 def _find_adventure_hall() -> Any | None:

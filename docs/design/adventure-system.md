@@ -547,12 +547,12 @@ pokemon/adventures/
 Possible tests:
 
 ```text
-tests/test_adventure_templates.py
-tests/test_adventure_sessions.py
+tests/adventure/test_adventure_templates.py
+tests/adventure/test_adventure_sessions.py
 tests/test_adventure_movement.py
 tests/test_adventure_objectives.py
 tests/test_adventure_rewards.py
-tests/test_adventure_commands.py
+tests/adventure/test_adventure_commands.py
 tests/test_adventure_battle_integration.py
 ```
 

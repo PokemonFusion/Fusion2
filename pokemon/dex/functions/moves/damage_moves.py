@@ -3044,6 +3044,8 @@ class Healbell:
 
 
 class Healblock:
+	onResidualOrder = 20
+
 	def durationCallback(self, *args, **kwargs):
 		source = args[1] if len(args) > 1 else kwargs.get("source")
 		effect = args[2] if len(args) > 2 else kwargs.get("effect")
@@ -3081,18 +3083,38 @@ class Healblock:
 			move.effect = "healblock"
 
 	def onRestart(self, *args, **kwargs):
-		target = args[0] if args else kwargs.get("target")
-		if target and hasattr(target, "volatiles"):
-			# simply refresh duration indicator if present
-			target.volatiles["healblock"] = True
-		return True
+		"""An existing block retains its original remaining lifetime."""
+		return False
 
 	def onStart(self, *args, **kwargs):
-		user = args[0] if args else None
-		target = args[1] if len(args) > 1 else None
-		if target and hasattr(target, "volatiles"):
-			target.volatiles["healblock"] = True
+		"""Keep condition state and apply the actual move's bounded lifetime."""
+		target = kwargs.get("target") or kwargs.get("pokemon")
+		if target is None:
+			target = args[1] if len(args) == 2 else args[0] if args else None
+		if target is not None:
+			state = target.volatiles.get("healblock")
+			state = state if isinstance(state, dict) else {}
+			effect = kwargs.get("effect") or (args[2] if len(args) > 2 else None)
+			source = kwargs.get("source") or (args[1] if len(args) > 2 else None)
+			duration = self.durationCallback(source=source, effect=effect)
+			state.setdefault("duration", duration)
+			target.volatiles["healblock"] = state
 		return True
+
+	def onResidual(self, pokemon=None, battle=None, **kwargs):
+		"""Expire once per residual boundary, including old boolean checkpoints."""
+		state = getattr(pokemon, "volatiles", {}).get("healblock")
+		if state is None:
+			return
+		if not isinstance(state, dict):
+			state = {"duration": 5}
+			pokemon.volatiles["healblock"] = state
+		state["duration"] = state.get("duration", 5) - 1
+		if state["duration"] <= 0:
+			if battle:
+				battle.remove_volatile(pokemon, "healblock")
+			else:
+				pokemon.volatiles.pop("healblock", None)
 
 	def onTryHeal(self, amount=None, target=None, **kwargs):
 		"""The relay value precedes the recipient in TryHeal events."""

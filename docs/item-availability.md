@@ -1,5 +1,57 @@
 # Finding and using items
 
+## October 29 activity and field routes
+
+The [Training Grounds](training-grounds.md) provide free deliberate EV sessions
+and confirmed partial/full resets. The optional Training Trail has a five-percent
+named Finder chance, one item per successful search, with a three-second
+character cooldown. Its 15 items supplement training; useful completed sessions
+also earn Candy and Cap milestones. Neither waiting alone nor a reset earns
+progress or rewards.
+
+The private nursery now accepts Oran, Cheri, Pecha, Rawst, Aspear, Chesto, Sitrus
+and Lum. It retains one bed and seed, four one-hour stages and one to five berries.
+[Link Cord](link-cord-evolution.md) has separate finite source authoring.
+The [field-item guide](contextual-and-field-items.md) covers public day/night
+context recipes, reusable Soothe Bell feeding, confirmed Mirror Herb teaching
+at configured Daycares and nonstacking standard NPC prize bonuses.
+
+These recipes and activity flags require explicit world placement. Their
+command/SQL and private socket evidence is separate from the existing-world
+stock observation below. No automatic installation, refill or deployment follows
+from an item definition or these additions. Cleanse Tag and Pure Incense hunt
+reduction remain intentionally deferred by #938.
+
+## October 29 bounded additions
+
+[Six additional Z source mappings](testing/z-next-six-sources-2026-10-29.md) bring
+the local registry to69 mappings on35 crystals. The [four field recovery medicines](remedy-recovery.md)
+add Remedy, Fine Remedy, Superb Remedy and Jubilife Muffin through `+use`.
+Their [receipt](testing/item-additions-2026-10-29.md) records the tested local
+candidate and its separate publication/deployment limits. The new
+[source-only index](testing/item-availability-additions-index-2026-10-29.json)
+contains646 definitions and498 scoped items; all498 world entries remain
+unverified in that artifact. No new permanent source or stock is installed.
+The [remaining scope decisions](design/item-backlog-next-batches-2026-10-29.md)
+keep later features and intentional hunt-item deferrals explicit.
+
+## October 29 repair candidate
+
+The [held-item guide](held-item-repairs.md) describes the repaired stat,
+indirect-damage, residual-healing and Berserk Gene behavior. The
+[manual medicine policy](battle-recovery-items.md) includes target-specific
+Embargo checks. Their [dated evidence](testing/item-repairs-2026-10-29.md) keeps
+offline tests, captured command/SQL observations, publication and deployment
+separate. The [new source-only index](testing/item-availability-repairs-index-2026-10-29.json)
+contains 642 definitions and 494 scoped items, including Link Cord. Its coarse
+capability labels are not complete facet acceptance; no fresh world snapshot was
+supplied, so all 494 current-world availability entries remain unverified.
+
+Ordinary [consent trades](operations/consent-trading.md) use `+trade` without
+automatic evolution. [Link Cord](link-cord-evolution.md) is consumed from the bag
+by `+evolve <id> Link Cord` for its 14 exact mappings. Existing trade-held item
+evolutions keep their held-item route. Public acquisition remains a separate check.
+
 ## Current public counters (October26 release)
 
 At Alpha Test Hub31 these ordinary exits reach finite buy-only counters. Use
@@ -78,8 +130,8 @@ The later [47-pair Mega route](mega-evolution.md) supplies ordinary `+mega` befo
 10,000-price Counter recipe. Its local automated acceptance is separate from
 deployment and permanent public stock; the [per-stone matrix](design/mega-stones.md)
 records accepted effects, source limits and the remaining CAP/required-move exclusions.
-The later [Z route](z-moves.md) accepts63 explicit source mappings on35
-existing crystals through `+zmove`, including 14 status sources,16 unchanged
+The later [Z route](z-moves.md) accepts69 explicit source mappings on35
+existing crystals through `+zmove`, including 15 status sources,16 unchanged
 signatures and one separately guarded [Ultra signature](ultra-burst.md).
 The [matrix](design/z-crystals.md) names the older exact native/source
 limits; other unreviewed source moves remain deferred. The native
@@ -189,7 +241,7 @@ command/SQL effects do not complete #893's four real elapsed hours or certify
 permanent public stock.
 
 The later EXP Candy, manual battle boosters and21 nature mints retain their
-separate guides and dated local receipts. The newest [source-only index](testing/item-availability-ultra-index-2026-10-25.json)
+separate guides and dated local receipts. The October25 [source-only index](testing/item-availability-ultra-index-2026-10-25.json)
 preserves all493 scoped definition fingerprints and adds the explicitly guarded
 [Ultra route](ultra-burst.md):63 mappings on35 crystals, including the unchanged
 16 signatures and one separate native Ultra profile. All493 world entries stay

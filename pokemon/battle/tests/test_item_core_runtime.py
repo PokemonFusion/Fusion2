@@ -7,6 +7,7 @@ import random
 import pytest
 
 from pokemon.battle.actions import Action, ActionType
+from pokemon.utils.boosts import STAT_KEY_MAP
 
 from .helpers import battle_move, build_battle, load_modules
 
@@ -249,7 +250,7 @@ def test_absorb_bulb_consumes_and_boosts_special_attack():
 
 	battle._deal_damage(attacker, defender, battle_move("Water Gun", power=40, move_type="Water", category="Special"))
 
-	assert defender.boosts["spa"] == 1
+	assert defender.boosts["special_attack"] == 1
 	assert defender.item is None
 	assert getattr(defender, "held_item", "") == ""
 
@@ -271,7 +272,7 @@ def test_cell_battery_luminous_moss_and_snowball_consume_on_matching_hit():
 		defender,
 		battle_move("Thunder Shock", power=40, move_type="Electric", category="Special"),
 	)
-	assert defender.boosts["atk"] == 1
+	assert defender.boosts["attack"] == 1
 	assert defender.item is None
 
 	battle, attacker, defender = build_battle()
@@ -287,7 +288,7 @@ def test_cell_battery_luminous_moss_and_snowball_consume_on_matching_hit():
 		defender,
 		battle_move("Water Gun", power=40, move_type="Water", category="Special"),
 	)
-	assert defender.boosts["spd"] == 1
+	assert defender.boosts["special_defense"] == 1
 	assert defender.item is None
 
 	battle, attacker, defender = build_battle()
@@ -303,7 +304,7 @@ def test_cell_battery_luminous_moss_and_snowball_consume_on_matching_hit():
 		defender,
 		battle_move("Powder Snow", power=40, move_type="Ice", category="Special"),
 	)
-	assert defender.boosts["atk"] == 1
+	assert defender.boosts["attack"] == 1
 	assert defender.item is None
 
 
@@ -514,7 +515,7 @@ def test_terrain_seeds_activate_when_set_into_active_terrain(
 		),
 	)
 
-	assert defender.boosts[boost_key] == 1
+	assert defender.boosts[STAT_KEY_MAP[boost_key]] == 1
 	assert defender.item is None
 	assert getattr(defender, "held_item", "") == ""
 
@@ -553,7 +554,7 @@ def test_terrain_seeds_activate_on_terrain_change(
 	assert defender.boosts.get(boost_key, 0) == 0
 	assert battle.setTerrain(terrain_name, source=attacker) is True
 
-	assert defender.boosts[boost_key] == 1
+	assert defender.boosts[STAT_KEY_MAP[boost_key]] == 1
 	assert defender.item is None
 	assert getattr(defender, "held_item", "") == ""
 

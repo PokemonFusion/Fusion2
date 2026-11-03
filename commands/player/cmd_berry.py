@@ -16,7 +16,8 @@ class CmdBerry(Command):
       +berry snack Razz Berry=<party slot, unique name, full ID or fusion>
       +berry snack Bluk Berry=<target>
 
-    Growing accepts Oran, Cheri, Pecha, Rawst and Aspear Berry, one bag seed.
+    Growing accepts Oran, Cheri, Pecha, Rawst, Aspear, Chesto, Sitrus and Lum
+    Berry, one bag seed.
     Four one-hour stages count offline time;
     water free once in each stage for yield 1-5. Ready crops do not decay.
     Harvest once, then replant explicitly. Find the optional nursery through its

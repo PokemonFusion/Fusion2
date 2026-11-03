@@ -76,7 +76,7 @@ fields, disable the Tempo profile; older code cannot enforce its reward policy.
 
 ## Validation and acceptance
 
-`tests/test_gym_policy.py` checks bounded configuration and explicit aliases.
+`tests/world/test_gym_policy.py` checks bounded configuration and explicit aliases.
 `tests/integration/production_gym_cases.py` exercises the normal player command,
 full first-clear/rematch engine battles, real PostgreSQL claims and row locking,
 installer reruns, failed-start rollback, pending delivery, loss/concession/abort,

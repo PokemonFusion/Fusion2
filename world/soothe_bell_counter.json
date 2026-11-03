@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "key": "soothe-bell-counter-v1",
+  "room": "Soothe Bell Counter",
+  "entrance": "soothebell",
+  "return_exit": "back",
+  "refill": "none",
+  "buy_only": true,
+  "description": "Finite reusable Soothe Bells. Buy with +store, equip using +hold <slot>=Soothe Bell, then feed an EV berry to gain extra friendship. No walking or battle friendship bonus is supplied. Back returns to the hub.",
+  "offers": [
+    {"item": "Soothe Bell", "price": 4000, "quantity": 2}
+  ]
+}

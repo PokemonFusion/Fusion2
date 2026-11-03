@@ -61,7 +61,7 @@ The additive checkpoint fields require no database migration.
 
 ## Validation and staging acceptance
 
-`tests/test_player_doubles.py` covers independent declarations, ambiguity,
+`tests/battle/test_player_doubles.py` covers independent declarations, ambiguity,
 ally/self/spread targets, PP, exact-slot switches, reserve reservations,
 stable fainted slots, stale menu views and failed-save rollback.
 `tests/integration/player_doubles_cases.py` uses real production models and

@@ -29,6 +29,8 @@ class EffectContext:
         battle = getattr(pokemon, "battle", None)
         if (value and not flags.get("cantsuppress") and cls.key(value) != "neutralizinggas"
                 and cls.key(held) != "abilityshield" and battle is not None):
+            if (getattr(pokemon, "volatiles", {}) or {}).get("gastroacid"):
+                return None
             if any(mon is not pokemon and getattr(mon, "hp", 0) > 0
                    and cls.key(getattr(mon, "ability", None)) == "neutralizinggas"
                    for part in getattr(battle, "participants", []) for mon in getattr(part, "active", [])):

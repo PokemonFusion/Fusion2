@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "key": "link-cord-counter-v1",
+  "room": "Link Cord Counter",
+  "entrance": "linkcord",
+  "return_exit": "back",
+  "refill": "none",
+  "buy_only": true,
+  "description": "Finite Link Cords for the 14 supported trade-only evolutions. Use +store, then +evolve <full ID> Link Cord. Other trade-held items keep their own rules. Back returns to the hub.",
+  "offers": [
+    {"item": "Link Cord", "price": 10000, "quantity": 20}
+  ]
+}

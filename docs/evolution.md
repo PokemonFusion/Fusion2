@@ -55,6 +55,7 @@ Both the source's `evos` and the target's `prevo` must agree on the exact form.
 | Kleavor | `Black Augurite`, preserving the checked-in data's spelling and handling its misplaced item field |
 | Alcremie | Milcery holds one of the seven Sweets; explicit `+evolve` replaces spinning, with an optional allowed cream target |
 | Existing trade-held items | Exact allowlisted source/target/item triples; `+hold` then `+evolve` consumes the held item without transferring ownership |
+| Link Cord | One bag copy through `+evolve` for 14 exact trade-only mappings; preserve Alolan form and all four Pumpkaboo sizes; Karrablast and Shelmet need no partner species |
 | Ordinary Ursaluna | Exact Ursaring source and a bag Peat Block; explicit item-use equivalent replaces the lunar condition |
 | Kingambit | Native owned Bisharp's private evidence of three leader victories, then a stored level above the third-KO floor; no bag item |
 | Urshifu styles | Native Kubfu uses a bag Scroll of Darkness for Single Strike (`Urshifu`), or Scroll of Waters for `Urshifu-Rapid-Strike`; consumes one copy |
@@ -83,8 +84,14 @@ the non-plot action/persistence rules are listed in
 The 14 existing trade-held items support 17 exact transitions through the
 [non-transfer evolution equivalent](trade-held-evolution.md). Equip the required
 item, then `+evolve <pokemon-id>` without supplying a bag item. Ownership,
-canonical placement and bag copies stay unchanged. Actual trading remains
-disabled pending #722/#725; this route does not add a transfer or trade callback.
+canonical placement and bag copies stay unchanged. Ordinary consent trading
+does not trigger automatic evolution; this route adds no transfer or trade callback.
+
+For the 14 supported trade-only mappings, use `+evolve <pokemon-id> Link Cord`.
+One real bag cord evolves only that Pokemon, preserving its Alolan form or
+Pumpkaboo size. Karrablast and Shelmet evolve independently without the other
+species. Existing trade-held items require no additional cord. Full mappings,
+item availability and preservation rules are in [Link Cord evolution](link-cord-evolution.md).
 
 For ordinary Ursaluna, copy Ursaring's full ID from `+party <slot>` and use
 `+evolve <pokemon-id> Peat Block`. PF2 deliberately selects an explicit item-use
@@ -117,7 +124,7 @@ These fail closed, even at level 100 or with a supplied item. Unknown future
 
 | Condition | Reason |
 | --- | --- |
-| Non-item, partner-species and unlisted `trade` transitions | Actual trading remains disabled; only the explicit existing held-item allowlist has a non-transfer equivalent |
+| Unlisted `trade` transitions | Only the existing held-item allowlist and the 14 exact Link Cord mappings have direct equivalents; ordinary trades do not trigger evolution |
 | Malamar: console upside-down | No PF2 equivalent is defined |
 | Sirfetch'd: 3 critical hits in a battle | No persisted evolution counter |
 | Runerigus: 49 HP lost and Dusty Bowl sculpture | No persisted journey/damage evidence |
@@ -162,6 +169,9 @@ already empty slot is a no-op. No schema migration is needed.
 - `python tests/integration/trade_held_cases.py`, with an explicit test DSN,
   for all 17 existing trade-held mappings, ID discovery/equip/evolve/reload,
   ownership and placement preservation, rollback, retries and competing requests.
+- `python tests/integration/link_cord_cases.py`, with an explicit test DSN,
+  for all 14 bag-cord mappings, form/size preservation, independent Karrablast
+  and Shelmet, guarded failures, rollback and competing final-copy requests.
 - `python tests/integration/peat_block_cases.py`, with an explicit test DSN,
   for shop/evolution flow, SQL reload, exact species/form/item restrictions,
   missing/spoofed context, rollback and competing completion/reservation requests.

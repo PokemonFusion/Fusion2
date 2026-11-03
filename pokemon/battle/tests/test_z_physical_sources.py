@@ -38,7 +38,7 @@ def test_exact_physical_normal_profiles(crystal, source, result, kind, native, l
         profile.kind,
         profile.native,
     ) == (result, power, kind, "Physical", "normal", "generic", ())
-    assert ZProfiles.get("Firium Z", "Fire Blast") is None
+    assert ZProfiles.get("Firium Z", "Fire Punch") is None
 
 
 @pytest.mark.parametrize("crystal,source,result,kind,native,level,power", PAIRS)
@@ -128,7 +128,7 @@ def test_old_generic_and_signature_fingerprints_are_preserved():
             json.dumps([asdict(p) for p in profiles], sort_keys=True).encode()
         ).hexdigest()
 
-    assert len(GENERIC_PAIRS) == 31 and len(ZProfiles.accepted) == 1
+    assert len(GENERIC_PAIRS) == 36 and len(ZProfiles.accepted) == 1
     assert (
         fingerprint(GENERIC_PAIRS[:19])
         == "8531fef86a1f635abd4e8951b92a0a4c9d3161975f756b9ec7d59656fa01df78"

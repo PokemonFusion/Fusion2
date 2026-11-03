@@ -48,8 +48,12 @@ class _Registry:
         return None
 
     def sessions_for(self, caller) -> List[object]:
+        from pokemon.adventures.privacy import AdventurePrivacy
+
         out: List[object] = []
         for session in self._sessions:
+            if not AdventurePrivacy.battle_access(session, caller):
+                continue
             if caller in getattr(session, "teamA", []) or caller == getattr(
                 session, "captainA", None
             ):

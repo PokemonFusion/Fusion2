@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "status": "approved_publication_completed_and_read_back_verified",
+  "source_issue": {
+    "parent": 930,
+    "issue": 952,
+    "url": "https://github.com/PokemonFusion/Fusion2/issues/952",
+    "approved_body_verified": true
+  },
+  "existing_issue_updates": [
+    {
+      "issue": 922,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/922",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:00Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 923,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/923",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:12Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 924,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/924",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:15Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 925,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/925",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:18Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 926,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/926",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:20Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 927,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/927",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:23Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 928,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/928",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:36Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 929,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/929",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:39Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 932,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/932",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:42Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 935,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/935",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:45Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 931,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/931",
+      "state": "open",
+      "updated_at": "2026-10-29T12:27:51Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 933,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/933",
+      "state": "open",
+      "updated_at": "2026-10-29T12:28:01Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 934,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/934",
+      "state": "open",
+      "updated_at": "2026-10-29T12:28:04Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 936,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/936",
+      "state": "open",
+      "updated_at": "2026-10-29T12:28:07Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 937,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/937",
+      "state": "open",
+      "updated_at": "2026-10-29T12:28:10Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    },
+    {
+      "issue": 938,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/938",
+      "state": "open",
+      "updated_at": "2026-10-29T12:28:12Z",
+      "exact_body_verified": true,
+      "original_body_preserved": true,
+      "original_metadata_preserved": true
+    }
+  ],
+  "authorization": "Direct user approval of the redacted source follow-up and the prepared sixteen append-only issue updates.",
+  "scope": {
+    "issue_closures": 0,
+    "push": false,
+    "deployment": false,
+    "operational_inspection_details_published": false
+  },
+  "limits": [
+    "Implementation commits remain local.",
+    "Issue publication does not establish deployed or socket acceptance.",
+    "Existing scope follow-ups remain separate implementation work."
+  ]
+}

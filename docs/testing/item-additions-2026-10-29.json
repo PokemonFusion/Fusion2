@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "baseline_commit": "af476a950cd21842050c3e79c58adb1731b75c47",
+  "status": "local_automated_and_owned_sql_accepted_not_published_or_deployed",
+  "issues": [
+    932,
+    935
+  ],
+  "new_engine_and_definition_cases": 53,
+  "mandatory_gate": [
+    {
+      "order": "combined",
+      "passed": 8135,
+      "skipped": 4032,
+      "warnings": 2143,
+      "seconds": 377.99
+    },
+    {
+      "order": "repeat",
+      "passed": 8135,
+      "skipped": 4032,
+      "warnings": 2143,
+      "seconds": 350.69
+    },
+    {
+      "order": "battle-first",
+      "passed": 8135,
+      "skipped": 4032,
+      "warnings": 2163,
+      "seconds": 310.89
+    }
+  ],
+  "mandatory_exit_code": 0,
+  "mandatory_log_sha256_lf": "15ed2af3407db4900b7327cbb19687e54cc31e8b1209f8ffa5af392746548a9c",
+  "sql_matrices": [
+    {
+      "matrix": "six_z_sources",
+      "cases_passed": 94,
+      "evidence": "production_commands_and_owned_rows_disposable_postgresql_captured_transport",
+      "log_sha256_lf": "5248efe12db16b300847935b9babb921d343cc7c1d5294502388ee5194d3581b",
+      "observations_sha256_lf": "e06b69d20ed30b7f1d0b800a7fd7faa4419ba1428f5452d4d9eadd65bc7907f8"
+    },
+    {
+      "matrix": "four_field_medicines",
+      "cases_passed": 24,
+      "evidence": "production_commands_and_owned_rows_disposable_postgresql_captured_transport",
+      "log_sha256_lf": "618725db6ab7ceab3424784dbf82ae04661ca716fcc1bebfcc74462ba2541325",
+      "observations_sha256_lf": "003e835de38dc73fb1b8ea0b8c7dc97672532cb456d2cc695ebd459a58f0abaa"
+    },
+    {
+      "matrix": "prior_two_equivalents",
+      "cases_passed": 8,
+      "evidence": "production_commands_and_owned_rows_disposable_postgresql_captured_transport",
+      "log_sha256_lf": "bb3a7fd793e1bd0f291e91a7e08a81fcad3fdfab4a86e5cd4f004a7fa774f40c",
+      "observations_sha256_lf": "9b8acc5390cff996b4aa6e52bc3d9a3dfd8a8aa52c7407e108b237a1e598786c"
+    }
+  ],
+  "sql_total": 126,
+  "preserved_z_profiles": {
+    "pokemon/battle/z_generic_pairs.py": {
+      "original_count": 31,
+      "original_ast_unchanged": true
+    },
+    "pokemon/battle/z_status_pairs.py": {
+      "original_count": 14,
+      "original_ast_unchanged": true
+    }
+  },
+  "preserved_scoped_definition_fingerprints": 494,
+  "current_registries": {
+    "mega_pairs": 47,
+    "z_mappings": 69,
+    "z_crystals": 35,
+    "z_kinds": {
+      "generic": 37,
+      "status": 15,
+      "signature": 16,
+      "ultra": 1
+    }
+  },
+  "definition_count": 646,
+  "scoped_count": 498,
+  "source_identities_sha256_lf": {
+    "commands/player/cmd_inventory.py": "ea7c41bdb83277699ceb69ef9d3612e32ced909ea5f791cc3af7de852b513383",
+    "pokemon/battle/tests/test_z_existing_sources.py": "cf990d979d96ceb4e8d966f21e47f68db9783052ed0db66b1d2fcdbfe5c346b0",
+    "pokemon/battle/tests/test_z_next_six_sources.py": "cc874936128362bb91e903a82e838d5aad8f2a720d6b55b503a6329b00302154",
+    "pokemon/battle/tests/test_z_physical_sources.py": "f29b24f359b5c4331bdc53b180acaf4b4188833d10fd0073d3481ce43751907a",
+    "pokemon/battle/tests/test_z_special_sources.py": "27e433f06b118c350f03c42c3a08400ea6742abaca4adfb56846bd9b010039ab",
+    "pokemon/battle/tests/test_z_status_sources.py": "3931c2069e80657ac59b305923d27258f38bcc1a611ab9d86b7a872f98b1bc86",
+    "pokemon/battle/z_generic_pairs.py": "32d7a75504e732f808acd9f2411a05dd17379f67c56d13a94d37eff4a8b82e79",
+    "pokemon/battle/z_status_pairs.py": "71c22bcf7f2a0ef60b611043a1e5eab0b7b839adaba3bcec9393cd7dfec1f658",
+    "pokemon/items.py": "23783cc4052a9b2d07abc515558523beba976f8cfa8638e9541b27ed4eac3992",
+    "pokemon/services/field_recovery_equivalents.py": "86fdebf36d1319917395c6160e20b19319c04f58a897eb5a1caebe194a806fd0",
+    "tests/integration/remedy_recovery_cases.py": "a86b5f2bf5ad64b5d11694566498943c00f0553685bad7d725d3934a34d94d59",
+    "tests/integration/z_next_six_sources_cases.py": "d9e80a9ec825133fa67fbcbdf48eb8f5cb860c975f4c9186cbcc717c4d75e839",
+    "tests/test_item_availability.py": "748037412292695eb10c654bbd34112bdf8ea0b084b3ef3deb055c550d86a886",
+    "tests/test_remedy_recovery.py": "84e6a1bc0c113a29eb3bf77e15d0fbeda469a79ae83a8aeedfbb294431686512",
+    "tools/audit_item_availability.py": "7f51c34d51cca2700ccbed0e38583ae6c7bd81373b71b3fa665896fee16ed320"
+  },
+  "primary_references": {
+    "pokemon_showdown": "ccfaa20f32af363569cd21a9d501b2bc1ded26b1",
+    "pokeemerald_expansion": "8654616bd38d9b28cc7dd8f3d0b4cb030aa2d40c"
+  },
+  "limits": [
+    "Captured command transport, no logged-in socket acceptance",
+    "No permanent public stock or deployed-code qualification",
+    "No shared world/source/stock/refill, migrations, human fixture edits or service restarts",
+    "Private PostgreSQL stopped after verifying zero disposable schemas"
+  ],
+  "evidence_directory_local": "H:\\PokemonFusionProject\\.codex-artifacts\\item-repairs-20261029-86951f7b522f46b69bdfbb031ad5a149"
+}

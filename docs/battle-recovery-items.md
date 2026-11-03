@@ -90,6 +90,19 @@ SQL/runtime effects and the turn checkpoint roll back together on write failure.
 The production turn recovery policy handles infrastructure failures; never retry
 by mutating the persisted declaration into a different target or move.
 
+Embargo also rejects medicine aimed at the affected active recipient before
+reserving an action. This covers HP, status and selected/all-move PP medicine,
+including the permitted foods and berries above. An embargoed actor can still
+use medicine on an unaffected reserve or doubles partner. Magic Room and Klutz
+do not restrict bag medicine. If Embargo appears after queuing, the action is
+spent without an effect or item debit, following the existing stale-target
+policy. Field `+use` retains its separate eligibility rules.
+
+This target restriction follows the primary
+[manual Embargo check](https://github.com/rh-hideout/pokeemerald-expansion/blob/master/src/item_use.c).
+The [October 29 repair report](testing/item-repairs-2026-10-29.md) separates
+isolated command/SQL checks from socket acceptance and deployment.
+
 Held Pecha Berry and PSN Cure Berry also cure Toxic; Burnt Berry thaws freeze
 and cannot cure burn. Their held triggers obey item suppression and Unnerve.
 These repairs preserve the field and manual bag routes, their reviewed amounts,

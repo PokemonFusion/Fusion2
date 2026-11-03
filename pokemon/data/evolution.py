@@ -5,7 +5,10 @@ from typing import List, Optional
 
 from pokemon.names import normalize_name
 from pokemon.evolution_forms import AlcremieEvolution
-from pokemon.evolution_items import GimmighoulEvolution, KingambitEvolution, KubfuEvolution, PeatBlockEvolution, TradeHeldEvolution
+from pokemon.evolution_items import (
+    GimmighoulEvolution, KingambitEvolution, KubfuEvolution, LinkCordEvolution,
+    PeatBlockEvolution, TradeHeldEvolution,
+)
 
 from ..dex import POKEDEX
 
@@ -97,6 +100,9 @@ def required_item(evo):
     scroll = KubfuEvolution.required_item(evo)
     if scroll:
         return scroll
+    cord = LinkCordEvolution.required_item(evo)
+    if cord:
+        return cord
     return evo.raw.get("evoItem")
 
 
@@ -134,17 +140,21 @@ def evolution_options(species, *, level, item=None, context=None):
         kingambit_evolution = KingambitEvolution.eligible(current, evo, context.kingambit_ready)
         kubfu_evolution = KubfuEvolution.eligible(current, evo, item)
         coin_evolution = GimmighoulEvolution.eligible(current, evo, item, level, context.ability)
+        cord_evolution = LinkCordEvolution.eligible(current, evo, item, level)
+        if LinkCordEvolution.required_item(evo) and not cord_evolution:
+            continue
         if key == "kleavor":
             condition = ""
         if (
             kind not in SUPPORTED_TYPES and not sweet_evolution
             and not trade_held_evolution and not peat_evolution and not kingambit_evolution
-            and not kubfu_evolution and not coin_evolution
+            and not kubfu_evolution and not coin_evolution and not cord_evolution
         ) or key in UNSUPPORTED_TARGETS:
             continue
         if level < (evo.evo_level or 0) or (
             not sweet_evolution and not peat_evolution and not kingambit_evolution
-            and not kubfu_evolution and not coin_evolution and not context.meets(condition)
+            and not kubfu_evolution and not coin_evolution and not cord_evolution
+            and not context.meets(condition)
         ):
             continue
         gender = raw.get("gender")
@@ -156,7 +166,7 @@ def evolution_options(species, *, level, item=None, context=None):
             region = "Hisui"
         if region and normalize_name(context.region) != normalize_name(region):
             continue
-        if kind == "useItem" or peat_evolution or kubfu_evolution or coin_evolution:
+        if kind == "useItem" or peat_evolution or kubfu_evolution or coin_evolution or cord_evolution:
             if not item or not required_item(evo) or normalize_name(item) != normalize_name(required_item(evo)):
                 continue
         elif item:  # Never spend a supplied item on an unrelated level evolution.

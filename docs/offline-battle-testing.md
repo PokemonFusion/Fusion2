@@ -1,5 +1,8 @@
 # Offline Battle Testing
 
+Use the [test source index](../tests/README.md) to find application tests by
+feature and the [tools index](../tools/README.md) for QA and audit entry points.
+
 Fusion2 battle behavior should be testable without live Evennia sessions. Manual
 testing is useful for UX, but it cannot cover hundreds of moves, abilities,
 Pokemon, and held items.
@@ -48,7 +51,7 @@ Evennia sessions, PostgreSQL concurrency, or migration/deployment readiness.
 The [September Week 1 evidence](testing/september-week-1.md) maps the test,
 result-commit and lifecycle criteria to their implementation and verification.
 
-The mandatory gate deliberately excludes `tests/test_all_moves_and_abilities.py`
+The mandatory gate deliberately excludes `tests/pokemon/test_all_moves_and_abilities.py`
 and `pokemon/battle/tests/test_exhaustive_dex_smoke.py` cases marked `dex`
 (high-volume construction/execution sweeps), and
 `pokemon/battle/tests/test_showdown_differential.py` cases marked `showdown`
@@ -156,7 +159,7 @@ updated. Use these snapshots when proving exact calculated damage.
 
 Use `MoveOutcomeContract` and `ResidualOutcomeContract` when a mechanic is
 important enough to lock down as expected behavior rather than a smoke test.
-Shared contract definitions live in `tests/battle_contract_catalog.py`; the
+Shared contract definitions live in `tests/battle/battle_contract_catalog.py`; the
 pytest file only executes that catalog.
 
 ```python
@@ -287,7 +290,7 @@ The coverage inventory classifies every loaded move, ability, item, and Pokemon
 species against the current contract catalog:
 
 ```powershell
-..\evenv\Scripts\python.exe -m tests.battle_contract_coverage
+..\evenv\Scripts\python.exe -m tests.battle.battle_contract_coverage
 ```
 
 Or use the repository's Make target:
@@ -325,14 +328,14 @@ links every retained item to declared normal-flow evidence and fixes the exact
 item/check lists and budgets for future reruns. Generate or verify it with:
 
 ```powershell
-..\evenv\Scripts\python.exe -B tools/reconcile_item_support.py --check
+..\evenv\Scripts\python.exe -B tools/audits/reconcile_item_support.py --check
 ```
 
 When the retained local archives are available, rehash them without starting a
 server, logging in, or changing saved evidence:
 
 ```powershell
-..\evenv\Scripts\python.exe -B tools/reconcile_item_support.py --check --evidence-root .codex-artifacts/full-items-postformfix-20261020 --compare-local-source
+..\evenv\Scripts\python.exe -B tools/audits/reconcile_item_support.py --check --evidence-root .codex-artifacts/full-items-postformfix-20261020 --compare-local-source
 ```
 
 The matrix uses LF-normalized text identity so Git checkout newline conversion

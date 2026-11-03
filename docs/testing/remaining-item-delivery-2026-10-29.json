@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "source_base": "15bfe1a7489cfd4e5b6c62a23e3e88f535eeccb5",
+  "implemented_issues": [
+    947,
+    949,
+    950,
+    951
+  ],
+  "additional_acceptance": [
+    939
+  ],
+  "source_sha256": {
+    ".github/workflows/lifecycle-integrity.yml": "b4c266623688a826326660133079dbb55768e2fd2d1a0786d7528afc2cf8074a",
+    "commands/player/cmd_daycare.py": "61e48daf318d3e9c66145e8ce03a11b33e631a0a7e26424ff8589d75978391fa",
+    "pokemon/battle/battledata.py": "3cc0d40aff1d7d4621c53490b45ed058ea93dc700e7c17488830136dbdfb56b7",
+    "pokemon/battle/battleinstance.py": "e7d0332d13065455daaedec474662930005ad31385fe5e96ebd7d73c3d8b1022",
+    "pokemon/battle/engine.py": "e96edd34a4368b57ad73cd1751d3d617d4c49fdc0255e3e73c32ac3b18649249",
+    "pokemon/battle/logic.py": "007fe9c3332768b3cb9761970497ed2007cd3d8169ad92506446ee41bb604e93",
+    "pokemon/battle/npc_prize_items.py": "22bc1ba3f746c7a00be756c78b2207c4db6901f804042c90769176c7efcb57ab",
+    "pokemon/battle/state.py": "5e7ffd44104d7219c119f467e08d321876d571b2494ee279393a8b9ab49b8cde",
+    "pokemon/battle/turns.py": "725425493319c423ba44fc4261177fecbaea21b3c79d38fd7555d8a0bc5b3858",
+    "pokemon/field_friendship.py": "ce899538082c4b590ba977cca2b0d5def731b94813bc0b10454d73b262729428",
+    "pokemon/items.py": "92c5ee4d4fea6ea615d7d8fd15d9bcb9d38ccf590118b12c8380d639ef2a5435",
+    "pokemon/mirror_herb.py": "2ef2598bb3559da4a001ee060711505e3d3bf3a421680ffdce2d297b5081e087",
+    "pokemon/services/daycare_teaching_location.py": "0717a8efb11f6ea5b790a359ec8113ab874decd0427f31b92f129bced2526bb2",
+    "pokemon/services/evolution.py": "a856ec30a0be0f1a5f0c5379bee4bcf8e4e3355013f6f1cd4330585fa253d665",
+    "pokemon/services/field_berries.py": "4a0c950b2bd11181d5aba174c2388d07c49481efa490adaba084554575a8f6b6",
+    "pokemon/services/item_activity_routes.py": "d441b0ba7a8952d2d483c3aa9b0353d2f79d29acd0fb46fe0484b4c6d93a6657",
+    "pokemon/services/mirror_herb.py": "512cea5527341ea48392b3aef21914370327df200f1c6f823febf0f19e3d8af0",
+    "tests/integration/battle_player_fixtures.py": "73941286a6f5d262e5ba22438c9399087948c772bbeb30f15b007b5787c53f49",
+    "tests/integration/contextual_evolution_cases.py": "b9ff42b5afe0591ab263d746833911187f99ebbd43ecbfb7bb168e58c44df200",
+    "tests/integration/evolution_cases.py": "b64ee0c0d191e9ea9bed045fd65f6cfa1e8f0b42e553d4f857d4511b26b99509",
+    "tests/integration/mirror_herb_cases.py": "f3b7659c38300716a1a9e9bb98756bfb8116a72fae630b6e79c336692e23c0dd",
+    "tests/integration/npc_prize_item_cases.py": "51243668ba7167bccb2e7950f9fc869afba7954cbbd6c2ed29614a22a5fa0c83",
+    "tests/integration/soothe_bell_cases.py": "4c5fbd547e8f88ce608125d39151976242955bf95a65533a5d91eb64fd34efaa",
+    "tests/integration/training_finder_cases.py": "48986b5681f030b1d0bc66299275e2ac53cbbbfb1e5cb0788b04a947c5c53342",
+    "tests/test_field_friendship_bell.py": "1337bcdfdab41ac6b8e3532ecc191aea8e1049e88611ef47f809015ab2903017",
+    "tests/test_item_availability.py": "f720b65fcbcf4748bad2463bdef4b297ffad9de8e29d9c57225147634fffa528",
+    "tests/test_mirror_herb_rules.py": "2e53be348808ccd762398a23fab8fba9616925ab25813ec485b20db9c3ff80e0",
+    "tests/test_npc_prize_ledger.py": "8819ec61e81660b9cbd22e910ee4bdc507ebaee2a2a4579ad343a824b9910ffa",
+    "tools/audit_item_availability.py": "74101346c6f0f6e9a0792988fd801f6da473c5e6a8b9e6d403ebd08ce80683e8",
+    "world/contextual_evolution_counter.json": "936040190bc08125f8e71909a32789ab1a9c0fb13e73697f170ea356a9dfb31e",
+    "world/npc_prize_item_counter.json": "349f08818080e06c74c9caa5bbd66dd22db55bae7bd1439c58fdb301f0d779d4",
+    "world/soothe_bell_counter.json": "ab383a157fa8d9c18fe0eae061be9343b0c4465728899b961a784a7bedbeec22"
+  },
+  "repository_normalized_sha256": {
+    ".github/workflows/lifecycle-integrity.yml": "315172ca7bf8cb147c69af33eef4a231da6e71f8504fc14044a5bb8c07d59ed1",
+    "commands/player/cmd_daycare.py": "e451ee87c64d3567e5b8118d143c521c166f910256beed0b024c7b9eb726ab60",
+    "pokemon/battle/battledata.py": "c19d7ee4c5636b738f56273fedd255eba701ce9bc77923389aff3dfb8b848495",
+    "pokemon/battle/battleinstance.py": "8edacda947a99c266e7e5ad3ed123ff83a1c6e97a04b61df97af9f92022050a2",
+    "pokemon/battle/engine.py": "960728a8946fdedddceb800d43d29818ce2641d37782e3198f5391c57c7a95e7",
+    "pokemon/battle/logic.py": "8647cdaade1d04321ad736fbf85e6895058129a6453fc7fc257541fdf89990b2",
+    "pokemon/battle/npc_prize_items.py": "22bc1ba3f746c7a00be756c78b2207c4db6901f804042c90769176c7efcb57ab",
+    "pokemon/battle/state.py": "5403ff985208116fcce6ddd537479a37c373c048dd4da36cefe5947532660c46",
+    "pokemon/battle/turns.py": "4ecfaf9cb7525f110f642ed05f50e4c42c0e2fea6fdbfce8b3101f6c6d7723e9",
+    "pokemon/field_friendship.py": "ce899538082c4b590ba977cca2b0d5def731b94813bc0b10454d73b262729428",
+    "pokemon/items.py": "60035b028a43d6018452f5eb9cbc062afac360e8b88d8bd4b1efce280584a392",
+    "pokemon/mirror_herb.py": "2ef2598bb3559da4a001ee060711505e3d3bf3a421680ffdce2d297b5081e087",
+    "pokemon/services/daycare_teaching_location.py": "0717a8efb11f6ea5b790a359ec8113ab874decd0427f31b92f129bced2526bb2",
+    "pokemon/services/evolution.py": "750e1975e517478712171435e5206e379a3526621c2a1df5b2864d0153f5f22e",
+    "pokemon/services/field_berries.py": "4a0c950b2bd11181d5aba174c2388d07c49481efa490adaba084554575a8f6b6",
+    "pokemon/services/item_activity_routes.py": "d441b0ba7a8952d2d483c3aa9b0353d2f79d29acd0fb46fe0484b4c6d93a6657",
+    "pokemon/services/mirror_herb.py": "512cea5527341ea48392b3aef21914370327df200f1c6f823febf0f19e3d8af0",
+    "tests/integration/battle_player_fixtures.py": "0b1d19ed8059408c6fe062b498fa6085cdf54c8eef908cd52673ef6f37ead0b2",
+    "tests/integration/contextual_evolution_cases.py": "b9ff42b5afe0591ab263d746833911187f99ebbd43ecbfb7bb168e58c44df200",
+    "tests/integration/evolution_cases.py": "cf7954cdb3bea5ad5bb5e2d56ad7e64f1c2bc055fd92fdb27cf971efb9910029",
+    "tests/integration/mirror_herb_cases.py": "f3b7659c38300716a1a9e9bb98756bfb8116a72fae630b6e79c336692e23c0dd",
+    "tests/integration/npc_prize_item_cases.py": "51243668ba7167bccb2e7950f9fc869afba7954cbbd6c2ed29614a22a5fa0c83",
+    "tests/integration/soothe_bell_cases.py": "4c5fbd547e8f88ce608125d39151976242955bf95a65533a5d91eb64fd34efaa",
+    "tests/integration/training_finder_cases.py": "48986b5681f030b1d0bc66299275e2ac53cbbbfb1e5cb0788b04a947c5c53342",
+    "tests/test_field_friendship_bell.py": "1337bcdfdab41ac6b8e3532ecc191aea8e1049e88611ef47f809015ab2903017",
+    "tests/test_item_availability.py": "c210cf63cd012c9a414cb516ff8cf768ef1bb48cf07184d07b21f363ab65d5f0",
+    "tests/test_mirror_herb_rules.py": "2e53be348808ccd762398a23fab8fba9616925ab25813ec485b20db9c3ff80e0",
+    "tests/test_npc_prize_ledger.py": "8819ec61e81660b9cbd22e910ee4bdc507ebaee2a2a4579ad343a824b9910ffa",
+    "tools/audit_item_availability.py": "e3267041f8d9e676a6f1abdf7d097d7d9b96e1d51f62829c68acb5b34bbbeefe",
+    "world/contextual_evolution_counter.json": "936040190bc08125f8e71909a32789ab1a9c0fb13e73697f170ea356a9dfb31e",
+    "world/npc_prize_item_counter.json": "349f08818080e06c74c9caa5bbd66dd22db55bae7bd1439c58fdb301f0d779d4",
+    "world/soothe_bell_counter.json": "ab383a157fa8d9c18fe0eae061be9343b0c4465728899b961a784a7bedbeec22"
+  },
+  "mandatory_gate": [
+    {
+      "order": "combined",
+      "passed": 8187,
+      "skipped": 4032,
+      "warnings": 2142,
+      "seconds": 707.81
+    },
+    {
+      "order": "repeat",
+      "passed": 8187,
+      "skipped": 4032,
+      "warnings": 2142,
+      "seconds": 702.99
+    },
+    {
+      "order": "battle-first",
+      "passed": 8187,
+      "skipped": 4032,
+      "warnings": 2162,
+      "seconds": 698.4
+    }
+  ],
+  "focused": {
+    "passed": 47,
+    "warning": "Original-worktree pytest cache is unwritable; tests passed."
+  },
+  "disposable_postgres": {
+    "cases": {
+      "contextual_evolution_cases": 5,
+      "soothe_bell_cases": 6,
+      "mirror_herb_cases": 7,
+      "npc_prize_item_cases": 15,
+      "evolution_cases": 28,
+      "trade_held_cases": 33,
+      "link_cord_cases": 29,
+      "alcremie_cases": 76,
+      "training_grounds_cases": 16,
+      "training_finder_cases": 8,
+      "itemfinder_cases": 7
+    },
+    "total_distinct_cases": 230,
+    "migrations_run": false
+  },
+  "ordinary_socket_acceptance": {
+    "all_fourteen_exact_mappings": true,
+    "reconnect_persisted": true,
+    "training_socket": {
+      "actual_seconds": 90.45300000021234,
+      "earned_attack_evs": 64,
+      "reconnected_mid_session": true
+    },
+    "contextual_socket": {
+      "paid_three_items": 12000,
+      "three_exact_targets": true,
+      "wrong_time_preserved": true
+    },
+    "bell_socket": {
+      "paid_bell": 4000,
+      "friendship": [
+        153,
+        160
+      ],
+      "target": "Crobat",
+      "reusable": true
+    },
+    "herb_socket": {
+      "exact_new_move": "Wish",
+      "pp": 10,
+      "old_tackle_pp": 1,
+      "donor_wish_pp": 0,
+      "reconnected_before_confirm": true,
+      "duplicate_unchanged": true
+    },
+    "finder_socket": {
+      "attempts": 4,
+      "first_actual_random_find": "Pomeg Berry",
+      "found_copy_used": true,
+      "rng_unpatched": true
+    },
+    "npc_prize_socket": {
+      "payload": {
+        "money": 80,
+        "npc_prize": {
+          "base": 40,
+          "multiplier": 2
+        }
+      },
+      "reconnected_repeat_no_payout": true
+    },
+    "actual_socket_commands": 100,
+    "private_processes_stopped": true,
+    "private_schema_removed": true,
+    "clock_and_rng_unpatched": true,
+    "ordinary_account_not_staff_or_superuser": true
+  },
+  "confirmed_defects": [
+    "Contextual evolution formerly trusted cached character/room context; now reads saved current room under the character lock and refuses invalid saved levels before item spending.",
+    "Clearing authored activity-exit locks removed Evennia call access. Preserve base exit locks and verify call/view/traverse on retry; private ordinary socket travel reproduces the repair.",
+    "New metadata-only field/prize holders lacked physical runtime Item objects, so Trick could not transfer them. Reviewed inert representations now preserve ordinary transfer semantics."
+  ],
+  "fixture_diagnoses": [
+    "First contextual Happiny setup lacked native gender/ability; prepared explicit canonical prerequisites.",
+    "The useful Bell fixture was corrected from an already-above-threshold friendship to 153 -> 160.",
+    "Captured battle fixtures now expose real SQL room Attributes and Character movement; private battle logs avoid shared file rotation.",
+    "The new catalog check originally assumed deferred Cleanse Tag had an existing definition; deferrals now remain explicit even when a definition is absent."
+  ],
+  "limits": [
+    "All schemas, accounts, targets, source installations and game processes used for socket acceptance were task-owned disposable fixtures.",
+    "Prepared native companions, donor knowledge, wallet, Herb and feeding berry are labelled prerequisites; no public acquisition is inferred for them.",
+    "Private ordinary sockets and actual clocks/RNG do not establish shared-world deployment or availability.",
+    "No existing-world source installation/refill, migration, shared restart or human character/Pokemon changes occurred.",
+    "Nursery #948 remains separate pending its actual four-hour harvest/use receipt.",
+    "Catalog capability labels and all 501 world-unverified entries are not a claim of complete support or source coverage."
+  ]
+}

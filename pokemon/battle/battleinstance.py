@@ -696,8 +696,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Return the active battle instance for ``player`` if possible.
 
         This checks ``player.ndb.battle_instance`` first, then tries to
-        rebuild it from persistent data on the player's room. It returns
-        the instance if found, otherwise ``None``.
+        rebuild it from persistent data on the player's room. An Adventure
+        may also recover from its validated session room without moving the
+        player. It returns the instance if found, otherwise ``None``.
         """
 
         log_info(f"ensure_for_player called for {getattr(player, 'key', player)}")
@@ -710,12 +711,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         room = getattr(player, "location", None)
         if not room:
             log_info(f"Player {getattr(player, 'key', player)} has no location")
-            return None
+            return BattleSession._restore_adventure_for_player(player)
 
         bid = getattr(player.db, "battle_id", None)
         if bid is None:
             log_info(f"Player {getattr(player, 'key', player)} has no battle_id")
-            return None
+            return BattleSession._restore_adventure_for_player(player)
 
         bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
         if bmap and hasattr(bmap, "get"):
@@ -730,7 +731,16 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if inst:
             log_info(f"Restored instance {bid} from room data")
             player.ndb.battle_instance = inst
+        else:
+            return BattleSession._restore_adventure_for_player(player)
         return inst
+
+    @staticmethod
+    def _restore_adventure_for_player(player) -> "BattleSession | None":
+        """Use validated session custody when reconnect location lost the battle."""
+        from pokemon.adventures.sessions import restore_session_battle
+
+        return restore_session_battle(player)
 
     @classmethod
     def restore(cls, room, battle_id: int) -> "BattleSession | None":
@@ -1025,6 +1035,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     log_info(f"Could not find watcher {wid}")
                     continue
                 watcher = targets[0]
+            from pokemon.adventures.privacy import AdventurePrivacy
+
+            if not AdventurePrivacy.battle_access(obj, watcher):
+                continue
             obj.add_watcher(watcher)
             if wid in teamA:
                 if obj.captainA is None:
@@ -1552,6 +1566,13 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Move players to the battle room and notify watchers."""
         self._bind_reward_delivery()
         log_info(f"Setting up battle room for {self.battle_id}")
+        from .npc_prize_items import NPCPrizeItems
+
+        if self.battle and NPCPrizeItems.enabled(self.battle):
+            NPCPrizeItems.initial(self.battle)
+            if NPCPrizeItems.freeze(self.battle):
+                self.logic.sync_runtime_state()
+                self.storage.set("state", self._compact_state_for_persist(self.state.to_dict()))
         self.add_watcher(self.captainA)
         if self.captainB and getattr(self.captainB, "id", None) is not None:
             self.add_watcher(self.captainB)
@@ -1921,6 +1942,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if self.battle and self.state and BattleRewards.supports(self.captainA):
             self.battle.reward_delivery = BattleRewards(self.state.reward_id)
         metadata = getattr(self, "encounter_metadata", {}) or {}
+        if self.battle:
+            self.battle.prize_source_type = metadata.get("source_type")
         if self.battle and metadata.get("source_type") == "gym_leader" and metadata.get("reward_policy") == "badge_only":
             self.battle.award_xp = self.battle.award_txp = self.battle.award_prizes = False
             self.state.xp = self.state.txp = False
@@ -2110,8 +2133,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         from .battle_boosters import BattleBoosters
 
         from .ultra_burst import UltraBurst
+        from .npc_prize_items import NPCPrizeItems
 
-        if (BattleBoosters.tracked(self.battle) or UltraBurst.tracked(self.battle)) and connection.in_atomic_block:
+        if (BattleBoosters.tracked(self.battle) or UltraBurst.tracked(self.battle)
+                or NPCPrizeItems.tracked(self.battle)) and connection.in_atomic_block:
             raise ValueError("Submit this item or Ultra turn outside a containing transaction; no turn changed.")
         snapshot = self.logic.to_dict()
         adventure_result = getattr(self, "_adventure_result", None)
@@ -2135,15 +2160,18 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
                 NativeNecrozmaBattle.lock_sources(self.battle)
                 from .battle_boosters import BattleBoosters
+                from .npc_prize_items import NPCPrizeItems
 
-                if getattr(self.state, 'multi', None) or BattleBoosters.tracked(self.battle) or UltraBurst.tracked(self.battle):
+                if (getattr(self.state, 'multi', None) or BattleBoosters.tracked(self.battle)
+                        or UltraBurst.tracked(self.battle) or NPCPrizeItems.tracked(self.battle)):
                     saved = BattleRewards.stored_attribute(self.room, self.storage._key('state')) or {}
                     if (saved.get('reward_id') != self.state.reward_id or saved.get('ending')
                             or saved.get('mechanic_turn', 0) != self.battle.mechanic_turn
                             or dict(saved.get('declare', {})) != dict(self.state.declare)
                             or saved.get('booster_effects', {}) != self.state.booster_effects
                             or saved.get('ultra_pending', {}) != self.state.ultra_pending
-                            or saved.get('ultra_used', []) != self.state.ultra_used):
+                            or saved.get('ultra_used', []) != self.state.ultra_used
+                            or saved.get('npc_prize_qualifications', {}) != self.state.npc_prize_qualifications):
                         raise ValueError('This battle turn changed; refresh and choose again.')
                 from .mega_evolution import MegaEvolution
 

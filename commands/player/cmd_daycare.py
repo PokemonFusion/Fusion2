@@ -10,11 +10,21 @@ class CmdDaycare(Command):
       +daycare
       +daycare deposit <your party slot/UUID>
       +daycare retrieve <entry UUID>
+      +daycare herb <recipient party slot/UUID>=<donor party slot/UUID>/<exact move>
+      +daycare herb confirm
+      +daycare herb cancel
 
     Deposit costs 100 trainer money per stay; retrieval is free. Eggs and reserved
     Pokemon cannot be deposited. Deposited Pokemon cannot battle or enter other
     systems. Retrieve returns the same Pokemon to a free party slot, or a box if
     full. Breeding is separate. Status and receipts survive reconnect.
+
+    At a configured Daycare, free Mirror Herb teaching uses two hatched owned
+    ordinary party members. The recipient holds a Mirror Herb and has an empty
+    active slot; the donor actively knows an exact native Gen 9 egg move for the
+    recipient (zero donor PP is allowed). Review and confirm within five minutes.
+    No Herb is consumed and no egg, fee, gender or Egg Group pairing is needed.
+    Existing knowledge and PP are preserved; this does not refresh a known move.
     """
 
     key = "+daycare"
@@ -30,7 +40,23 @@ class CmdDaycare(Command):
         action = action.lower()
         try:
             service = Daycare(self.caller)
-            if not action:
+            if action == "herb":
+                from pokemon.services.mirror_herb import MirrorHerbTeaching
+
+                teaching = MirrorHerbTeaching(self.caller)
+                text = arguments.strip()
+                if text.casefold() == "confirm":
+                    result = teaching.confirm()
+                elif text.casefold() == "cancel":
+                    result = teaching.cancel()
+                else:
+                    recipient, equals, donor_move = text.partition("=")
+                    donor, slash, move = donor_move.partition("/")
+                    if not equals or not slash or not all(value.strip() for value in (recipient, donor, move)):
+                        raise PlacementError("Use +daycare herb <recipient>=<donor>/<exact move>, then +daycare herb confirm.")
+                    result = teaching.review(recipient.strip(), donor.strip(), move.strip())
+                teaching.notify(result)
+            elif not action:
                 entries = service.entries()
                 self.caller.msg("Daycare (active entries first):\n" + "\n".join(service.describe(entry) for entry in entries)
                     if entries else "Your Daycare is empty. Use +daycare deposit <your slot/UUID>; 100 trainer money, retrieval free.")
@@ -43,5 +69,5 @@ class CmdDaycare(Command):
                     f"position {receipt['position']}. No retrieval fee. Repeating returns this historical receipt.")
             else:
                 self.caller.msg("Use +daycare, +daycare deposit <your slot/UUID>, or +daycare retrieve <entry UUID>.")
-        except PlacementError as error:
+        except (PlacementError, ValueError) as error:
             self.caller.msg(str(error))

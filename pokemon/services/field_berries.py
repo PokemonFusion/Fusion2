@@ -70,7 +70,9 @@ class FieldBerryUse(FieldMedicineUse):
             raise FieldMedicineError("Invalid saved friendship; contact staff before using an EV berry.")
         index = self.ev_stats[item]
         updated = max(0, evs[index] - 10)
-        gain = 10 if friendship < 100 else 5 if friendship < 200 else 2
+        from pokemon.field_friendship import FieldFriendship
+
+        gain = FieldFriendship.ev_berry_gain(pokemon, friendship)
         friendship = min(255, friendship + gain)
         if updated == evs[index] and friendship == pokemon.friendship:
             return False

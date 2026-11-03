@@ -90,7 +90,7 @@ does not install a gym, change the database schema or reload the game service.
 
 ## Validation
 
-`tests/test_ai_action_scoring.py` covers individual and spread targets, permitted
+`tests/battle/test_ai_action_scoring.py` covers individual and spread targets, permitted
 ally support, status, setup, recovery, Protect, room decisions, source-state
 purity, fainting, duration and serializable field references.
 `tests/integration/ai_scoring_cases.py` uses real gym generation, ordinary-player

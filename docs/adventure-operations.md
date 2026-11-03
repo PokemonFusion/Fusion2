@@ -93,6 +93,92 @@ part of the normal deployment process before enabling this version.
 - No weekly/monthly board goals or permanent milestone UI yet.
 - No reputation, procedural generation, crafting loop, or player-authored maps.
 
+## Exclusive solo instances (#833)
+
+The reservation belongs to a **character**, independently of its account. Only
+that character may enter or view its instance, select its battle through
+`+status`, or register for battle observations. Other characters on the same
+account have the same restrictions as any outsider. Developer permission is
+the explicit staff inspection exception; Builder permission alone is insufficient.
+Staff inspection is not ordinary-player acceptance.
+
+`AdventureSession.holds_instance` records occupancy separately from completion.
+Database constraints permit at most one occupied run per character and per room,
+and require both identities on every occupied run. Completing a survey retains
+the reservation until the owner leaves. Battle storage, pending original results
+and failed return movement also retain it. After leaving, historical results and
+unpaid first-clear rewards remain available without reserving the room.
+
+Starts, returns and encounter-result writes acquire locks in battle order:
+instance room, character, then session. A failed entry releases only its own
+claim; a delayed leave/expiry cannot release a newer run. An expired owner still
+inside must return successfully before the room becomes reusable. Expiry of an
+owner already outside does not move that character. An unreserved room with a
+character still physically inside is not offered as free capacity.
+
+The existing fixed room pool remains in use. A full pool produces a retryable
+message. Do not clear ownership attributes or rerun the Hall batch to bypass it.
+Staff `+adventureadmin/abort` and `/return` use the same reservation-aware leave
+transaction. They release occupancy only after successful return movement and
+detach cardinal commands only after success. Completed claims remain visible
+to staff after marker loss, and the existing validated-Hall fallback does not
+rewrite the stored return history. Failed returns retain the original claim,
+markers and recovery commands and report the actual movement failure.
+Privacy checks apply at room admission, appearance, observation registration,
+restoration and central battle output, including stale observer registrations.
+Ordinary battles outside Adventure instances retain their existing policy.
+
+### Schema preflight and activation
+
+This change requires `0060_adventure_occupancy`. **Migration execution and shared
+game activation require separate approval.** Prepare a verified backup and a
+quiescent deployment window using the normal operational procedure. From the
+intended deployment checkout with its existing database settings, inspect first:
+
+```powershell
+..\evenv\Scripts\python.exe -B tools/audit_adventure_occupancy.py
+```
+
+The read-only preflight works against the legacy schema. It lists retained
+session IDs and exact conflicting identities; it never guesses a winner or
+repairs data. The migration repeats that preflight transactionally, preserving
+active runs, completed occupancy, original-result receipts and battle identities.
+Ambiguous ownership, missing identities or invalid receipts stop the migration.
+Session histories, participation, encounter outcomes and unpaid rewards are not
+rewritten. Resolve any reported ambiguity through separately reviewed recovery.
+
+Before approval to deploy, rehearse fresh installation, a legacy upgrade with
+held/completed/unpaid runs, and rejected conflicting claims on a disposable
+PostgreSQL fixture. The guarded runner is:
+
+```powershell
+# Only after explicit approval, with PF2_TEST_POSTGRES_DSN set to a test fixture:
+..\evenv\Scripts\python.exe -B tests/integration/adventure_migration_cases.py --approved
+```
+
+This rehearsal is separate from model-table tests. Do not point it at a game
+database. Do not reverse/delete participation history as a rollback shortcut.
+Rollback across 0060 must coordinate code and schema: older Adventure inserts
+do not populate the new required occupancy column. Keep admissions quiescent
+until a separately approved rollback plan preserves all held runs and receipts;
+reverting only Python source is insufficient.
+
+### Regression and socket checks
+
+`tests/integration/adventure_privacy_cases.py` covers independent-connection
+same-room/same-character starts, release/reuse, stale markers, failed movement,
+database uniqueness, actual admission/observation commands and the staff exception.
+The lifecycle CI runs this alongside the retained Adventure player/recovery suites.
+
+`tests/integration/adventure_socket_cases.py` starts a task-owned Portal and
+Server against an explicit disposable PostgreSQL schema. It tests real Telnet
+login and commands with two Player accounts and two characters on one account,
+then stops its processes and removes its schema. It creates fixture model tables
+without migrations and records command-level evidence under `.codex-artifacts`.
+It does not establish shared-world deployment, migration readiness, or injected
+failure acceptance. The command/SQL suites retain pending-outcome and failure
+coverage separately.
+
 The [September closeout](testing/september-closeout-2026-10-23.md) records the
 retained integration, non-combat route repair, current command/SQL checks and
 deferred November work. `tests/integration/adventure_player_cases.py` exercises

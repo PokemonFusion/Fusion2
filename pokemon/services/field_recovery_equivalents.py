@@ -1,4 +1,4 @@
-"""Two field-only recovery equivalents using the existing fresh item boundary."""
+"""Six field-only recovery equivalents using the existing fresh item boundary."""
 
 from pokemon.items import FIELD_RECOVERY_EQUIVALENTS
 from pokemon.names import normalize_name
@@ -10,12 +10,14 @@ from pokemon.services.field_items import FieldMedicineError, FieldMedicineUse
 class _EquivalentMedicineUse(BattleMedicineUse):
     """Reuse durable status and exact selected-move PP effects without battle enablement."""
 
-    healing = {}
+    healing = {key: item.amount for key, item in FIELD_RECOVERY_EQUIVALENTS.items() if item.effect == "heal"}
     fractions = {}
-    statuses = {"ragecandybar": BattleMedicineUse.statuses["fullheal"]}
+    statuses = {key: BattleMedicineUse.statuses["fullheal"]
+                for key, item in FIELD_RECOVERY_EQUIVALENTS.items() if item.effect == "status"}
     pp_items = {"hopoberry": (10, False)}
     revivals = set()
-    herbs = {}
+    herbs = {key: item.friendship_cost for key, item in FIELD_RECOVERY_EQUIVALENTS.items()
+             if item.friendship_cost is not None}
 
 
 class FieldRecoveryEquivalentUse(FieldMedicineUse):
@@ -25,7 +27,7 @@ class FieldRecoveryEquivalentUse(FieldMedicineUse):
 
     @classmethod
     def supports(cls, item):
-        """Recognize only the two complete reviewed supplemental identities."""
+        """Recognize only the six complete reviewed supplemental identities."""
         return normalize_name(item) in FIELD_RECOVERY_EQUIVALENTS
 
     def use(self, item, target, *, move=None):

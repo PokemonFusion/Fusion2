@@ -1494,7 +1494,11 @@ class RewardService:
         recipient = winner.player
         delivery = getattr(battle, "reward_delivery", None)
         if delivery is not None and delivery.supports(recipient):
-            claimed = delivery.deliver(recipient, "prize", {"money": prize_money}, caller=battle)
+            from .npc_prize_items import NPCPrizeItems
+
+            payload = NPCPrizeItems.payload(battle, winner, prize_money)
+            prize_money = payload["money"]
+            claimed = delivery.deliver(recipient, "prize", payload, caller=battle)
             if claimed is None:
                 return
             battle._rewards_granted = True
@@ -2280,10 +2284,20 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         elif eventid == "TryAddVolatile":
             relay_kw_name = "status"
             relay_positional = False
-        for holder, state, owner in self._event_scoped_holders(
+        holders = self._event_scoped_holders(
             target=target, source=source, effect=effect,
             include_suppressed_items=eventid == "TakeItem",
-        ):
+        )
+        if eventid == "Residual":
+            def residual_order(entry):
+                """Honor residual order so healing precedes Heal Block expiry."""
+                holder = entry[0][1] if isinstance(entry[0], tuple) else entry[0]
+                raw = getattr(holder, "raw", {}) or {}
+                return tuple(raw.get(key, getattr(holder, key, 0)) for key in
+                             ("onResidualOrder", "onResidualSubOrder"))
+
+            holders.sort(key=residual_order)
+        for holder, state, owner in holders:
             relation = None
             actual_holder = holder
             if isinstance(holder, tuple):
@@ -2959,6 +2973,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         pokemon.tempvals["entry_action_turn"] = self.turn_count
         if part and hasattr(part, "record_participation"):
             part.record_participation(pokemon)
+        from .npc_prize_items import NPCPrizeItems
+
+        NPCPrizeItems.entry(self, pokemon)
         self._apply_item_forme_effects(pokemon, source=source)
         self._apply_ability_item_type(pokemon)
         self.register_handlers(pokemon)
@@ -3317,6 +3334,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def deduct_pp(self, pokemon, move: BattleMove, target=None) -> None:
         """Spend PP, including surcharges from the move's opposing targets."""
+        from .npc_prize_items import NPCPrizeItems
+
+        NPCPrizeItems.move_attempted(self, pokemon)
         if getattr(move, "_z_paid", False):
             return
         if getattr(move, "_called_use", False):
@@ -3512,6 +3532,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 or ITEMDEX.get(str(item).replace(" ", ""))
                 or ITEMDEX.get(normalized.capitalize())
             )
+        if entry is None:
+            from pokemon.items import runtime_field_held_item
+
+            return runtime_field_held_item(item)
         return entry
 
     def _holder_item(self, pokemon):

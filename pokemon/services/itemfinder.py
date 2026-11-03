@@ -1,9 +1,48 @@
-"""One optional non-plot Potion finder source with durable claim/cooldown state."""
+"""Named opt-in item sources with durable one-attempt claim/cooldown state."""
 
 import time
 from collections.abc import Mapping
 from math import isfinite
 from uuid import uuid4
+
+
+class FinderProfile:
+    """Keep the original Potion rule and one exact fifteen-name training table."""
+
+    training = (
+        ("Health Feather", 8), ("Muscle Feather", 8), ("Resist Feather", 8),
+        ("Genius Feather", 8), ("Clever Feather", 8), ("Swift Feather", 8),
+        ("Pomeg Berry", 6), ("Kelpsy Berry", 6), ("Qualot Berry", 6),
+        ("Hondew Berry", 6), ("Grepa Berry", 6), ("Tamato Berry", 6),
+        ("Rare Candy", 12), ("Bottle Cap", 3), ("Gold Bottle Cap", 1),
+    )
+
+    @classmethod
+    def resolve(cls, room, read):
+        """Refuse mixed/unknown room configuration without enabling a fallback table."""
+        from pokemon.names import normalize_name
+
+        item = normalize_name(read(room, "itemfinder_item", default=""))
+        profile = read(room, "itemfinder_profile", default="")
+        rate = read(room, "itemfinder_rate", default=0)
+        if profile in (None, ""):
+            if item == "potion" and type(rate) is int and 0 <= rate <= 100:
+                return "potion", rate, (("Potion", 100),)
+        elif profile == "training-v1" and not item and type(rate) is int and rate == 5:
+            return profile, rate, cls.training
+        return None
+
+    @staticmethod
+    def select(weights, rng):
+        """Keep legacy Potion's single roll unchanged; training uses one weighted roll."""
+        if len(weights) == 1:
+            return weights[0][0]
+        roll, total = rng.randint(1, 100), 0
+        for name, weight in weights:
+            total += weight
+            if roll <= total:
+                return name
+        raise ValueError("Invalid reviewed Finder weight table or random source.")
 
 
 class ItemfinderClaim:
@@ -23,7 +62,7 @@ class ItemfinderClaim:
             raise ValueError("The server search clock is unavailable.")
 
     def claim(self):
-        """Deliver at most one Potion for this attempt, or return an honest refusal."""
+        """Deliver at most one named item for this attempt, or an honest refusal."""
         from django.db import connection, transaction
         from evennia.objects.models import ObjectDB
         from pokemon.models.trainer import Trainer
@@ -52,11 +91,10 @@ class ItemfinderClaim:
                 enabled = read(room, "allow_hunting")
                 if enabled not in (True, "true", "yes", "1", "on") or read(room, "noitem", default=False):
                     return None
-                if normalize_name(read(room, "itemfinder_item", default="")) != "potion":
+                profile = FinderProfile.resolve(room, read)
+                if profile is None:
                     return None
-                rate = read(room, "itemfinder_rate", default=0)
-                if type(rate) is not int or not 0 <= rate <= 100:
-                    return None
+                profile_name, rate, weights = profile
                 if not require_no_battle_lock(self.hunter):
                     return "You cannot search for items during battle."
                 prior = read(character, self.key)
@@ -71,11 +109,13 @@ class ItemfinderClaim:
                         return "You need to wait before searching for items again."
                 found = self.rng.randint(1, 100) <= rate
                 trainer = Trainer.objects.select_for_update().get(user_id=character.pk)
+                item = FinderProfile.select(weights, self.rng) if found else ""
                 if found:
-                    trainer.add_item("Potion", 1)
+                    if trainer.add_item(item, 1) is False:
+                        raise ValueError("The Finder item could not be saved.")
                 character.attributes.add(self.key, {"version": 1, "attempt": self.identifier,
-                    "started": self.started, "room": room.pk, "item": "Potion" if found else "",
-                    "quantity": int(found)})
-                return "You found a Potion! It was added to your inventory." if found else None
+                    "started": self.started, "room": room.pk, "item": item,
+                    "quantity": int(found), "profile": profile_name})
+                return f"You found a {item}! It was added to your inventory." if found else None
         finally:
             ShopPurchase.refresh_attributes(character, self.key, "inventory")

@@ -86,7 +86,7 @@ cached owned models so party views reflect the restored database state.
 
 ## Validation and activation
 
-Run `pytest -q tests/test_terastallization.py --run-callback-tests -o addopts=`
+Run `pytest -q tests/battle/test_terastallization.py --run-callback-tests -o addopts=`
 and the mandatory normal/repeat/battle-first gate with
 `python -B tools/run_mandatory_tests.py`. With an explicit disposable PostgreSQL
 DSN, `python tests/integration/terastallization_cases.py` exercises normal

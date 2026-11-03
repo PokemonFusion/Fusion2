@@ -160,6 +160,11 @@ class CmdEffects(Command):
             if not target:
                 caller.msg("Battle not found. Try +status list.")
                 return
+            from pokemon.adventures.privacy import AdventurePrivacy
+
+            if not AdventurePrivacy.battle_access(target, caller):
+                caller.msg("Battle not found. Try +status list.")
+                return
             self._set_sticky_focus(getattr(target, "id", None) or getattr(target, "uuid", None) or str(id(target)))
         else:
             participant = [
@@ -189,6 +194,11 @@ class CmdEffects(Command):
                     caller.msg("\n".join(lines))
                     return
 
+        from pokemon.adventures.privacy import AdventurePrivacy
+
+        if not AdventurePrivacy.battle_access(target, caller):
+            caller.msg("Battle not found. Try +status list.")
+            return
         panel = render_effects_panel(
             target,
             caller,

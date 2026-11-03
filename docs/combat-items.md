@@ -10,6 +10,16 @@ Fusion2 uses a battle-first item policy:
 - Treat battle-runtime behavior as supported only when it is covered by battle-level tests.
 - Defer or omit low-value canon baggage that does not improve MUD combat.
 
+The [Training Grounds](training-grounds.md) supply deliberate EV builds and
+free confirmed retraining, with supplementary named Finder items and earned
+milestones. The [field-item contract](contextual-and-field-items.md) separately
+defines Soothe Bell feeding, Mirror Herb teaching and the participation-based
+Amulet Coin/Luck Incense prize condition. Prize qualification records physical
+held ownership for a maximum standard NPC payout of twice the base amount;
+it does not add competitive callbacks or bonuses to PvP, wild, gym/Adventure,
+scripted rewards or Pay Day. Definition, source authoring and world availability
+remain separate evidence.
+
 ## Core Held Items
 
 These item families are part of the supported combat surface and should keep battle coverage:

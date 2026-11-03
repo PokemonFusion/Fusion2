@@ -81,7 +81,7 @@ Commands were run from `H:\PokemonFusionProject\fusion2` with
 
 | Command | Result |
 | --- | --- |
-| `..\evenv\Scripts\python.exe -m tests.battle_contract_coverage` | Passed; move summary was `total=1904; explicit_contract=256, mechanic_contract=1648, smoke_only=0, known_gap=0`. |
+| `..\evenv\Scripts\python.exe -m tests.battle.battle_contract_coverage` | Passed; move summary was `total=1904; explicit_contract=256, mechanic_contract=1648, smoke_only=0, known_gap=0`. |
 | `..\evenv\Scripts\python.exe -m pytest pokemon\battle\tests\test_generated_move_callbacks.py --run-callback-tests -q` | Passed after the engine guard. |
 | `..\evenv\Scripts\python.exe -m pytest tests\test_all_moves_and_abilities.py --run-dex-tests -q` | Passed. |
 | `..\evenv\Scripts\python.exe -m pytest tests\test_battle_semantic_contracts.py -q` | Passed. |

@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "baseline_commit": "9c36beec68b2e3b6a413b2c4c93785f620831e48",
+  "status": "local_automated_and_owned_sql_accepted_publication_and_deployment_separate",
+  "issues": {
+    "922": {
+      "items": [
+        "Liechi Berry",
+        "Ganlon Berry",
+        "Salac Berry",
+        "Petaya Berry",
+        "Apicot Berry",
+        "Starf Berry"
+      ],
+      "facet": "pinch_stat_stages_and_randomness",
+      "status": "accepted_local_candidate",
+      "limit": "No public acquisition or socket acceptance implied."
+    },
+    "923": {
+      "items": [
+        "Absorb Bulb",
+        "Cell Battery",
+        "Luminous Moss",
+        "Snowball",
+        "Kee Berry",
+        "Maranga Berry",
+        "Weakness Policy",
+        "Throat Spray"
+      ],
+      "facet": "reactive_stat_stages",
+      "status": "accepted_local_candidate",
+      "limit": "No public acquisition or socket acceptance implied."
+    },
+    "924": {
+      "items": [
+        "Electric Seed",
+        "Grassy Seed",
+        "Misty Seed",
+        "Psychic Seed"
+      ],
+      "facet": "terrain_seed_stages",
+      "status": "accepted_local_candidate",
+      "limit": "No public acquisition or socket acceptance implied."
+    },
+    "925": {
+      "items": [
+        "Black Sludge",
+        "Sticky Barb",
+        "Rocky Helmet",
+        "Jaboca Berry",
+        "Rowap Berry"
+      ],
+      "facet": "indirect_damage_guards",
+      "status": "accepted_local_candidate",
+      "limit": "No public acquisition or socket acceptance implied."
+    },
+    "926": {
+      "items": [
+        "Leftovers",
+        "Black Sludge"
+      ],
+      "facet": "residual_healing_eligibility",
+      "status": "accepted_local_candidate",
+      "limit": "No public acquisition or socket acceptance implied."
+    },
+    "927": {
+      "items": [
+        "Potion",
+        "Antidote",
+        "Ether",
+        "Max Ether",
+        "Elixir",
+        "Max Elixir",
+        "Fresh Water",
+        "Oran Berry",
+        "Lum Berry",
+        "Leppa Berry",
+        "Mystery Berry"
+      ],
+      "facet": "manual_medicine_embargo_target_policy",
+      "status": "accepted_local_candidate",
+      "limit": "#927 names are representative family controls; the shared target policy covers the existing medicine allowlist."
+    },
+    "928": {
+      "items": [
+        "Berserk Gene"
+      ],
+      "facet": "legacy_gene_effect_and_lifecycle",
+      "status": "accepted_local_candidate",
+      "limit": "No public acquisition or socket acceptance implied."
+    }
+  },
+  "new_engine_cases": 363,
+  "mandatory_gate": [
+    {
+      "order": "combined",
+      "passed": 8082,
+      "skipped": 4032,
+      "warnings": 2143,
+      "seconds": 399.86
+    },
+    {
+      "order": "repeat",
+      "passed": 8082,
+      "skipped": 4032,
+      "warnings": 2143,
+      "seconds": 377.9
+    },
+    {
+      "order": "battle-first",
+      "passed": 8082,
+      "skipped": 4032,
+      "warnings": 2163,
+      "seconds": 334.9
+    }
+  ],
+  "mandatory_exit_code": 0,
+  "mandatory_log_sha256_lf": "ae197eaa344ab51152eb0a511d27e516096da4d4fb8f190c03c00adb80b189a4",
+  "sql_matrices": [
+    {
+      "matrix": "stat",
+      "cases_passed": 92,
+      "ordinary_command_inputs": 845,
+      "log_sha256_lf": "66da6204bbd6b80baa17ef5f1c43f6099ad907c94c094a57ecc159335fc1a718",
+      "observations_sha256_lf": "cf37a9e2b3fe7c6361acec02dc33741b5f542e92f3c1b78f67ddb86d8029a31e",
+      "evidence": "disposable_postgresql_production_commands_captured_transport",
+      "live_socket": false
+    },
+    {
+      "matrix": "hp_medicine_gene",
+      "cases_passed": 52,
+      "ordinary_command_inputs": 406,
+      "log_sha256_lf": "0ed21142c942d409640ca55598f13b9a2628a8694d03200a7e7d1ea160a0fb95",
+      "observations_sha256_lf": "32d7860eb1c74caa108e452f94a28f36c53f055fc0bab7e6a8e7a345d63813eb",
+      "evidence": "disposable_postgresql_production_commands_captured_transport",
+      "live_socket": false
+    },
+    {
+      "matrix": "prior_920_921",
+      "cases_passed": 67,
+      "ordinary_command_inputs": 983,
+      "log_sha256_lf": "efac6c9e5822398be276188c093772f6c57b3cacd92c6f954a62daefa477bd73",
+      "observations_sha256_lf": "bc878abb66601e70f125e9ee9866527a19bffbfa8747502a68a328e0c8b63b25",
+      "evidence": "disposable_postgresql_production_commands_captured_transport",
+      "live_socket": false
+    }
+  ],
+  "sql_total": 211,
+  "source_identities_sha256_lf": {
+    "commands/player/cmd_battle_item.py": "982163a58c9fe3aff002572df70b2e9e87d2b95c1758093f014eae71a8ef216b",
+    "pokemon/battle/effect_context.py": "be60a3f71fbb323c174e8190235d3a5193fa0ed130f544daec63e0dced62e38c",
+    "pokemon/battle/engine.py": "65c894ab9b80bd4470e8a80db52b2a9699cbf48cc239d1641167fcef511f0f35",
+    "pokemon/battle/held_item_effects.py": "9546fc20e7d499bad59b182c0baf3d569d4886b99effcca95026c1090fb6ddb2",
+    "pokemon/battle/item_boosts.py": "a0934ccce0a035c597733cb7245d314f0d829df88b552d2dbad9a053ed906842",
+    "pokemon/battle/logic.py": "7a35e908c46b0e8ed84e0e40aed21555b55f3ebf0682923091432257846a7a7e",
+    "pokemon/battle/player_choices.py": "1da8f63c62ec0d7d33a23b0e71225572d07092a88557dc3af5fa615d9f3701b4",
+    "pokemon/battle/state.py": "c557eb3be1f2714db0691e0f7947003cdd3fdef6914e562ca578818191898c36",
+    "pokemon/battle/tests/test_held_hp_and_gene_repairs.py": "65e924f24cb0ac1c12f870b680cd1bea7110aee56c6e3fcda4dd02a352bf4b90",
+    "pokemon/battle/tests/test_held_stat_boost_rules.py": "8723805a08a79d78939019061774590eba6bb31c77c8606d2d820b41531b85e8",
+    "pokemon/battle/tests/test_item_core_runtime.py": "49a4b6eb59a9954170354f39da6440768a7853406e44cffd1eced98b4ef2af26",
+    "pokemon/dex/functions/items_funcs.py": "c5fd44d557f28b6163764c1a04aabb74016bb06ca0039d1cc0ee1ffdf4936f41",
+    "pokemon/dex/functions/moves/damage_moves.py": "90075b485ae4360c4cb95d78af5463b5df4e1bd6210153e3027011d8c2e4d824",
+    "pokemon/services/battle_items.py": "fc9dd3fa15c9ecd12fd5327487e33b458b6a7a66c0efbe607f65dda306421491",
+    "tests/integration/isolated_battle_logs.py": "d3105ac18098a17d2adfa5446b1346195a6c6a44cb32d46020eebff491d6da3e",
+    "tests/integration/item_medicine_and_hp_cases.py": "a27a3d23d4ae6a2d3d37aa6e8e947ee1937945e9b146d522647e54678b75a77a",
+    "tests/integration/item_repair_cases.py": "a7b1bedf381fca595f8ee8edf323e85376709bda47c05d6dfdeb4e063c1b5c72",
+    "tests/test_battle_medicine_embargo.py": "94ff5f7b815b8b348f3f165af53391efea72f794a732da4c9a741c2484202276"
+  },
+  "reference_commit": "ccfaa20f32af363569cd21a9d501b2bc1ded26b1",
+  "current_registry": {
+    "mega_pairs": 47,
+    "z_mappings": 63,
+    "z_crystals": 35
+  },
+  "limits": [
+    "Captured transport, no logged-in socket walkthrough",
+    "No new permanent source, stock, refill, migration, restart or deployment",
+    "Existing Belch selection and broader Pickup eligibility remain explicit limits",
+    "Unrelated region-design drafts preserved"
+  ],
+  "evidence_directory_local": "H:\\PokemonFusionProject\\.codex-artifacts\\item-repairs-20261029-86951f7b522f46b69bdfbb031ad5a149"
+}

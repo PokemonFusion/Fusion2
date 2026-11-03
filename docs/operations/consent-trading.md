@@ -72,8 +72,10 @@ offline participants can inspect their own persisted list after reconnect.
 
 Trades never trigger automatic evolution. Existing documented
 [manual trade-held item equivalents](../trade-held-evolution.md) remain supported.
-Other non-item/partner-species trade triggers remain deferred; this feature does
-not silently grant them.
+The separate [Link Cord equivalents](../link-cord-evolution.md) provide manual
+bag-item evolution for 14 exact trade-only mappings, including independent
+Karrablast and Shelmet. Automatic non-item/partner-species trade triggers remain
+unsupported; a consent trade does not activate those manual routes.
 
 ## Shared mutation guards
 

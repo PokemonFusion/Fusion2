@@ -38,7 +38,7 @@ stream. The final turn's compact results are delivered before battle cleanup.
 
 ## Verification
 
-`tests/test_compact_battle_ui.py` covers presentation, ownership, PP, physical
+`tests/battle/test_compact_battle_ui.py` covers presentation, ownership, PP, physical
 slots, stale selectors and committed-turn delivery. The standalone helpers
 `tests/helpers/compact_battle_render.py` and
 `tests/helpers/compact_battle_player_flow.py` exercise real ANSI/HTML parsing

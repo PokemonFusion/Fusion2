@@ -90,6 +90,9 @@ class BattleLogic:
 		self.battle = battle
 		self.data = data
 		self.state = state
+		from .item_boosts import ItemRandomState
+
+		ItemRandomState.restore(battle, getattr(state, "item_rng_state", None))
 		# One live field must also be the checkpoint's field. Otherwise an
 		# executed Trick Room disappears during a save/rebuild.
 		data.field = battle.field
@@ -111,6 +114,9 @@ class BattleLogic:
 		battle.mechanic_battle_id = getattr(state, "reward_id", None)
 		battle.mechanic_turn = getattr(state, "mechanic_turn", 0)
 		battle.mechanic_controllers = dict(getattr(state, "pokemon_control", {}))
+		from .npc_prize_items import NPCPrizeItems
+
+		NPCPrizeItems.restore(battle, getattr(state, "npc_prize_qualifications", {}))
 		battle.mega_used = set(getattr(state, "mega_used", []))
 		battle.mega_pending = {key: dict(value) for key, value in getattr(state, "mega_pending", {}).items()}
 		z_used, z_pending = getattr(state, "z_used", []), getattr(state, "z_pending", {})
@@ -207,6 +213,12 @@ class BattleLogic:
 		from .item_consumption import ItemUseHistory
 
 		self.state.used_item_history = ItemUseHistory.freeze_sides(self.battle)
+		from .item_boosts import ItemRandomState
+
+		self.state.item_rng_state = ItemRandomState.freeze(self.battle)
+		from .npc_prize_items import NPCPrizeItems
+
+		self.state.npc_prize_qualifications = NPCPrizeItems.freeze(self.battle)
 		teams = [
 			(getattr(part, "team", None) or ("A" if index == 0 else "B"), part)
 			for index, part in enumerate(self.battle.participants)

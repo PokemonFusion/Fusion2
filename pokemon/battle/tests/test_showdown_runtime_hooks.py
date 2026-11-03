@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 from types import SimpleNamespace
 
 from .helpers import build_battle, load_modules
@@ -641,23 +642,47 @@ def test_shed_tail_fails_when_user_already_has_substitute():
 
 
 def test_emergency_exit_queues_switch_after_crossing_half_hp():
+	"""Use a surviving hit and local RNG so critical rolls cannot invalidate the fixture."""
 	modules = load_modules()
 	damage_mod = __import__("pokemon.battle.damage", fromlist=["apply_damage"])
 	battle, attacker, defender = build_battle(defender_ability=__import__("pokemon.dex.functions.abilities_funcs", fromlist=["Emergencyexit"]).Emergencyexit())
+	battle.rng = random.Random(0)
 	defender.hp = 110
 	move = modules["BattleMove"](
 		name="Tackle",
-		power=120,
+		power=60,
 		accuracy=100,
 		type="Normal",
-		raw={"category": "Physical", "basePower": 120, "accuracy": 100},
+		raw={"category": "Physical", "basePower": 60, "accuracy": 100},
 	)
 	move.key = "tackle"
 
 	damage_mod.apply_damage(attacker, defender, move, battle=battle)
 
-	assert defender.hp <= defender.max_hp // 2
+	assert 0 < defender.hp <= defender.max_hp // 2
 	assert defender.tempvals.get("switch_out") is True
+
+
+def test_emergency_exit_does_not_queue_switch_after_knockout():
+	"""A hit crossing half HP by knocking out the holder must not request a switch."""
+	modules = load_modules()
+	damage_mod = __import__("pokemon.battle.damage", fromlist=["apply_damage"])
+	battle, attacker, defender = build_battle(defender_ability=__import__("pokemon.dex.functions.abilities_funcs", fromlist=["Emergencyexit"]).Emergencyexit())
+	battle.rng = random.Random(0)
+	defender.hp = 110
+	move = modules["BattleMove"](
+		name="Explosion",
+		power=250,
+		accuracy=100,
+		type="Normal",
+		raw={"category": "Physical", "basePower": 250, "accuracy": 100},
+	)
+	move.key = "explosion"
+
+	damage_mod.apply_damage(attacker, defender, move, battle=battle)
+
+	assert defender.hp == 0
+	assert not defender.tempvals.get("switch_out")
 
 
 def test_wimp_out_queues_switch_after_damaging_hit():

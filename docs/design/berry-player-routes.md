@@ -148,7 +148,7 @@ all-berry growing, shared beds, contests and unrelated acquisitions are excluded
 ## Local references
 
 - [In-memory helper](../../pokemon/helpers/berry_system.py) and its
-  [two tests](../../tests/test_berry_system.py).
+  [two tests](../../tests/items/test_berry_system.py).
 - [Field target/transaction checks](../../pokemon/services/field_items.py),
   [field berries](../../pokemon/services/field_berries.py) and
   [field food](../../pokemon/services/field_food.py).
