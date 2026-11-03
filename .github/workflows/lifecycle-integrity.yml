@@ -94,6 +94,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt -r requirements-dev.txt
+      # The old serial job populated these caches during integration checks.
+      # The gate reads existing bytecode but deliberately does not write it.
+      - name: Precompile production Python for repeated isolated imports
+        run: python -m compileall -q commands menus pokemon services typeclasses utils world
       - name: Mandatory combined suite, repeat and reversed suite order
         run: python -B tools/run_mandatory_tests.py
 
