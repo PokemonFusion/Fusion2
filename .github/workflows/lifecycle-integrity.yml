@@ -68,7 +68,151 @@ on:
       - '.github/workflows/lifecycle-integrity.yml'
   workflow_dispatch:
 jobs:
-  postgres:
+  # Keep all three mandatory passes together, with the original PostgreSQL
+  # service and environment so disposable-ORM wrappers still run.
+  mandatory:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fusion2_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PF2_TEST_POSTGRES_DSN: 'postgresql://postgres:postgres@localhost:5432/fusion2_test'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      # The old serial job populated these caches during integration checks.
+      # The gate reads existing bytecode but deliberately does not write it.
+      - name: Precompile production Python for repeated isolated imports
+        run: python -m compileall -q commands menus pokemon services typeclasses utils world
+      - name: Mandatory combined suite, repeat and reversed suite order
+        run: python -B tools/run_mandatory_tests.py
+
+  # Whole integration commands are balanced using run 41513013366 timings.
+  # Each runner has its own PostgreSQL service; retain each script's races.
+  postgres_a:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fusion2_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PF2_TEST_POSTGRES_DSN: 'postgresql://postgres:postgres@localhost:5432/fusion2_test'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Fixed-price marketplace, current wallets and atomic competing purchases
+        run: python tests/integration/market_cases.py
+      - name: Daycare canonical custody, atomic fees, retrieval and reservation races
+        run: python tests/integration/daycare_cases.py
+      - name: Character mail, persistent boards and channel recipient permissions
+        run: python tests/integration/communication_cases.py
+      - name: Four-account Multi lobbies, exact controllers, team mechanics and rollback
+        run: python tests/integration/multi_battle_cases.py
+      - name: Real Gen 9 breeding species, native ability slots and genetic inheritance
+        run: pytest -q tests/integration/breeding_rule_cases.py
+      - name: Existing trade-held item equivalents, player commands and safe retries
+        run: python tests/integration/trade_held_cases.py
+      - name: Held stat item rules, native abilities, consumption and checkpoint rollback
+        run: python tests/integration/item_repair_cases.py
+      - name: Eighteen stat items, paired next-action damage and order after checkpoint restore
+        run: python tests/integration/item_next_action_cases.py
+      - name: Six explicit Z source additions, owned payment, native learning and rollback
+        run: python tests/integration/z_next_six_sources_cases.py
+      - name: Peat Block purchase, ordinary Ursaluna evolution and atomic retries
+        run: python tests/integration/peat_block_cases.py
+      - name: Leader's Crest KO evidence, committed victories and Kingambit player flow
+        run: python tests/integration/leader_crest_cases.py
+      - name: NPC challenge constructor failure and persistent cleanup retries
+        run: python tests/integration/trainer_challenge_cases.py
+      - name: Evolution conditions and commands
+        run: pytest -q tests/evolution/test_evolution.py tests/evolution/test_evolution_conditions.py tests/evolution/test_evolve_command_safety.py tests/items/test_hold_command_safety.py tests/evolution/test_trade_held_evolution.py tests/ownership/test_trade_safety.py
+      - name: Adventure and gym recovery with concurrent PostgreSQL claims
+        run: python tests/integration/recovery_cases.py
+      - name: Battle EXP, HP, PP and post-win healing on PostgreSQL
+        run: python tests/integration/progression_cases.py
+      - name: Battle reward retries, atomic turn checkpoints and lifecycle recovery
+        run: python tests/integration/battle_recovery_cases.py
+      - name: Legal AI actions, reserve switches and checkpoint rebuilds
+        run: python tests/integration/ai_action_cases.py
+      - name: Doubles AI scoring, Trick Room and checkpoint rebuilds
+        run: python tests/integration/ai_scoring_cases.py
+      - name: Player doubles commands, targets and complete battle
+        run: python tests/integration/player_doubles_cases.py
+      - name: Smoke Ball equip, normal flee, suppression, capture separation and rebuilds
+        run: python tests/integration/smoke_ball_cases.py
+      - name: Tera commands, Stellar boosts and transactional checkpoint rollback
+        run: python tests/integration/terastallization_cases.py
+      - name: Move and species name variants on PostgreSQL
+        run: python tests/integration/name_resolution_cases.py
+      - name: Real AMP input routing through reload and session synchronization
+        run: python tests/integration/amp_reload_cases.py
+      - name: Captured PP, Full Restore and inventory name aliases on PostgreSQL
+        run: python tests/integration/capture_pp_item_cases.py
+      - name: Rare Candy targets, atomic levels, learning and concurrent debits
+        run: python tests/integration/rare_candy_cases.py
+      - name: Field berry feeding, EV reduction, friendship and transactional persistence
+        run: python tests/integration/field_berry_cases.py
+      - name: Focused Training Grounds, free EV reset, earned milestones and real elapsed session
+        run: python -B tests/integration/training_grounds_cases.py
+      - name: Named training Finder drops, real use and explicit public activity routes
+        run: python -B tests/integration/training_finder_cases.py
+      - name: Mirror Herb native egg teaching, exact PP, source travel and concurrent confirmation
+        run: python -B tests/integration/mirror_herb_cases.py
+      - name: NPC prize item participation, item transfer, sealed payouts and atomic retry
+        run: python -B tests/integration/npc_prize_item_cases.py
+      - name: Legacy recovery berry field routes, guards, rollback and final-copy use
+        run: python tests/integration/legacy_berry_cases.py
+      - name: Ability item native slots, reversible Patch, evolution and atomic field use
+        run: python tests/integration/ability_item_cases.py
+      - name: Bottle Cap Hyper Training, genetic IV preservation, battle reload and atomic use
+        run: python tests/integration/hyper_training_cases.py
+      - name: Native legendary type boosters, forms and ordinary player persistence
+        run: python tests/integration/legendary_item_cases.py
+      - name: Origin, Primal and Rusted item native removal roles and player persistence
+        run: python tests/integration/origin_primal_rusted_theft_cases.py
+      - name: Held status berries, Synchronize and restored item updates
+        run: python tests/integration/held_status_berry_cases.py
+      - name: Explicit flavor berry snacks, owned field effects and atomic item conservation
+        run: python tests/integration/flavor_snack_cases.py
+      - name: Flamethrower and Surf through owned generic Z source routes
+        run: python tests/integration/z_existing_sources_cases.py
+      - name: Battle item capability, rejection before actions and restored choices
+        run: python tests/integration/battle_item_validation_cases.py
+      - name: Manual recovery foods and berries, normal item actions and atomic checkpoints
+        run: python tests/integration/battle_recovery_food_cases.py
+      - name: Exclusive Adventure reservations, independent races and solo privacy
+        run: python tests/integration/adventure_privacy_cases.py
+      - name: Merged migration graph
+        run: python tests/integration/migration_graph.py
+
+  postgres_b:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -100,136 +244,60 @@ jobs:
         run: python tests/integration/fusion_cases.py
       - name: Ordinary consent trades, immutable counteroffers and stale menu ownership
         run: python tests/integration/trade_cases.py
-      - name: Fixed-price marketplace, current wallets and atomic competing purchases
-        run: python tests/integration/market_cases.py
-      - name: Daycare canonical custody, atomic fees, retrieval and reservation races
-        run: python tests/integration/daycare_cases.py
-      - name: Character mail, persistent boards and channel recipient permissions
-        run: python tests/integration/communication_cases.py
       - name: Character sheet ownership, read-only resources and private profile requests
         run: python tests/integration/sheet_cases.py
-      - name: Four-account Multi lobbies, exact controllers, team mechanics and rollback
-        run: python tests/integration/multi_battle_cases.py
       - name: Persistent human and Fusion onboarding, saved choices and atomic one-time grants
         run: python tests/integration/onboarding_cases.py
       - name: Breeding cycles, fixed traits, egg collection and same-identity hatch retries
         run: python tests/integration/breeding_cases.py
-      - name: Real Gen 9 breeding species, native ability slots and genetic inheritance
-        run: pytest -q tests/integration/breeding_rule_cases.py
       - name: Ownership fresh install, upgrade and guarded invalid-data rollback
         run: python tests/integration/ownership_migrations.py
       - name: Evolution and held-item transactions and concurrent retries
         run: python tests/integration/evolution_cases.py
       - name: Alcremie Sweets, cosmetic reloads and ordinary command flow
         run: python tests/integration/alcremie_cases.py
-      - name: Existing trade-held item equivalents, player commands and safe retries
-        run: python tests/integration/trade_held_cases.py
       - name: Link Cord bag evolutions, native forms and atomic consumption
         run: python tests/integration/link_cord_cases.py
-      - name: Held stat item rules, native abilities, consumption and checkpoint rollback
-        run: python tests/integration/item_repair_cases.py
-      - name: Eighteen stat items, paired next-action damage and order after checkpoint restore
-        run: python tests/integration/item_next_action_cases.py
       - name: Indirect item damage, blocked residual healing, Gene and manual medicine Embargo
         run: python tests/integration/item_medicine_and_hp_cases.py
-      - name: Six explicit Z source additions, owned payment, native learning and rollback
-        run: python tests/integration/z_next_six_sources_cases.py
       - name: Four field recovery equivalents, friendship costs and atomic final-copy use
         run: python tests/integration/remedy_recovery_cases.py
-      - name: Peat Block purchase, ordinary Ursaluna evolution and atomic retries
-        run: python tests/integration/peat_block_cases.py
       - name: Kubfu Scroll purchase, both Urshifu styles and atomic retries
         run: python tests/integration/kubfu_cases.py
-      - name: Leader's Crest KO evidence, committed victories and Kingambit player flow
-        run: python tests/integration/leader_crest_cases.py
-      - name: NPC challenge constructor failure and persistent cleanup retries
-        run: python tests/integration/trainer_challenge_cases.py
-      - name: Evolution conditions and commands
-        run: pytest -q tests/evolution/test_evolution.py tests/evolution/test_evolution_conditions.py tests/evolution/test_evolve_command_safety.py tests/items/test_hold_command_safety.py tests/evolution/test_trade_held_evolution.py tests/ownership/test_trade_safety.py
-      - name: Adventure and gym recovery with concurrent PostgreSQL claims
-        run: python tests/integration/recovery_cases.py
-      - name: Battle EXP, HP, PP and post-win healing on PostgreSQL
-        run: python tests/integration/progression_cases.py
-      - name: Battle reward retries, atomic turn checkpoints and lifecycle recovery
-        run: python tests/integration/battle_recovery_cases.py
-      - name: Legal AI actions, reserve switches and checkpoint rebuilds
-        run: python tests/integration/ai_action_cases.py
-      - name: Doubles AI scoring, Trick Room and checkpoint rebuilds
-        run: python tests/integration/ai_scoring_cases.py
       - name: Versioned authored gyms, ordinary singles launch and pending reward snapshots
         run: python tests/integration/gym_content_cases.py
       - name: Production gym configuration, strategy, rematches and reward integrity
         run: python tests/integration/production_gym_cases.py
-      - name: Player doubles commands, targets and complete battle
-        run: python tests/integration/player_doubles_cases.py
-      - name: Smoke Ball equip, normal flee, suppression, capture separation and rebuilds
-        run: python tests/integration/smoke_ball_cases.py
-      - name: Tera commands, Stellar boosts and transactional checkpoint rollback
-        run: python tests/integration/terastallization_cases.py
-      - name: Move and species name variants on PostgreSQL
-        run: python tests/integration/name_resolution_cases.py
       - name: Battle item targets and persistent status on PostgreSQL
         run: python tests/integration/status_item_cases.py
       - name: Center healing locks and canonical party-slot commands on PostgreSQL
         run: python tests/integration/cloud_gameplay_cases.py
-      - name: Real AMP input routing through reload and session synchronization
-        run: python tests/integration/amp_reload_cases.py
       - name: Server listener close barrier and real AMP socket handoff
         run: |
           python -B tests/integration/server_shutdown_cases.py
           python -B tests/integration/reload_socket_cases.py
       - name: Capture replay debits and durable Ether restoration on PostgreSQL
         run: python tests/integration/capture_ether_cases.py
-      - name: Captured PP, Full Restore and inventory name aliases on PostgreSQL
-        run: python tests/integration/capture_pp_item_cases.py
       - name: Field medicine commands, exact targets, rollback and concurrent debits
         run: python tests/integration/field_item_cases.py
-      - name: Rare Candy targets, atomic levels, learning and concurrent debits
-        run: python tests/integration/rare_candy_cases.py
       - name: Food and drink medicine equivalents, shop-to-use and atomic party revival
         run: python tests/integration/field_food_cases.py
-      - name: Field berry feeding, EV reduction, friendship and transactional persistence
-        run: python tests/integration/field_berry_cases.py
-      - name: Focused Training Grounds, free EV reset, earned milestones and real elapsed session
-        run: python -B tests/integration/training_grounds_cases.py
-      - name: Named training Finder drops, real use and explicit public activity routes
-        run: python -B tests/integration/training_finder_cases.py
       - name: Chesto Sitrus Lum growing masks, source travel and atomic harvests
         run: python -B tests/integration/nursery_next_three_cases.py
       - name: Native day night evolution source travel, stale context and atomic consumption
         run: python -B tests/integration/contextual_evolution_cases.py
       - name: Reusable Soothe Bell field friendship, native evolution and atomic feeding
         run: python -B tests/integration/soothe_bell_cases.py
-      - name: Mirror Herb native egg teaching, exact PP, source travel and concurrent confirmation
-        run: python -B tests/integration/mirror_herb_cases.py
-      - name: NPC prize item participation, item transfer, sealed payouts and atomic retry
-        run: python -B tests/integration/npc_prize_item_cases.py
-      - name: Legacy recovery berry field routes, guards, rollback and final-copy use
-        run: python tests/integration/legacy_berry_cases.py
       - name: Vitamin and feather field training, caps, HP and atomic concurrent use
         run: python tests/integration/field_training_cases.py
-      - name: Ability item native slots, reversible Patch, evolution and atomic field use
-        run: python tests/integration/ability_item_cases.py
-      - name: Bottle Cap Hyper Training, genetic IV preservation, battle reload and atomic use
-        run: python tests/integration/hyper_training_cases.py
       - name: Existing incense equip, battle power, suppression and checkpoint persistence
         run: python tests/integration/incense_cases.py
       - name: Native stat and critical items through nickname, hold and battle routes
         run: python tests/integration/native_stat_item_cases.py
-      - name: Native legendary type boosters, forms and ordinary player persistence
-        run: python tests/integration/legendary_item_cases.py
       - name: Plate native theft protection, nickname controls and durable player transfers
         run: python tests/integration/plate_theft_cases.py
       - name: Memory and Drive native theft protection and ordinary typed-move persistence
         run: python tests/integration/memory_drive_theft_cases.py
-      - name: Origin, Primal and Rusted item native removal roles and player persistence
-        run: python tests/integration/origin_primal_rusted_theft_cases.py
-      - name: Held status berries, Synchronize and restored item updates
-        run: python tests/integration/held_status_berry_cases.py
-      - name: Explicit flavor berry snacks, owned field effects and atomic item conservation
-        run: python tests/integration/flavor_snack_cases.py
-      - name: Flamethrower and Surf through owned generic Z source routes
-        run: python tests/integration/z_existing_sources_cases.py
       - name: Six explicit special Z sources, native acquisition, effects and persistent PP
         run: python tests/integration/z_special_sources_cases.py
       - name: Obtainable item menu, inventory, field/evolution/held effects and documented acquisition gaps
@@ -243,21 +311,35 @@ jobs:
         run: python tests/integration/pp_capacity_cases.py
       - name: Battle medicine, reserve revival and PP snapshot regressions
         run: python tests/integration/remaining_item_cases.py
-      - name: Battle item capability, rejection before actions and restored choices
-        run: python tests/integration/battle_item_validation_cases.py
-      - name: Manual recovery foods and berries, normal item actions and atomic checkpoints
-        run: python tests/integration/battle_recovery_food_cases.py
       - name: Capture nickname input and Fusion character sheets on PostgreSQL
         run: python tests/integration/ui_cases.py
       - name: Adventure battle startup, concession and capture replay recovery
         run: python tests/integration/adventure_lifecycle_cases.py
       - name: Non-combat Adventure survey commands, reconnect, expiry and optional encounters
         run: python tests/integration/adventure_player_cases.py
-      - name: Exclusive Adventure reservations, independent races and solo privacy
-        run: python tests/integration/adventure_privacy_cases.py
       - name: Fresh install and three upgrade histories on PostgreSQL
         run: python tests/integration/recovery_migrations.py
-      - name: Merged migration graph
-        run: python tests/integration/migration_graph.py
-      - name: Mandatory combined suite, repeat and reversed suite order
-        run: python -B tools/run_mandatory_tests.py
+
+  # Preserve the existing required check and reject failed, skipped or
+  # cancelled dependencies instead of allowing a skipped gate to satisfy it.
+  postgres:
+    name: postgres
+    needs: [mandatory, postgres_a, postgres_b]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every lifecycle job to succeed
+        shell: bash
+        env:
+          MANDATORY_RESULT: ${{ needs.mandatory.result }}
+          POSTGRES_A_RESULT: ${{ needs.postgres_a.result }}
+          POSTGRES_B_RESULT: ${{ needs.postgres_b.result }}
+        run: |
+          printf 'mandatory=%s postgres_a=%s postgres_b=%s\n' \
+            "$MANDATORY_RESULT" "$POSTGRES_A_RESULT" "$POSTGRES_B_RESULT"
+          if [[ "$MANDATORY_RESULT" != "success" ||
+                "$POSTGRES_A_RESULT" != "success" ||
+                "$POSTGRES_B_RESULT" != "success" ]]; then
+            echo "::error::Every lifecycle job must succeed, including all mandatory passes and integration commands."
+            exit 1
+          fi

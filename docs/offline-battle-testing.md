@@ -36,6 +36,22 @@ without parallel workers, and stops on the first failure. Repeated runs reuse
 the checkout and pytest cache; they do not reuse Python module state or a game
 database. ORM checks in the default suite create their own disposable databases.
 
+Lifecycle-integrity CI runs three jobs in parallel: `mandatory` keeps the entire
+three-pass runner together, while `postgres_a` and `postgres_b` divide the
+standalone integration commands by historical runtime. Each job retains the
+same Python dependencies, PostgreSQL 16 service and explicit test DSN, including
+`mandatory` so its disposable-ORM wrappers do not skip. Scripts remain intact,
+including their concurrent writers, migration checks and four stat/type batches.
+Before the mandatory runner, CI precompiles production Python into bytecode
+caches without importing or executing the modules. This replaces the cache
+warm-up previously supplied by the serial integration steps. The runner keeps
+its bytecode-write guards, import isolation and all three fresh-process passes;
+each pass can read the precompiled code instead of repeatedly compiling it.
+The final required `postgres` check always evaluates all three job results and
+fails if any job failed, was cancelled or was skipped. No tests are selected by
+changed paths within a triggered run, and the existing opt-in skips below are
+unchanged.
+
 For a single combined run while developing, use:
 
 ```powershell
