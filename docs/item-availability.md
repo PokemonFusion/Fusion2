@@ -93,8 +93,8 @@ The alpha build recipe includes a Rare Candy dispenser, but building the recipe
 and having that dispenser in the current world are separate steps.
 
 The authored Alpha Meadow Survey gives one Potion on your character's first
-completion. Use `+adventure/list`, `+adventure/info alpha_meadow`, then
-`+adventure/start alpha_meadow` where Adventures are available. Follow its
+completion. In Adventure Hall, use `+adventure/board`,
+`+adventure/info alpha_meadow`, then `+adventure/take alpha_meadow`. Follow its
 objectives and use `+adventure/claim` if a completed reward is pending. Repeating
 the Adventure does not give another first-clear Potion.
 

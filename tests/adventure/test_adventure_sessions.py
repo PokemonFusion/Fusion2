@@ -32,6 +32,13 @@ class DummyRoom:
     def contents_get(self, content_type=None):
         return self.exits if content_type == "exit" else []
 
+    def post_mission(self, instance):
+        """Give this fake Hall a board and an explicit room pool."""
+
+        self.db.adventure_board = DummyRoom("Mission Board", adventure_offers={"alpha_meadow": 1})
+        self.db.adventure_board.location = self
+        self.db.adventure_instance_rooms = [instance]
+
 
 class DummyPlayer:
     _next_id = 100
@@ -119,16 +126,17 @@ def fake_session_model(monkeypatch):
     monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
     monkeypatch.setattr(sessions, "_lock_object", lambda _obj: None)
     monkeypatch.setattr(sessions.transaction, "atomic", contextlib.nullcontext)
+    monkeypatch.setattr(progress, "ensure_participation", lambda *_args: None)
     monkeypatch.setattr(progress, "record_encounter_result", lambda *_args: None)
     monkeypatch.setattr(progress, "safe_finalize_completion", lambda _session: "")
     return FakeAdventureSession.objects
 
 
 @pytest.fixture
-def adventure_world():
+def adventure_world(fake_session_model):
     hall = DummyRoom("Adventure Hall", adventure_hall=True)
     instance = DummyRoom("Adventure Instance Room #1", adventure_instance=True)
-    hall.exits = [types.SimpleNamespace(destination=instance)]
+    hall.post_mission(instance)
     player = DummyPlayer()
     player.location = hall
     return hall, instance, player
@@ -226,7 +234,7 @@ def test_noncombat_survey_completes_without_fabricating_an_encounter(adventure_w
 
     assert result.ok and session.state == STATE_COMPLETED
     assert session.objective_progress["resolve_encounter"] == 0
-    assert session.metadata == {}
+    assert session.metadata == {"template_version": 1}
     assert all(session.objective_progress[key] == 1 for key in (
         "reach_old_tree", "search_old_tree", "return_entrance",
     ))

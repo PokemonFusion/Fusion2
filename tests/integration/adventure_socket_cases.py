@@ -37,7 +37,7 @@ class SocketAcceptance:
         from psycopg2.extensions import parse_dsn
 
         self.database = IsolatedPostgres()
-        self.root = REPO.parent / ".codex-artifacts" / "nov-w1-20261102" / ("socket-" + secrets.token_hex(6))
+        self.root = REPO.parent / ".codex-artifacts" / "adventure-socket" / ("socket-" + secrets.token_hex(6))
         self.root.mkdir(parents=True)
         self.telnet_port, self.amp_port = free_port(), free_port()
         self.children, self.streams, self.clients = [], [], []
@@ -163,16 +163,20 @@ class SocketAcceptance:
                                      active_move_names=["Watergun"])
                 players.append(player)
         owner, sibling, outsider = players
-        hall = evennia.create_object("typeclasses.rooms.FusionRoom", key="Private Adventure Hall", nohome=True)
-        rooms = [evennia.create_object("typeclasses.rooms.FusionRoom", key="Private Instance " + str(i), nohome=True)
-                 for i in range(2)]
-        hall.db.adventure_hall = True
+        from pokemon.adventures.content import AdventureInstallation
+
+        host = evennia.create_object("typeclasses.rooms.FusionRoom", key="Public Square", nohome=True)
+        installation = AdventureInstallation(host.pk)
+        installation.install()
+        hall = installation.objects["hall"]
+        rooms = [installation.objects["instance-1"]]
+        second = evennia.create_object("typeclasses.rooms.FusionRoom", key="Private Instance 2", nohome=True)
+        second.db.adventure_instance = True
+        rooms.append(second)
         hall.db.adventure_instance_rooms = rooms
-        for room in rooms:
-            room.db.adventure_instance = True
         evennia.create_object("typeclasses.exits.Exit", key="instance", location=hall, destination=rooms[0])
         for player in players:
-            player.move_to(hall, quiet=True)
+            player.move_to(host if player == owner else hall, quiet=True)
             player.home = hall
         self.report["fixtures"] = {"characters": [player.pk for player in players], "accounts": [a.pk for a in accounts],
                                     "same_account_characters": [owner.pk, sibling.pk],
@@ -183,7 +187,8 @@ class SocketAcceptance:
             and {str(p).casefold() for p in account.permissions.all()} == {"player"}
             for account in accounts) and all({str(p).casefold() for p in player.permissions.all()} == {"player"}
                                            for player in players))
-        tracked = ["pokemon/adventures/sessions.py", "pokemon/adventures/privacy.py", "pokemon/models/adventures.py"]
+        tracked = ["pokemon/adventures/sessions.py", "pokemon/adventures/commands.py", "pokemon/adventures/content.py",
+                   "pokemon/adventures/privacy.py", "pokemon/models/adventures.py"]
         self.report["source_sha256"] = {path: hashlib.sha256((REPO / path).read_bytes()).hexdigest() for path in tracked}
         environment = os.environ.copy()
         environment.update(PYTHONPATH=os.pathsep.join([str(self.root), str(REPO)]), PYTHONUNBUFFERED="1")
@@ -212,7 +217,12 @@ class SocketAcceptance:
         def attr(player, key):
             return BattleRewards.stored_attribute(player, key)
 
-        self.send(a, "+adventure/start alpha_meadow")
+        self.check("public entrance and mission board are discoverable",
+                   "+adventure/board" in self.send(a, "adventures"))
+        self.check("board lists Alpha Meadow", "alpha_meadow" in self.send(a, "+adventure/board"))
+        self.check("mission info shows replay policy",
+                   "no entry fee, cooldown" in self.send(a, "+adventure/info alpha_meadow"))
+        self.send(a, "+adventure/take alpha_meadow")
         session = AdventureSession.objects.get(leader=owner, holds_instance=True)
         self.send(a, "north")
         self.send(a, "+adventure/choose wild", seconds=1.5)
@@ -259,6 +269,9 @@ class SocketAcceptance:
         self.send(a, "south")
         self.send(a, "south")
         self.send(a, "+adventure/leave")
+        self.check("first run completed and returned to the Hall",
+                   AdventureSession.objects.filter(pk=session.pk, state="completed", holds_instance=False).exists())
+        self.check("first clear paid exactly one Potion", owner.trainer.get_item_quantity("Potion") == 1)
         self.send(a, "+adventure/claim")
         self.send(a, "+adventure/claim")
         self.send(a, "+adventure/start alpha_meadow")
@@ -272,7 +285,13 @@ class SocketAcceptance:
         self.send(a, "+concede yes", seconds=1.5)
         self.check("NPC concession recorded original loss", AdventureSession.objects.get(pk=trainer_run.pk).metadata.get("encounter_result") == "loss")
         self.send(a, "north")
+        self.send(a, "+adventure/search")
+        self.send(a, "south")
+        self.send(a, "south")
         self.send(a, "+adventure/leave")
+        self.check("immediate replay completed and kept one Potion",
+                   AdventureSession.objects.filter(pk=trainer_run.pk, state="completed", holds_instance=False).exists()
+                   and owner.trainer.get_item_quantity("Potion") == 1)
         self.check("all fixture reservations released", not AdventureSession.objects.filter(holds_instance=True).exists())
         self.check("fixture runtime logs contain no tracebacks", all(
             "Traceback (most recent call last)" not in path.read_text(encoding="utf-8", errors="replace")

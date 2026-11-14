@@ -1,5 +1,7 @@
 #
-# Adventure Hall MVP batch commands.
+# Historical Adventure Hall MVP batch commands.
+# For fresh installation or adoption use evennia install_adventure_content.
+# See docs/adventure-operations.md for the plan and apply procedure.
 #
 # Run once from a Developer/superuser building character in the room that
 # should link to the Adventure Hall:

@@ -8,6 +8,9 @@ STATE_EXPIRED = "expired"
 ADVENTURE_CMDSET_KEY = "AdventureMovementCmdSet"
 ADVENTURE_SESSION_ATTR = "adventure_session_id"
 ADVENTURE_HALL_ATTR = "adventure_hall"
+ADVENTURE_BOARD_ATTR = "adventure_board"
+ADVENTURE_OFFERS_ATTR = "adventure_offers"
+ADVENTURE_CONTENT_ID_ATTR = "adventure_content_id"
 ADVENTURE_INSTANCE_ATTR = "adventure_instance"
 
 DEFAULT_SESSION_MINUTES = 120

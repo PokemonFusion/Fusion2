@@ -20,7 +20,7 @@ def adventure_world():
     """Provide private room fixtures without cross-module fixture globals."""
     hall = DummyRoom("Adventure Hall", adventure_hall=True)
     room = DummyRoom("Instance", adventure_instance=True)
-    hall.exits = [SimpleNamespace(destination=room)]
+    hall.post_mission(room)
     player = DummyPlayer()
     player.location = hall
     return hall, room, player
@@ -36,6 +36,7 @@ def isolated_session_model(monkeypatch):
     monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
     monkeypatch.setattr(sessions, "_lock_object", lambda _obj: None)
     monkeypatch.setattr(sessions.transaction, "atomic", contextlib.nullcontext)
+    monkeypatch.setattr(progress, "ensure_participation", lambda *_args: None)
     monkeypatch.setattr(progress, "safe_finalize_completion", lambda _session: "")
 
 

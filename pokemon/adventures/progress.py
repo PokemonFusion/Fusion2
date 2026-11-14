@@ -10,7 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from .constants import STATE_COMPLETED
-from .templates import get_template
+from .templates import get_session_template
 
 
 def _model():
@@ -66,8 +66,8 @@ def finalize_completion(session: Any) -> tuple[bool, str]:
     """
 
     player = getattr(session, "leader", None)
-    template = get_template(getattr(session, "template_key", ""))
-    if player is None or template is None or getattr(session, "state", None) != STATE_COMPLETED:
+    template = get_session_template(session)
+    if player is None or getattr(session, "state", None) != STATE_COMPLETED:
         return False, ""
 
     with transaction.atomic():
@@ -78,7 +78,7 @@ def finalize_completion(session: Any) -> tuple[bool, str]:
         )
         first_clear = not _model().objects.filter(
             player=player,
-            session__template_key=template.key,
+            session__template_key=session.template_key,
             completed_at__isnull=False,
         ).exclude(pk=participation.pk).exists()
 
@@ -86,12 +86,15 @@ def finalize_completion(session: Any) -> tuple[bool, str]:
         if participation.completed_at is None:
             participation.completed_at = _now()
             changed.append("completed_at")
-        if first_clear and not participation.reward_item:
+        if first_clear and template is not None and not participation.reward_item:
             participation.reward_item = template.first_clear_item
             participation.reward_amount = max(1, int(template.first_clear_amount))
             changed.extend(("reward_item", "reward_amount"))
         if changed:
             participation.save(update_fields=tuple(changed))
+
+        if first_clear and template is None and not participation.reward_item:
+            return False, "Your Adventure content revision is unavailable. Use +adventure/claim after it is restored."
 
         if not participation.reward_item or participation.reward_claimed_at is not None:
             return False, ""
@@ -117,13 +120,32 @@ def finalize_completion(session: Any) -> tuple[bool, str]:
         )
 
 
-def safe_ensure_participation(session: Any, player: Any) -> None:
-    """Create participation when Django is ready; pure unit harnesses may omit it."""
+def latest_run(player: Any):
+    """Return the most recent run belonging to this character."""
 
-    try:
-        ensure_participation(session, player)
-    except Exception:
-        return
+    from .sessions import _session_model
+
+    return _session_model().objects.filter(leader=player).first()
+
+
+def reward_status(player: Any, template_key: str) -> str:
+    """Report first-clear eligibility from this character's completed runs."""
+
+    from .sessions import _session_model
+
+    if getattr(player, "pk", None) is None:
+        return ""
+    completed = _session_model().objects.filter(
+        leader=player, template_key=template_key, state=STATE_COMPLETED,
+    )
+    if not completed.exists():
+        return "Your first-clear reward is available on completion."
+    receipts = _model().objects.filter(player=player, session__in=completed)
+    if receipts.filter(reward_item__gt="", reward_claimed_at__isnull=True).exists():
+        return "You have an unpaid first-clear reward. Use +adventure/claim."
+    if receipts.filter(reward_claimed_at__isnull=False).exists():
+        return "You already claimed this mission's first-clear reward."
+    return "Your first-clear reward needs recovery. Use +adventure/claim."
 
 
 def safe_finalize_completion(session: Any) -> str:

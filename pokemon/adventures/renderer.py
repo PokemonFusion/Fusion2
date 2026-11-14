@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from .constants import STATE_COMPLETED
-from .templates import AdventureTemplate, get_template
+from .constants import DEFAULT_SESSION_MINUTES, STATE_COMPLETED
+from .templates import AdventureTemplate, get_session_template
 
 
 def render_for_room(room: Any, looker: Any) -> str | None:
@@ -29,7 +29,7 @@ def render_for_room(room: Any, looker: Any) -> str | None:
 def render_session(session: Any) -> str:
     """Render the current virtual Adventure location."""
 
-    template = get_template(getattr(session, "template_key", ""))
+    template = get_session_template(session)
     if template is None:
         return "Adventure data is missing."
     node = template.nodes.get(getattr(session, "current_node", ""))
@@ -63,7 +63,7 @@ def render_session(session: Any) -> str:
 def render_objectives(session: Any) -> str:
     """Render objective progress for an Adventure session."""
 
-    template = get_template(getattr(session, "template_key", ""))
+    template = get_session_template(session)
     if template is None:
         return "  Adventure data is missing."
     progress = dict(getattr(session, "objective_progress", None) or {})
@@ -91,6 +91,15 @@ def render_template_info(template: AdventureTemplate) -> str:
         "Objectives:",
     ]
     lines.extend(f"  - {objective.description}" for objective in template.objectives)
+    lines.extend((
+        "",
+        f"First clear: {template.first_clear_item} x{template.first_clear_amount} per character.",
+        "Replay: no entry fee, cooldown or repeat clear reward. Explore, roleplay, or catch a wild Pokemon.",
+        "Encounters are optional. Bring a usable Pokemon to battle.",
+        "Win, loss, flee and capture all resolve the route. Encounters grant no EXP, EVs, Trainer XP, money or prize items.",
+        f"Leaving early or reaching the {DEFAULT_SESSION_MINUTES}-minute expiry ends the run without a clear reward.",
+        "Use +adventure/retry for a pending encounter result and +adventure/claim for an unpaid clear.",
+    ))
     return "\n".join(lines)
 
 

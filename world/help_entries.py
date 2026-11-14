@@ -732,8 +732,9 @@ rooms may have highlighted shortcut letters in their exit names.
 
 +hunt             Attempt to find a wild Pokemon in the current room.
 +hunt/leave       Leave a hunting instance if you are inside one.
-+adventure/list   List compact adventure instances available from Adventure Hall.
-+adventure/start  Start a solo adventure from Adventure Hall.
++adventure/board  Browse posted missions in Adventure Hall.
++adventure/take   Take a posted solo mission and enter its private instance.
++adventure/status Review your run and any first-clear reward recovery.
 +adventure/choose Choose an authored route when the Adventure display offers one.
 +adventure/retry  Retry a saved encounter result after a temporary failure.
 +adventure/claim  Claim unpaid completion rewards, including after leaving a run.
@@ -1038,7 +1039,8 @@ Use +vend <machine name> 1 at a dispenser; one request may give a bundle.
 +inventory shows owned copies. +itemdex descriptions do not prove shop stock.
 
 The authored Alpha Meadow Survey gives a Potion on your first completion.
-Use +adventure/list and +adventure/info alpha_meadow to inspect the route.
+In Adventure Hall, use +adventure/board and +adventure/info alpha_meadow to
+inspect the route. Use +adventure/take alpha_meadow to enter.
 Use +adventure/claim for a pending completed reward; repeats do not farm it.
 The alpha build recipe includes Rare Candy vending, but a recipe does not
 guarantee that its dispenser exists in the current world.

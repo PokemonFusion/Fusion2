@@ -63,6 +63,7 @@ class AdventureTemplate:
     status: str = "active"
     first_clear_item: str = "Potion"
     first_clear_amount: int = 1
+    version: int = 1
 
 
 ALPHA_MEADOW = AdventureTemplate(
@@ -171,6 +172,9 @@ ALPHA_MEADOW = AdventureTemplate(
 )
 
 
+# Keep published revisions here for stored runs and unpaid rewards. Add a new
+# revision instead of editing a published definition in place.
+_REVISIONS = {(ALPHA_MEADOW.key, ALPHA_MEADOW.version): ALPHA_MEADOW}
 _TEMPLATES = {ALPHA_MEADOW.key: ALPHA_MEADOW}
 
 
@@ -191,6 +195,21 @@ def get_template(key_or_name: str) -> AdventureTemplate | None:
     for template in _TEMPLATES.values():
         if query == template.name.lower():
             return template
+    return None
+
+
+def get_template_revision(key: str, version: int) -> AdventureTemplate | None:
+    """Resolve an exact published revision, including withdrawn missions."""
+
+    return _REVISIONS.get((key, version))
+
+
+def get_session_template(session) -> AdventureTemplate | None:
+    """Resolve a run's original content, including runs predating version pins."""
+
+    version = (getattr(session, "metadata", None) or {}).get("template_version", 1)
+    if type(version) is int:
+        return get_template_revision(getattr(session, "template_key", ""), version)
     return None
 
 

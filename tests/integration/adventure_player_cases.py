@@ -34,6 +34,10 @@ class AdventurePlayerCases(unittest.TestCase):
         self.hall.db.adventure_hall = True
         self.room.db.adventure_instance = True
         self.hall.db.adventure_instance_rooms = [self.room]
+        board = ObjectDB.objects.create(db_key='Survey Board ' + suffix, db_location=self.hall,
+                                        db_typeclass_path='typeclasses.objects.Object')
+        board.db.adventure_offers = {"alpha_meadow": 1}
+        self.hall.db.adventure_board = board
         self.player = ObjectDB.objects.create(db_key='Survey Player ' + suffix,
                                               db_typeclass_path='pokemon.user.User')
         self.player.permissions.add('Player')
@@ -104,7 +108,7 @@ class AdventurePlayerCases(unittest.TestCase):
 
     def start(self):
         """Launch through normal commands and verify canonical persisted pointers."""
-        self.command('+adventure/start alpha_meadow')
+        self.command('+adventure/take alpha_meadow')
         session = AdventureSession.objects.get(pk=self.player.db.adventure_session_id)
         self.assertEqual(session.leader_id, self.player.pk)
         self.assertEqual(self.player.location.pk, self.room.pk)
@@ -123,7 +127,7 @@ class AdventurePlayerCases(unittest.TestCase):
 
     def test_noncombat_commands_resume_complete_leave_and_replay_once(self):
         """A battle-free survey restores its state and grants one first clear only."""
-        self.command('+adventure/list')
+        self.command('+adventure/board')
         self.command('+adventure/info alpha_meadow')
         session = self.start()
         self.command('north')
@@ -170,6 +174,49 @@ class AdventurePlayerCases(unittest.TestCase):
         self.assertEqual(session.state, 'abandoned')
         self.assertFalse(self.room.db.adventure_session_id)
         self.assertNotEqual(self.start().pk, session.pk)
+
+    def test_take_rejects_withdrawn_offer_and_shortcuts(self):
+        """Legacy start syntax uses the same posted offer as take."""
+
+        board = self.hall.db.adventure_board
+        board.db.adventure_offers = {}
+        for command in ('+adventure/take alpha_meadow', '+adventure/start alpha_meadow'):
+            self.command(command)
+            self.assertIn('unavailable', self.messages[-1])
+        self.assertFalse(AdventureSession.objects.filter(leader=self.player).exists())
+        board.db.adventure_offers = {"alpha_meadow": 1}
+        self.start()
+
+    def test_take_rolls_back_failed_receipt_and_after_move_failure(self):
+        """A failed take leaves the character at the board and the pool free."""
+
+        from django.db import OperationalError
+        from pokemon.adventures import progress
+
+        original_ensure = progress.ensure_participation
+        original_move = type(self.player).move_to
+
+        def fail_receipt(*args):
+            original_ensure(*args)
+            raise OperationalError("injected write interruption")
+
+        def fail_after_arrival(player, *args, **kwargs):
+            self.assertTrue(original_move(player, *args, **kwargs))
+            return False
+
+        for target, method, failure in (
+            (progress, "ensure_participation", fail_receipt),
+            (type(self.player), "move_to", fail_after_arrival),
+        ):
+            with patch.object(target, method, failure):
+                self.command('+adventure/take alpha_meadow')
+            self.assertIn('try again', self.messages[-1])
+            self.assertEqual(self.player.location, self.hall)
+            self.assertFalse(AdventureSession.objects.filter(leader=self.player).exists())
+            self.assertFalse(AdventureParticipation.objects.filter(player=self.player).exists())
+            self.assertFalse(self.room.db.adventure_session_id)
+            self.assertNotIn(self.player, self.room.contents)
+        self.start()
 
     def test_expired_session_releases_only_its_pointers(self):
         """Fresh SQL expiry leaves no live room reservation or claimable reward."""
@@ -239,6 +286,35 @@ class AdventurePlayerCases(unittest.TestCase):
         self.assertEqual(self.trainer.get_item_quantity('Potion'), 1)
         self.assertFalse(self.player.db.battle_lock)
         self.assertFalse(self.room.db.battles)
+
+    def test_repeated_trainer_wins_remain_reward_free_after_restore(self):
+        """The real battle, restore and repeat paths grant no farmable progression."""
+
+        from pokemon.models.stats import get_trainer_xp
+
+        def progression():
+            self.owned.refresh_from_db()
+            self.trainer.refresh_from_db()
+            return (self.owned.total_exp, list(self.owned.evs), get_trainer_xp(self.player),
+                    self.trainer.money, self.trainer.get_item_quantity("Potion"))
+
+        before = progression()
+        for _ in range(2):
+            session = self.start()
+            self.command('north')
+            self.command('+adventure/choose trainer')
+            battle = self.player.ndb.battle_instance
+            restored = BattleSession.restore(self.room, battle.battle_id)
+            self.assertIsNotNone(restored)
+            self.assertFalse(restored.battle.award_xp or restored.battle.award_txp or restored.battle.award_prizes)
+            restored.battle.rng = random.Random(2)
+            for _ in range(12):
+                if getattr(restored, "_ended", False):
+                    break
+                self.command('+attack Water Gun')
+            self.assertEqual(AdventureParticipation.objects.get(session=session).encounter_result, 'win')
+            self.command('+adventure/leave')
+            self.assertEqual(progression(), before)
 
     def test_selected_route_cannot_bypass_pending_result_then_retry(self):
         """Real route state blocks a battle-free clear until the retained outcome saves."""

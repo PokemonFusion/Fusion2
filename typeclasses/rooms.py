@@ -327,6 +327,9 @@ class FusionRoom(Room):
 		else:
 			output = [title, "", desc_wrapped]
 
+		if getattr(self.db, "adventure_hall", False) and getattr(self.db, "adventure_board", None):
+			output.extend(["", "Use +adventure/board to browse posted missions."])
+
 		# Weather (only if not 'clear')
 		weather = (self.get_weather() or "").lower()
 		if weather and weather != "clear":
