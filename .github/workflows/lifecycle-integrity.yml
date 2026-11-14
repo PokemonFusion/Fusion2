@@ -209,6 +209,8 @@ jobs:
         run: python tests/integration/battle_recovery_food_cases.py
       - name: Exclusive Adventure reservations, independent races and solo privacy
         run: python tests/integration/adventure_privacy_cases.py
+      - name: Adventure installation, legacy adoption, rollback and concurrent upgrade
+        run: python tests/integration/adventure_content_cases.py
       - name: Merged migration graph
         run: python tests/integration/migration_graph.py
 

@@ -8,12 +8,14 @@ from datetime import datetime, timedelta
 from datetime import timezone as dt_timezone
 from typing import Any, Iterable
 
-from django.db import IntegrityError, transaction
+from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
 
 from .constants import (
+    ADVENTURE_BOARD_ATTR,
     ADVENTURE_HALL_ATTR,
     ADVENTURE_INSTANCE_ATTR,
+    ADVENTURE_OFFERS_ATTR,
     ADVENTURE_SESSION_ATTR,
     DEFAULT_SESSION_MINUTES,
     STATE_ABANDONED,
@@ -25,7 +27,9 @@ from .interlocks import inspect_adventure_battle, room_battle_ids
 from .templates import (
     AdventureObjective,
     AdventureTemplate,
+    get_session_template,
     get_template,
+    get_template_revision,
     initial_objective_progress,
     validate_template,
 )
@@ -39,6 +43,10 @@ class AdventureActionResult:
     message: str
     session: Any | None = None
     data: Any | None = None
+
+
+class AdmissionError(Exception):
+    """Roll back a take when the character could not enter."""
 
 
 def _session_model():
@@ -298,16 +306,6 @@ def _as_bool(value: Any) -> bool:
     return bool(value)
 
 
-def _room_exits(room: Any) -> list[Any]:
-    contents_get = getattr(room, "contents_get", None)
-    if callable(contents_get):
-        try:
-            return list(contents_get(content_type="exit"))
-        except Exception:
-            return []
-    return [obj for obj in getattr(room, "contents", []) if getattr(obj, "destination", None)]
-
-
 def _resolve_room_refs(raw_refs: Any) -> list[Any]:
     if not raw_refs:
         return []
@@ -326,14 +324,7 @@ def _resolve_room_refs(raw_refs: Any) -> list[Any]:
 def find_instance_rooms(hall: Any) -> list[Any]:
     """Find candidate Adventure instance rooms for ``hall``."""
 
-    candidates: list[Any] = []
-    candidates.extend(_resolve_room_refs(_db_attr(hall, "adventure_instance_rooms")))
-    for exit_obj in _room_exits(hall):
-        destination = getattr(exit_obj, "destination", None)
-        if destination is not None:
-            candidates.append(destination)
-    candidates.extend(_search_object("Adventure Instance Room #1"))
-    candidates.extend(_search_object("Adventure Instance Room 1"))
+    candidates = _resolve_room_refs(_db_attr(hall, "adventure_instance_rooms"))
 
     seen: set[str] = set()
     rooms: list[Any] = []
@@ -433,7 +424,7 @@ def _completion_reward_message(session: Any) -> str:
 def update_location_objectives(session: Any) -> bool:
     """Apply objectives caused by the session's current virtual node."""
 
-    template = get_template(getattr(session, "template_key", ""))
+    template = get_session_template(session)
     if template is None:
         return False
     progress = dict(getattr(session, "objective_progress", None) or {})
@@ -455,8 +446,33 @@ def update_location_objectives(session: Any) -> bool:
     return changed
 
 
+def board_offers(hall: Any) -> list[AdventureTemplate]:
+    """Read published revisions from the mission board in this Hall."""
+
+    if not _as_bool(_db_attr(hall, ADVENTURE_HALL_ATTR, False)):
+        return []
+    board = _db_attr(hall, ADVENTURE_BOARD_ATTR)
+    if not _ids_match(_object_id(getattr(board, "location", None)), _object_id(hall)):
+        return []
+    offers = _db_attr(board, ADVENTURE_OFFERS_ATTR, {})
+    if not isinstance(offers, Mapping):
+        return []
+    return [
+        template for key, version in offers.items()
+        if type(version) is int
+        and (template := get_template_revision(key, version)) is not None
+        and template.status == "active"
+    ]
+
+
+def _offered_template(hall: Any, requested: AdventureTemplate) -> AdventureTemplate | None:
+    """Match a mission's stable key against the current board offers."""
+
+    return next((template for template in board_offers(hall) if template.key == requested.key), None)
+
+
 def start_session(player: Any, template_key: str) -> AdventureActionResult:
-    """Start a solo Adventure for ``player``."""
+    """Take a mission and enter in one transaction with its participation receipt."""
 
     gate = inspect_adventure_battle(player)
     if gate.active_battle or gate.pending_result:
@@ -467,19 +483,19 @@ def start_session(player: Any, template_key: str) -> AdventureActionResult:
     template = get_template(template_key)
     if template is None:
         return AdventureActionResult(False, "No adventure by that name was found.")
-    errors = validate_template(template)
-    if errors:
-        return AdventureActionResult(False, "Adventure template is not valid: " + "; ".join(errors))
-
     hall = getattr(player, "location", None)
     if not hall or not _as_bool(_db_attr(hall, ADVENTURE_HALL_ATTR, False)):
         return AdventureActionResult(False, "You need to start adventures from the Adventure Hall.")
+    _refresh_board(hall)
+    if _offered_template(hall, template) is None:
+        return AdventureActionResult(False, "That mission is unavailable at this board. Use +adventure/board for current offers.")
 
     for room in sorted(find_instance_rooms(hall), key=lambda candidate: _object_id(candidate)):
         try:
             with transaction.atomic():
                 _lock_object(room)
                 _lock_object(player)
+                _lock_object(hall)
                 if get_current_session_for_player(player):
                     return AdventureActionResult(False, "You are already in an adventure.")
                 gate = inspect_adventure_battle(player)
@@ -487,11 +503,36 @@ def start_session(player: Any, template_key: str) -> AdventureActionResult:
                     return AdventureActionResult(False, gate.message)
                 if not _ids_match(_object_id(getattr(player, "location", None)), _object_id(hall)):
                     return AdventureActionResult(False, "You need to start adventures from the Adventure Hall.")
-                if room_is_available(room):
-                    return _create_reserved_session(player, hall, room, template)
+                _refresh_board(hall)
+                offered = _offered_template(hall, template)
+                if offered is None:
+                    return AdventureActionResult(False, "That mission is unavailable at this board. Use +adventure/board for current offers.")
+                errors = validate_template(offered)
+                if errors:
+                    return AdventureActionResult(False, "Adventure template is not valid: " + "; ".join(errors))
+                if room in find_instance_rooms(hall) and room_is_available(room):
+                    return _create_reserved_session(player, hall, room, offered)
+        except AdmissionError:
+            _restore_admission_cache(player, room, hall)
+            return AdventureActionResult(False, "The adventure room could not be entered. Use +adventure/take to try again.")
         except IntegrityError:
+            _restore_admission_cache(player, room, hall)
             return AdventureActionResult(False, "An adventure reservation changed. Please try again.")
+        except DatabaseError:
+            _restore_admission_cache(player, room, hall)
+            raise
     return AdventureActionResult(False, "No adventure instance rooms are available right now. Please try again shortly.")
+
+
+def _refresh_board(hall: Any) -> None:
+    """Refresh cached offers after acquiring the installation's Hall lock."""
+
+    attributes = getattr(hall, "attributes", None)
+    if attributes is not None:
+        attributes.reset_cache()
+    board = _db_attr(hall, ADVENTURE_BOARD_ATTR)
+    if getattr(board, "attributes", None) is not None:
+        board.attributes.reset_cache()
 
 
 def _create_reserved_session(player: Any, hall: Any, instance_room: Any,
@@ -509,28 +550,37 @@ def _create_reserved_session(player: Any, hall: Any, instance_room: Any,
         objective_progress=initial_objective_progress(template),
         started_at=now,
         expires_at=now + timedelta(minutes=DEFAULT_SESSION_MINUTES),
-        metadata={},
+        metadata={"template_version": template.version},
         holds_instance=True,
     )
 
-    from .progress import safe_ensure_participation
+    from .progress import ensure_participation
 
-    safe_ensure_participation(session, player)
+    ensure_participation(session, player)
 
     _set_db_attr(player, ADVENTURE_SESSION_ATTR, getattr(session, "pk", getattr(session, "id", None)))
     _set_db_attr(instance_room, ADVENTURE_SESSION_ATTR, getattr(session, "pk", getattr(session, "id", None)))
     move_to = getattr(player, "move_to", None)
-    if callable(move_to):
-        moved = move_to(instance_room, quiet=True)
-        if moved is False:
-            leave_session(player, session=session, reason=STATE_ABANDONED, move_player=False)
-            return AdventureActionResult(False, "The adventure room could not be entered.")
+    if not callable(move_to) or not move_to(instance_room, quiet=True):
+        raise AdmissionError
 
     return AdventureActionResult(
         True,
         f"Started {template.name}.",
         session=session,
     )
+
+
+def _restore_admission_cache(player: Any, room: Any, hall: Any) -> None:
+    """Discard cached markers and movement rolled back by the database."""
+
+    from evennia.objects.models import ObjectDB
+
+    player.db_location_id = ObjectDB.objects.filter(pk=player.pk).values_list("db_location_id", flat=True).get()
+    for obj in (player, room):
+        obj.attributes.reset_cache()
+    for location in (hall, room):
+        location.contents_cache.init()
 
 
 def choose_session_route(player: Any, choice_key: str) -> AdventureActionResult:
@@ -542,7 +592,7 @@ def choose_session_route(player: Any, choice_key: str) -> AdventureActionResult:
     gate = inspect_adventure_battle(player, session)
     if gate.blocks_route_retry:
         return AdventureActionResult(False, gate.message, session=session)
-    template = get_template(getattr(session, "template_key", ""))
+    template = get_session_template(session)
     node = template.nodes.get(getattr(session, "current_node", "")) if template else None
     if node is None:
         return AdventureActionResult(False, "This adventure location is missing.", session=session)
@@ -692,7 +742,7 @@ def move_session(player: Any, direction: str) -> AdventureActionResult:
     gate = inspect_adventure_battle(player, session)
     if gate.blocked:
         return AdventureActionResult(False, gate.message, session=session)
-    template = get_template(getattr(session, "template_key", ""))
+    template = get_session_template(session)
     if template is None:
         return AdventureActionResult(False, "This adventure template is missing.", session=session)
     node = template.nodes.get(getattr(session, "current_node", ""))
@@ -731,7 +781,7 @@ def search_session(player: Any) -> AdventureActionResult:
     gate = inspect_adventure_battle(player, session)
     if gate.blocked:
         return AdventureActionResult(False, gate.message, session=session)
-    template = get_template(getattr(session, "template_key", ""))
+    template = get_session_template(session)
     if template is None:
         return AdventureActionResult(False, "This adventure template is missing.", session=session)
     node = template.nodes.get(getattr(session, "current_node", ""))
@@ -794,7 +844,7 @@ def _leave_reserved_session(player: Any, session: Any, *, reason: str,
     if gate.blocked:
         return AdventureActionResult(False, gate.message, session=session)
 
-    template = get_template(getattr(session, "template_key", ""))
+    template = get_session_template(session)
     session_name = template.name if template else getattr(session, "template_key", "Adventure")
     instance_room = getattr(session, "instance_room", None)
     return_location = return_location or getattr(session, "return_location", None)

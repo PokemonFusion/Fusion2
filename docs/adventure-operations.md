@@ -5,10 +5,15 @@ Hall. The current playable mission is `alpha_meadow` (Alpha Meadow Survey).
 
 ## Player Flow
 
-Start in Adventure Hall. The original survey can be completed without a battle:
+Use the `adventures` exit from the public room linked to Adventure Hall.
+Browse the mission board, inspect the survey and take it. Taking a mission
+reserves a private room and enters it in one step. The survey can be completed
+without a battle:
 
 ```text
-+adventure/start alpha_meadow
++adventure/board
++adventure/info alpha_meadow
++adventure/take alpha_meadow
 north
 north
 +adventure/search
@@ -25,9 +30,9 @@ completion, including after a failed result save.
 For either existing optional encounter:
 
 ```text
-+adventure/list
++adventure/board
 +adventure/info alpha_meadow
-+adventure/start alpha_meadow
++adventure/take alpha_meadow
 north
 +adventure/choose wild
 ```
@@ -49,11 +54,22 @@ south
 Useful commands during a run are `+adventure/look`, `+adventure/objectives`,
 and `+adventure/leave`. A route choice is locked once its encounter begins.
 If battle startup fails before a battle is created, repeat the same choice.
+Use `+adventure/status` to see your active or most recent run and recovery
+actions. Reconnecting resumes the same character's run. If the room is full
+or entry fails, try taking the mission again. `+adventure/list` and
+`+adventure/start` are aliases for the board and take commands.
 
 The first completed clear grants one Potion, whether or not an encounter was
 chosen. A chosen route retains its original encounter result; a survey-only
-clear invents no route or battle outcome. Later clears remain available for alternate outcomes,
-catching, and roleplay but do not duplicate the first-clear reward.
+clear records only the survey objectives. Replays have no fee or cooldown
+and give no repeat clear reward. Replays remain open for alternate outcomes,
+catching and roleplay because survey searches, objectives and newly started
+encounters award no EXP, EVs, Trainer XP, money or prize items. Capture uses
+the normal Poké Ball and Pokémon placement rules. Battles already in progress
+at deployment retain their original payout rules and saved reward receipts.
+Leaving before completion or expiring after two hours ends the run without
+a clear reward. A held battle or pending result must be resolved before
+the instance can be released.
 
 If an encounter result cannot be saved, use `+adventure/retry`. This replays
 the recorded outcome without starting another encounter. The original result
@@ -67,9 +83,46 @@ write or claim marker is rolled back together so the reward can be retried.
 
 ## Builder Setup
 
-Run `batchcommands adventure_hall` once from the room that should link to
-Adventure Hall. The batch file is intentionally non-idempotent and must not be
-rerun against the same database.
+Use the public approach room's exact dbref. From the deployment checkout
+with its approved database settings, inspect the proposed changes:
+
+```text
+evennia install_adventure_content '#123'
+```
+
+The plan validates the published mission and reports which objects it will
+create, adopt, update or keep. It expects one Hall and one private instance.
+For the original batch layout it adopts the uniquely identified Hall, instance
+and correctly linked entrance/return exits. It stops on duplicates and
+conflicting paths, reporting the IDs where available. It keeps existing room
+descriptions, aliases, permissions, unrelated exits, sessions and receipts.
+The installer manages the Hall/instance flags, hunting and item restrictions,
+explicit pool, board link, and the version and offers on that board. A fresh
+install does not create a public traversal into the private instance. A legacy
+instance exit remains subject to the existing destination privacy gate.
+
+After reviewing the plan and taking a verified backup, apply in an approved
+quiescent window and repeat the read-only plan:
+
+```text
+evennia install_adventure_content '#123' --apply
+evennia install_adventure_content '#123'
+```
+
+The expected second plan reports five `Keep` entries. Reapplying this version
+does not rewrite it. Failed writes roll back together, so run the plan again
+after correcting the reported problem and retry the same apply. The installer
+adds no schema migration and assumes the existing Adventure schema, including
+`0060_adventure_occupancy`. The old `world/adventure_hall.ev` batch is retained
+as a reference for legacy adoption.
+
+New runs pin the mission revision posted at take time; earlier Alpha Meadow
+runs resolve to revision 1. Any later release must retain the published
+revisions referenced by active runs and unpaid rewards. Use a new release
+number with the approved offer manifest for a forward correction. For a
+full rollback of an applied world change, use the verified pre-install backup
+while the world is still quiescent. Once players have created new progress,
+use a separately reviewed forward correction that preserves those records.
 
 Validate content and room setup with:
 
@@ -83,8 +136,9 @@ Use `+adventureadmin/list` and `+adventureadmin/info <session_id>` to inspect
 sessions. Staff can abort a broken run or return a stranded player with the
 documented Adventure admin commands.
 
-The migration adding per-player result and reward tracking must be applied as
-part of the normal deployment process before enabling this version.
+After activation, use an ordinary player to enter via the public exit, browse,
+take, finish and leave the survey. Check reconnect and first-clear/replay
+behavior on the activated candidate separately from staff validation.
 
 ## Current Boundaries
 

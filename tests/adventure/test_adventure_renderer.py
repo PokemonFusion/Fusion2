@@ -4,6 +4,7 @@ import types
 import pytest
 
 from pokemon.adventures import renderer, sessions
+from tests.adventure.test_adventure_sessions import DummyRoom
 
 
 @pytest.fixture(autouse=True)
@@ -11,25 +12,11 @@ def isolated_reservation_locks(monkeypatch):
     """These render doubles have no database or database row locks."""
     monkeypatch.setattr(sessions.transaction, "atomic", contextlib.nullcontext)
     monkeypatch.setattr(sessions, "_lock_object", lambda _obj: None)
+    monkeypatch.setattr("pokemon.adventures.progress.ensure_participation", lambda *_args: None)
 
 
 class DummyDB(types.SimpleNamespace):
     pass
-
-
-class DummyRoom:
-    _next_id = 500
-
-    def __init__(self, key, **attrs):
-        self.id = DummyRoom._next_id
-        DummyRoom._next_id += 1
-        self.key = key
-        self.db = DummyDB(**attrs)
-        self.ndb = DummyDB()
-        self.exits = []
-
-    def contents_get(self, content_type=None):
-        return self.exits if content_type == "exit" else []
 
 
 class DummyPlayer:
@@ -105,7 +92,7 @@ def test_render_session_shows_location_map_exits_and_objectives(monkeypatch):
     FakeAdventureSession._next_id = 1
     hall = DummyRoom("Adventure Hall", adventure_hall=True)
     instance = DummyRoom("Adventure Instance Room #1", adventure_instance=True)
-    hall.exits = [type("Exit", (), {"destination": instance})()]
+    hall.post_mission(instance)
     player = DummyPlayer()
     player.location = hall
     monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
@@ -126,7 +113,7 @@ def test_render_for_room_uses_matching_active_session(monkeypatch):
     FakeAdventureSession._next_id = 1
     hall = DummyRoom("Adventure Hall", adventure_hall=True)
     instance = DummyRoom("Adventure Instance Room #1", adventure_instance=True)
-    hall.exits = [type("Exit", (), {"destination": instance})()]
+    hall.post_mission(instance)
     player = DummyPlayer()
     player.location = hall
     monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
@@ -150,7 +137,7 @@ def test_render_for_room_keeps_completed_session_visible_before_leave(monkeypatc
     FakeAdventureSession._next_id = 1
     hall = DummyRoom("Adventure Hall", adventure_hall=True)
     instance = DummyRoom("Adventure Instance Room #1", adventure_instance=True)
-    hall.exits = [type("Exit", (), {"destination": instance})()]
+    hall.post_mission(instance)
     player = DummyPlayer()
     player.location = hall
     monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)

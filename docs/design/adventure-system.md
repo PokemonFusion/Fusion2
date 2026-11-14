@@ -1,11 +1,11 @@
 # Pokémon Fusion 2 Adventure System Planning Document
 
-## Current Implementation Status (2026-10-23)
+## Current Implementation Status (2026-11-14)
 
 The Adventure foundation and first authored vertical slice are implemented.
 Alpha Meadow Survey currently provides:
 
-- solo sessions launched from Adventure Hall using a fixed instance-room pool;
+- solo missions taken from the Adventure Hall board using a fixed private room;
 - a four-node virtual map with movement, rendering, search, and objectives;
 - the original non-combat reach/search/return survey, with optional catchable
   wild or NPC trainer encounters; choosing one locks its route until resolved;
@@ -13,7 +13,9 @@ Alpha Meadow Survey currently provides:
   expedition to continue;
 - durable session recovery, two-hour expiry, staff validation and cleanup;
 - per-player route, outcome, completion, and reward-claim records; and
-- one idempotent first-clear item reward.
+- one idempotent first-clear Potion per character and immediate replay for
+  exploration, catching and roleplay;
+- a versioned Hall and board installer that preserves pinned runs on upgrade.
 
 Additional missions, milestone UI, weekly/monthly Mission Board goals,
 difficulty variants, party progress, reputation, and builder-facing template

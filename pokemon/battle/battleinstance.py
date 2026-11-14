@@ -1519,6 +1519,16 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         log_info(f"Prepared {len(pokemons)} pokemons for {getattr(trainer, 'key', trainer)}")
         return pokemons
 
+    @staticmethod
+    def has_usable_party(trainer) -> bool:
+        """Check encounter readiness without creating battle state."""
+
+        from .roster_eligibility import BattleRosterEligibility
+        from pokemon.helpers.party_helpers import pokemon_is_usable
+
+        party = BattleRosterEligibility.models(get_battle_party_with_fusion(trainer))
+        return any(pokemon_is_usable(mon) for mon in party)
+
     def _init_battle_state(
         self,
         origin,
@@ -1675,6 +1685,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         )
         metadata = {
             "source_type": "adventure",
+            "reward_policy": "survey_only",
             "adventure_session_id": adventure_session_id,
             "route_key": route_key,
             "outcome_key": outcome_key,
@@ -1944,7 +1955,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         metadata = getattr(self, "encounter_metadata", {}) or {}
         if self.battle:
             self.battle.prize_source_type = metadata.get("source_type")
-        if self.battle and metadata.get("source_type") == "gym_leader" and metadata.get("reward_policy") == "badge_only":
+        if self.battle and (metadata.get("source_type"), metadata.get("reward_policy")) in {
+            ("adventure", "survey_only"),
+            ("gym_leader", "badge_only"),
+        }:
             self.battle.award_xp = self.battle.award_txp = self.battle.award_prizes = False
             self.state.xp = self.state.txp = False
         for participant in getattr(self.battle, "participants", []):

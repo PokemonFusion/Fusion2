@@ -21,6 +21,10 @@ class AdventurePrivacyCases(unittest.TestCase):
         self.hall = ObjectDB.objects.create(db_key="Privacy Hall " + suffix,
                                             db_typeclass_path="typeclasses.rooms.FusionRoom")
         self.hall.db.adventure_hall = True
+        board = ObjectDB.objects.create(db_key="Privacy case board", db_location=self.hall,
+                                        db_typeclass_path="typeclasses.objects.Object")
+        board.db.adventure_offers = {"alpha_meadow": 1}
+        self.hall.db.adventure_board = board
         self.rooms = [ObjectDB.objects.create(db_key="Privacy Instance " + suffix + str(i),
                      db_typeclass_path="typeclasses.rooms.FusionRoom") for i in range(2)]
         for room in self.rooms:
@@ -166,7 +170,7 @@ class AdventurePrivacyCases(unittest.TestCase):
         """An exception after session insertion leaves neither a run nor a room claim."""
         from pokemon.adventures import progress
 
-        with patch.object(progress, "safe_ensure_participation", side_effect=RuntimeError("fixture creation failure")):
+        with patch.object(progress, "ensure_participation", side_effect=RuntimeError("fixture creation failure")):
             with self.assertRaisesRegex(RuntimeError, "fixture creation failure"):
                 sessions.start_session(self.players[0], "alpha_meadow")
         self.assertFalse(AdventureSession.objects.filter(leader=self.players[0]).exists())

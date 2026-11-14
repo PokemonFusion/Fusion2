@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from django.db import DatabaseError
+
 try:
     from evennia import Command as _EvenniaCommand
 except Exception:  # pragma: no cover - lightweight test fallback
@@ -13,8 +15,11 @@ else:
     Command = _EvenniaCommand
 
 from .cmdsets import attach_movement_cmdset, detach_movement_cmdset
+from .constants import STATE_COMPLETED
+from .interlocks import inspect_adventure_battle
 from .renderer import render_objectives, render_session, render_template_info
 from .sessions import (
+    board_offers,
     choose_session_route,
     get_current_session_for_player,
     leave_session,
@@ -22,7 +27,11 @@ from .sessions import (
     search_session,
     start_session,
 )
-from .templates import get_template, list_templates
+from .templates import get_session_template, get_template
+
+
+_ACTIONS = ("board", "list", "info", "take", "start", "status", "look", "objectives",
+            "search", "choose", "retry", "claim", "leave")
 
 
 def _parse_slash_switches(command) -> set[str]:
@@ -51,9 +60,10 @@ class CmdAdventure(Command):
     """Start and control compact Adventure instances.
 
     Usage:
-      +adventure/list
+      +adventure/board (alias: +adventure/list)
       +adventure/info <adventure>
-      +adventure/start <adventure>
+      +adventure/take <adventure> (alias: +adventure/start)
+      +adventure/status
       +adventure/look
       +adventure/objectives
       +adventure/search
@@ -63,12 +73,14 @@ class CmdAdventure(Command):
       +adventure/leave
 
     Examples:
-      +adventure/list
-      +adventure/start alpha_meadow
+      +adventure/board
+      +adventure/take alpha_meadow
       +adventure/search
 
     Notes:
-      Adventures are solo-first authored missions started from Adventure Hall.
+      Enter Adventure Hall via the adventures exit. Taking a mission enters
+      its instance and saves your progress for reconnect. Bring a battle-ready
+      Pokemon for optional encounters. The survey can be done without a Pokemon.
     """
 
     key = "+adventure"
@@ -81,12 +93,14 @@ class CmdAdventure(Command):
 
     def func(self):
         action, arg = self._action_and_arg()
-        if action == "list":
+        if action in {"board", "list"}:
             self._list()
         elif action == "info":
             self._info(arg)
-        elif action == "start":
+        elif action in {"take", "start"}:
             self._start(arg)
+        elif action == "status":
+            self._status()
         elif action == "look":
             self._look()
         elif action == "objectives":
@@ -106,7 +120,7 @@ class CmdAdventure(Command):
 
     def _action_and_arg(self) -> tuple[str, str]:
         switches = getattr(self, "switches", set())
-        for action in ("list", "info", "start", "look", "objectives", "search", "choose", "retry", "claim", "leave"):
+        for action in _ACTIONS:
             if action in switches:
                 return action, (self.args or "").strip()
         raw = (self.args or "").strip()
@@ -114,18 +128,22 @@ class CmdAdventure(Command):
             return "help", ""
         first, _, rest = raw.partition(" ")
         first = first.lower()
-        if first in {"list", "info", "start", "look", "objectives", "search", "choose", "retry", "claim", "leave"}:
+        if first in _ACTIONS:
             return first, rest.strip()
         return "help", raw
 
     def _list(self) -> None:
-        templates = list_templates()
+        """Show offers installed on the local Hall's board."""
+
+        templates = board_offers(getattr(self.caller, "location", None))
         if not templates:
-            self.caller.msg("No adventures are available.")
+            self.caller.msg("No missions are posted here. Go to Adventure Hall to check its mission board. "
+                            "Use +adventure/status for your current or most recent run.")
             return
-        lines = ["Available adventures:"]
+        lines = ["Adventure Mission Board"]
         for template in templates:
             lines.append(f"  {template.key} - {template.name} ({template.category})")
+        lines.append("Use +adventure/info <mission> to inspect or +adventure/take <mission> to enter.")
         self.caller.msg("\n".join(lines))
 
     def _info(self, arg: str) -> None:
@@ -133,17 +151,54 @@ class CmdAdventure(Command):
         if template is None:
             self.caller.msg("Usage: +adventure/info <adventure>")
             return
-        self.caller.msg(render_template_info(template))
+        from .progress import reward_status
+
+        offered = next((offer for offer in board_offers(getattr(self.caller, "location", None))
+                        if offer.key == template.key), None)
+        availability = (
+            f"Posted here. Use +adventure/take {offered.key} to enter." if offered
+            else "This mission is only available while posted at the Adventure Hall board."
+        )
+        self.caller.msg("\n".join((render_template_info(offered or template), availability,
+                                   reward_status(self.caller, template.key))))
 
     def _start(self, arg: str) -> None:
         if not arg:
-            self.caller.msg("Usage: +adventure/start <adventure>")
+            self.caller.msg("Usage: +adventure/take <adventure>")
             return
-        result = start_session(self.caller, arg)
+        try:
+            result = start_session(self.caller, arg)
+        except DatabaseError:
+            self.caller.msg("The mission could not be saved. Use +adventure/take to try again.")
+            return
         self.caller.msg(result.message)
         if result.ok and result.session is not None:
             attach_movement_cmdset(self.caller)
             self.caller.msg(render_session(result.session))
+
+    def _status(self) -> None:
+        """Show this character's latest run and recovery actions."""
+
+        from .progress import latest_run, reward_status
+
+        session = get_current_session_for_player(self.caller) or latest_run(self.caller)
+        lines = ["You have no Adventure runs yet."]
+        if session is not None:
+            template = get_session_template(session)
+            name = template.name if template else session.template_key
+            lines = [f"{name} — {session.state.title()}."]
+            if outcome := (session.metadata or {}).get("encounter_result"):
+                lines.append(f"Encounter result: {outcome}.")
+            if session.holds_instance:
+                command = "+adventure/leave" if session.state == STATE_COMPLETED else "+adventure/look"
+                lines.append(f"Use {command} to continue.")
+                gate = inspect_adventure_battle(self.caller, session)
+                if gate.blocked:
+                    lines.append(gate.message)
+            lines.append(reward_status(self.caller, session.template_key))
+        if (session is None or not session.holds_instance) and inspect_adventure_battle(self.caller).pending_result:
+            lines.append("An encounter result is pending. Use +adventure/retry.")
+        self.caller.msg("\n".join(line for line in lines if line))
 
     def _look(self) -> None:
         session = get_current_session_for_player(self.caller)
@@ -181,6 +236,9 @@ class CmdAdventure(Command):
                 active_battle = getattr(getattr(self.caller, "ndb", None), "battle_instance", None)
             if active_battle:
                 self.caller.msg("Finish your current battle before choosing a route.")
+                return
+            if not BattleSession.has_usable_party(self.caller):
+                self.caller.msg("You need a battle-ready Pokemon to choose an encounter. You can continue the survey without battling.")
                 return
 
         result = choose_session_route(self.caller, arg)
@@ -252,8 +310,8 @@ class CmdAdventure(Command):
 
 def _usage() -> str:
     return (
-        "Usage: +adventure/list | +adventure/info <adventure> | "
-        "+adventure/start <adventure> | +adventure/look | "
+        "Usage: +adventure/board | +adventure/info <adventure> | "
+        "+adventure/take <adventure> | +adventure/status | +adventure/look | "
         "+adventure/objectives | +adventure/search | "
         "+adventure/choose <route> | +adventure/retry | +adventure/claim | +adventure/leave"
     )

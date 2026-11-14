@@ -1,20 +1,35 @@
 """Issue #832: persisted battle lifecycle must gate every Adventure action."""
 
 from collections import UserDict
+from contextlib import nullcontext
 from datetime import timedelta
 from types import SimpleNamespace
 
 import pytest
 
-from pokemon.adventures import commands, sessions
+from pokemon.adventures import commands, progress, sessions
 from pokemon.adventures.cmdsets import CmdAdventureNorth
 from pokemon.adventures.constants import ADVENTURE_SESSION_ATTR, STATE_ACTIVE, STATE_EXPIRED
 from tests.adventure.test_adventure_commands import DummyCmdSet
 from tests.adventure.test_adventure_sessions import (
     DummyRoom,
+    FakeAdventureSession,
+    FakeSessionManager,
     adventure_world,
-    fake_session_model,
 )
+
+
+@pytest.fixture(autouse=True)
+def fake_session_model(monkeypatch):
+    """Patch the module reloaded for this collector's lifecycle tests."""
+
+    FakeAdventureSession.objects = FakeSessionManager()
+    monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
+    monkeypatch.setattr(sessions, "_lock_object", lambda _obj: None)
+    monkeypatch.setattr(sessions.transaction, "atomic", nullcontext)
+    monkeypatch.setattr(progress, "ensure_participation", lambda *_args: None)
+    monkeypatch.setattr(progress, "record_encounter_result", lambda *_args: None)
+    monkeypatch.setattr(progress, "safe_finalize_completion", lambda _session: "")
 
 
 @pytest.mark.parametrize("action", ["choose", "move", "search", "leave", "start"])

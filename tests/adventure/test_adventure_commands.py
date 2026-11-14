@@ -7,6 +7,7 @@ from pokemon.adventures.cmdsets import (
     detach_movement_cmdset,
 )
 from pokemon.adventures.sessions import AdventureActionResult
+from tests.adventure.test_adventure_sessions import DummyRoom
 
 
 class DummyCmdSet:
@@ -28,6 +29,8 @@ class DummyCaller:
     def __init__(self):
         self.messages = []
         self.cmdset = DummyCmdSet()
+        self.location = DummyRoom("Adventure Hall", adventure_hall=True)
+        self.location.post_mission(DummyRoom("Instance", adventure_instance=True))
 
     def msg(self, text):
         self.messages.append(text)
@@ -49,14 +52,14 @@ def _run_cmd(switches=None, args="", cmdstring="+adventure", parse=False):
 def test_adventure_list_command_shows_alpha_meadow():
     caller = _run_cmd({"list"})
 
-    assert "Available adventures:" in caller.messages[-1]
+    assert "Adventure Mission Board" in caller.messages[-1]
     assert "alpha_meadow - Alpha Meadow Survey" in caller.messages[-1]
 
 
 def test_adventure_list_command_parses_cmdstring_switch():
     caller = _run_cmd(cmdstring="+adventure/list", parse=True)
 
-    assert "Available adventures:" in caller.messages[-1]
+    assert "Adventure Mission Board" in caller.messages[-1]
 
 
 def test_adventure_info_command_shows_template_details():
@@ -126,6 +129,10 @@ def test_adventure_choose_starts_authored_encounter(monkeypatch):
     started = {}
 
     class FakeBattleSession:
+        @staticmethod
+        def has_usable_party(_player):
+            return True
+
         @staticmethod
         def ensure_for_player(_caller):
             return None
